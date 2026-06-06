@@ -1,0 +1,1662 @@
+# Oui Market — Figma Design Prompt
+# Complete UI/UX spec from splash to payment success
+# Hand this to your Figma designer exactly as written
+
+---
+
+## APP NAME
+
+**Oui Market**
+Tagline: *"Campus life, sorted."*
+Sub-tagline: *"Post tasks. Get paid. Build your rep."*
+
+Design feel: Clean, modern, trustworthy. Feels like Cowrywise meets
+Fiverr — not a crypto app, not a bank, not a student project.
+Students should feel safe putting money in it.
+
+---
+
+## BRAND TOKENS
+
+Typography:
+  Display:  Plus Jakarta Sans — Bold, 700
+  Heading:  Plus Jakarta Sans — SemiBold, 600
+  Body:     Inter — Regular, 400
+  Caption:  Inter — Medium, 500
+  Mono:     JetBrains Mono — for account numbers and codes only
+
+Colours:
+  Primary:       #1A1A2E   (deep navy — authority, trust)
+  Accent:        #6C63FF   (electric violet — action, energy)
+  Accent light:  #EAE8FF   (violet tint for backgrounds)
+  Success:       #12B76A   (green — money received, approved)
+  Warning:       #F79009   (amber — pending, waiting)
+  Danger:        #F04438   (red — dispute, error)
+  Neutral 900:   #101828   (primary text)
+  Neutral 700:   #344054   (secondary text)
+  Neutral 500:   #667085   (caption text)
+  Neutral 200:   #EAECF0   (borders, dividers)
+  Neutral 50:    #F9FAFB   (page backgrounds)
+  White:         #FFFFFF
+
+Tier colours (OuiScore):
+  STARTER:  #98A2B3   (slate)
+  BRONZE:   #F79009   (amber)
+  GOLD:     #6C63FF   (violet — matches accent)
+  DIAMOND:  #0BA5EC   (sky blue)
+
+Border radius:
+  Small:    8px
+  Medium:   12px
+  Large:    16px
+  XLarge:   24px
+  Pill:     999px
+
+Shadows:
+  Card:  0 1px 3px rgba(16,24,40,0.10), 0 1px 2px rgba(16,24,40,0.06)
+  Modal: 0 20px 60px rgba(16,24,40,0.18)
+
+Spacing: 4px base grid — 4, 8, 12, 16, 20, 24, 32, 40, 48, 64
+
+---
+
+## DEVICE
+
+Mobile first. All screens 390×844px (iPhone 14 base).
+Design in Figma auto-layout. Export for React Native or PWA.
+Bottom navigation bar. No hamburger menus.
+
+---
+
+## SCREENS — COMPLETE LIST
+
+Design every screen below. Each gets its own Figma frame.
+Name frames exactly as written.
+
+  01 / Splash
+  02 / Onboarding 1
+  03 / Onboarding 2
+  04 / Onboarding 3
+  05 / Sign Up
+  06 / Sign Up — OTP Verify
+  07 / Log In
+  08 / Create Profile
+  09 / Create DID — Choose Privacy
+  10 / Home Feed
+  11 / Task Board (browse tasks)
+  12 / Task Detail
+  13 / Post a Task — Step 1 (details)
+  14 / Post a Task — Step 2 (budget + duration)
+  15 / Post a Task — Step 3 (review)
+  16 / Payment Method Select
+  17 / Payment — Card
+  18 / Payment — Bank Transfer
+  19 / Payment — Processing
+  20 / Payment — Success
+  21 / My Tasks (poster view)
+  22 / My Gigs (doer view)
+  23 / Task Progress — Active
+  24 / Task Progress — Submitted
+  25 / Task Progress — Dispute Raised
+  26 / Task Progress — Dispute Voting
+  27 / Task Progress — Resolved
+  28 / Housing Board (browse rooms)
+  29 / Room Detail
+  30 / Housing Deposit Flow
+  31 / Marketplace (buy/sell goods)
+  32 / Product Detail
+  33 / OuiScore Profile
+  34 / Credential Share
+  35 / Credential Public Page
+  36 / Notifications
+  37 / Wallet / Earnings
+  38 / Settings
+  39 / Empty States (task board, notifications, gigs — all three)
+  40 / Error State
+
+---
+
+## SCREEN SPECS
+
+---
+
+### 01 / Splash
+
+Full screen. Colour: Primary (#1A1A2E).
+Centre: Oui Market wordmark in white, Plus Jakarta Sans Bold, 32px.
+Below wordmark: tagline "Campus life, sorted." in Neutral 500, 14px.
+Bottom 40% of screen: subtle upward gradient from #6C63FF at 8% opacity to transparent.
+Loading indicator: thin violet progress bar at very bottom, animating left to right.
+No logo icon — wordmark only.
+
+---
+
+### 02 / Onboarding 1 — "Post any task"
+
+Background: White.
+Top 55%: illustration area — clean flat art.
+  Scene: student at laptop, frustrated, clock on wall showing midnight.
+  Style: flat vector, Primary + Accent colours, no gradients.
+Heading (28px Bold): "Post any task."
+Body (16px Regular, Neutral 700):
+  "Need an essay done? A design made? Help moving in?
+   Post it. Someone on campus will handle it."
+Progress dots: 3 dots, first filled violet, others grey.
+Bottom: "Next →" pill button (full width, Accent fill, white text).
+
+---
+
+### 03 / Onboarding 2 — "Get paid for your skills"
+
+Same layout as screen 02.
+Illustration: student on phone, receiving notification, money icon floating.
+Heading: "Get paid for your skills."
+Body:
+  "Accept tasks that match your strengths.
+   Earn real money. Build your campus reputation."
+Progress dots: second dot filled.
+
+---
+
+### 04 / Onboarding 3 — "Your money is always safe"
+
+Same layout.
+Illustration: two students, lock icon between them, shield.
+  Conveys: money locked safely until work is done. Trust.
+Heading: "Your money is always safe."
+Body:
+  "Funds are locked in escrow until you're satisfied.
+   If something goes wrong, you get your money back."
+Progress dots: third dot filled.
+Bottom: two buttons stacked:
+  Primary pill: "Create account"
+  Ghost pill:   "I already have an account"
+
+---
+
+### 05 / Sign Up
+
+Top: Back arrow (left). Title: "Create account" (20px SemiBold).
+Form fields (stacked, 16px gap):
+  Full name         — text input
+  Email address     — email input
+  Phone number      — phone input with +234 prefix selector
+  Password          — password input with show/hide toggle
+  Referral code     — text input, optional tag "(optional)"
+
+Below form:
+  "By signing up, you agree to our Terms and Privacy Policy"
+  (Terms and Privacy underlined, violet)
+
+Primary button: "Create account" (full width, bottom of form).
+
+Bottom: "Already have an account? Log in" (centred, violet link).
+
+---
+
+### 06 / Sign Up — OTP Verify
+
+Title: "Verify your number"
+Subtitle: "We sent a 6-digit code to +234 XXX XXX XXXX"
+          "(Change number)" link inline.
+
+OTP input: 6 individual boxes side by side, rounded, 48×56px each.
+  Empty: Neutral 200 border.
+  Focused: Accent border, Accent light background.
+  Filled: Primary border, Primary text.
+
+Below: countdown "Resend code in 0:47" — timer.
+After timer: "Resend code" link activates.
+
+Primary button: "Verify" (disabled until all 6 filled).
+
+---
+
+### 07 / Log In
+
+Title: "Welcome back"
+Subtitle: "Sign in to your Oui Market account"
+
+Fields:
+  Email or phone number
+  Password (show/hide)
+  "Forgot password?" right-aligned below password field (violet)
+
+Primary button: "Log in"
+
+Divider: "or"
+
+Ghost button: "Continue with Google" (Google icon left)
+
+Bottom: "Don't have an account? Sign up"
+
+---
+
+### 08 / Create Profile
+
+Progress bar at top: Step 1 of 2, 50% filled, Accent colour.
+Title: "Set up your profile"
+
+Fields:
+  Profile photo — circular upload area, 80px, camera icon centre
+  Username / handle — text input, "@" prefix, live availability check
+    (shows green tick when available, red X when taken)
+  University — searchable dropdown
+  Department / Course — text input
+  Level — dropdown: 100L through 700L + Postgrad
+  Skills — multi-select tag chips:
+    Writing, Design, Coding, Tutoring, Photography,
+    Delivery, Research, Video, Music, Other
+    (tap to select, selected = Accent fill, white text)
+
+Primary button: "Continue"
+
+---
+
+### 09 / Create DID — Choose Privacy
+
+Progress bar: Step 2 of 2.
+Title: "Choose your identity level"
+Subtitle: "This controls what employers and others see when you share your OuiScore."
+
+Three option cards, stacked, selectable (radio style):
+  Each card has: icon left, title, description, chevron right.
+
+  Card 1 — ANONYMOUS (slate icon: eye-off)
+    Title: "Anonymous"
+    Description: "Only your score and 0x address are visible.
+                  Maximum privacy. Cannot vote on disputes."
+    Border: Neutral 200 (unselected)
+
+  Card 2 — PSEUDONYMOUS (violet icon: user-check) ← default selected
+    Title: "Pseudonymous"
+    Description: "Your handle and school department show.
+                  Your real name stays private."
+    Border: Accent, Accent light background (selected state)
+    Tag: "Recommended" — small pill, Success green
+
+  Card 3 — PUBLIC (blue icon: globe)
+    Title: "Public"
+    Description: "Full name, school, and skills visible.
+                  Best for job credentials and employer sharing."
+    Border: Neutral 200
+
+Below cards:
+  Info box (Neutral 50 background, Neutral 200 border):
+  ℹ️ "You can change this anytime in Settings."
+
+Primary button: "Finish setup"
+
+---
+
+### 10 / Home Feed
+
+Status bar area. Top bar:
+  Left: "Good morning, [Name] 👋" (18px SemiBold)
+  Right: notification bell icon (with unread dot if notifications exist)
+
+OuiScore strip — horizontal card, Accent light background, full width, 12px radius:
+  Left: score ring (60px) — animated arc showing score out of 1000
+    Tier colour fills the arc. Score number inside. Tier name below.
+  Right:
+    "Your OuiScore" label (12px, Neutral 500)
+    Progress to next tier (thin bar)
+    "See credential" link (violet, 13px)
+
+Section: "What do you need?" — quick action grid 2×2:
+  [📝 Post a task]   [🏠 Find a room]
+  [🛍️ Marketplace]   [💼 Browse gigs]
+  Each: white card, icon top, label below, subtle shadow.
+
+Section: "Recent tasks near you" — horizontal scroll:
+  Task cards (see Task Card component spec below)
+  "See all →" link right
+
+Section: "New rooms listed" — horizontal scroll:
+  Room cards (compact, photo + price + location)
+  "See all →" link right
+
+Bottom nav bar (fixed):
+  [Home] [Tasks] [+Post] [Housing] [Profile]
+  Centre "+" button: Accent fill, elevated, circular — primary action.
+
+---
+
+### TASK CARD COMPONENT
+
+Used in Home Feed, Task Board, search results.
+
+White card, border Neutral 200, radius 12px, padding 16px, shadow Card.
+
+Row 1: Category chip (e.g. "Writing", "Design") left + "₦3,500" right (bold, Primary)
+Row 2: Task title — 2 lines max, 15px SemiBold, Primary
+Row 3: Short description — 1 line, 13px Regular, Neutral 700, ellipsis
+Row 4: Poster row:
+  Left: avatar (28px circle) + poster handle (13px, Neutral 700)
+        + OuiScoreBadge (dot + tier name, 11px)
+  Right: deadline chip "Due in 2 days" (amber if < 24h, green if > 3 days)
+Row 5 (if poster is viewer): status chip — OPEN / LOCKED / SUBMITTED etc.
+
+Tapping card → Task Detail screen.
+
+---
+
+### 11 / Task Board
+
+Top bar: "Tasks" title + filter icon right.
+
+Search bar: rounded, "Search tasks..." placeholder, search icon.
+
+Filter chips (horizontal scroll, below search):
+  All | Writing | Design | Coding | Tutoring | Delivery | Research
+  Selected chip: Accent fill, white text. Unselected: Neutral 50, Neutral 700 text.
+
+Task list: vertical scroll, TaskCard components, 12px gap.
+
+Sort options (tappable): "Newest" | "Highest pay" | "Closing soon"
+
+Empty state (see screen 39).
+
+---
+
+### 12 / Task Detail
+
+Back arrow + "Task" title.
+Share icon top right.
+
+Poster row:
+  Avatar (48px) + Name + OuiScoreBadge (tier dot + score)
+  Posted time (e.g. "2 hours ago") — right aligned
+
+Title: 22px Bold, Primary.
+Description: 15px Regular, Neutral 700, full text.
+
+Details row (3 chips inline):
+  💰 ₦3,500   ⏰ 3 days   📁 Writing
+
+Divider.
+
+"About the poster" section:
+  Score ring (small, 40px) + stats:
+  "34 tasks completed · 0 disputes · Member since Mar 2024"
+
+Divider.
+
+If OPEN task and viewer is not poster:
+  Sticky bottom bar:
+    Left: "₦3,500" (20px Bold)
+    Right: "Apply for this task →" (Accent pill button)
+
+If viewer is poster:
+  Show task status timeline (see Task Progress screens).
+
+---
+
+### 13 / Post a Task — Step 1
+
+Progress bar: Step 1 of 3.
+Title: "What do you need done?"
+
+Fields:
+  Task title — text input, placeholder "e.g. Write my BUS 301 essay"
+  Category — dropdown with icons:
+    ✍️ Writing  🎨 Design  💻 Coding  📚 Tutoring
+    📦 Delivery  🔬 Research  📹 Video  🎵 Music  🔧 Other
+  Description — multiline text, 4 rows min, 500 char limit
+    Character counter bottom right of field.
+
+Primary button: "Next →"
+
+---
+
+### 14 / Post a Task — Step 2
+
+Progress bar: Step 2 of 3.
+Title: "Budget and timeline"
+
+Budget field:
+  Label: "How much will you pay?"
+  Input: ₦ prefix, numeric keyboard
+  Below input: small text "Minimum ₦500 · Platform fee: 8%"
+  Live calculation box (Neutral 50 bg):
+    You pay:      ₦3,500
+    Platform fee: ₦280 (8%)
+    Doer earns:   ₦3,220
+  This updates live as user types.
+
+Duration field:
+  Label: "How long does the doer have?"
+  Segmented control: 1 day | 3 days | 7 days | 14 days | 30 days
+  Selected segment: Accent fill.
+
+Primary button: "Next →"
+
+---
+
+### 15 / Post a Task — Step 3
+
+Progress bar: Step 3 of 3.
+Title: "Review your task"
+
+Summary card (Neutral 50 bg, border, radius 12px):
+  Category chip
+  Title (bold)
+  Description (truncated to 3 lines, "Read more")
+  Divider
+  Budget row:  ₦3,500
+  Duration row: 3 days
+  Deadline row: Wednesday, 11 June 2025
+
+Fee breakdown (smaller text, Neutral 700):
+  Task amount:  ₦3,500
+  Escrow fee:   ₦52.50 (1.5%)
+  Total to pay: ₦3,552.50
+
+Escrow info box:
+  🔒 "Funds are locked until you approve the work.
+      Auto-refunded if no delivery by deadline."
+
+Primary button: "Post task & pay ₦3,552.50"
+  → goes to screen 16 (Payment Method Select)
+
+---
+
+### 16 / Payment Method Select
+
+Bottom sheet modal (slides up from bottom, 70% screen height).
+Drag handle at top (pill shape, Neutral 200).
+
+Title: "Fund your escrow" (18px SemiBold, centred).
+Amount due: "₦3,552.50" (28px Bold, Primary, centred).
+Subtitle: "Held safely until you approve the work." (Neutral 500, centred).
+
+Two option cards stacked (not side-by-side — full width each):
+
+  Card A — Card deposit:
+    Icon left: 💳 (violet bg circle)
+    Title: "Pay with card" (15px SemiBold)
+    Subtitle: "Instant · Any debit card" (13px, Neutral 500)
+    Right: "→" chevron
+
+  Card B — Bank transfer:
+    Icon left: 🏦 (navy bg circle)
+    Title: "Bank transfer" (15px SemiBold)
+    Subtitle: "Transfer from any bank · USSD supported" (13px, Neutral 500)
+    Right: "→" chevron
+
+  Both cards: white bg, border Neutral 200, radius 12px, padding 16px.
+  Hover/press state: Accent light bg, Accent border.
+
+Below cards — expandable section "How does escrow work?":
+  Collapsed by default, chevron right.
+  Expanded content:
+    ✅ Funds lock the moment you pay
+    ✅ Released only when you approve the work
+    ✅ Auto-released if you don't respond in 48 hours
+    ✅ Full refund if no delivery by deadline
+    Each row: green tick icon + text, 13px, 8px gap.
+
+---
+
+### 17 / Payment — Card
+
+Bottom sheet continues (or new sheet, same handle).
+Back arrow top left returns to screen 16.
+
+Title: "Pay with card"
+Amount: "₦3,552.50" (bold, centred).
+
+Info row: "Powered by Paystack 🔒" (Neutral 500, 12px, centred).
+
+Body text (Neutral 700, 14px):
+  "Your card details are entered directly in Paystack's
+   secure checkout — we never see your card number."
+
+Primary button: "Open secure checkout →"
+  Full width, Accent fill.
+  On tap: Paystack inline popup opens (Paystack-hosted UI overlays the app).
+
+Below button:
+  Accepted cards: Visa / Mastercard / Verve icons inline.
+
+After popup close (success path):
+  → go to screen 19 (Processing).
+
+After popup close (cancelled):
+  Button changes to "Try again" with small "or choose bank transfer" link.
+
+---
+
+### 18 / Payment — Bank Transfer
+
+Bottom sheet, back arrow returns to screen 16.
+Title: "Bank transfer"
+
+Amount chip (Accent light bg, Accent text, pill):
+  "Transfer exactly ₦3,552.50"
+
+Account details card (white bg, border Neutral 200, radius 12px, padding 20px):
+
+  Row: "Bank"
+    Value: "Wema Bank" (SemiBold)
+
+  Divider (dashed)
+
+  Row: "Account number"
+    Value: "0123456789" (JetBrains Mono, 22px Bold, Primary)
+    Right: copy icon button (tap → copies to clipboard, shows "Copied ✓" toast)
+
+  Divider (dashed)
+
+  Row: "Account name"
+    Value: "OUI MARKET ESCROW" (SemiBold, Success green)
+
+  Divider (dashed)
+
+  Row: "Amount"
+    Value: "₦3,552.50" (SemiBold, Primary)
+    Small text below: "Transfer exact amount only"
+
+Tap anywhere on account number → copy to clipboard + haptic feedback + toast.
+
+USSD box (Neutral 50 bg, border, radius 8px, padding 12px):
+  📱 "No internet? Use USSD:"
+  Code: "*737*35525*0123456789#" (JetBrains Mono, 14px, Bold)
+  "(GTBank format — works on 2G)"
+
+Countdown timer:
+  "Account expires in: 28:47"
+  Timer: MM:SS format, Neutral 700.
+  Under 5 minutes: turns Danger red + "Expiring soon!"
+  At 0:00: show expiry state (see below).
+
+Primary button: "I've sent the transfer"
+  Full width, Accent fill.
+  On tap: button becomes loading spinner + "Checking your payment..."
+          start polling every 5s.
+
+Expiry state (timer hits 0 before payment confirmed):
+  Card goes grey.
+  Message: "Session expired"
+  Button: "Generate new account" → calls API again, refreshes screen.
+
+---
+
+### 19 / Payment — Processing
+
+Full screen, white bg.
+Centre vertically:
+  Animated icon: spinning circle (Accent colour, 64px).
+  Heading: "Confirming your payment..." (18px SemiBold).
+  Body: "This usually takes 10–30 seconds." (Neutral 500, 14px).
+
+Bottom: small text "Do not close this screen." (Neutral 500, 12px).
+
+This screen auto-advances to screen 20 when payment confirmed.
+No manual actions. No back button (prevent accidental navigation).
+
+---
+
+### 20 / Payment — Success
+
+Full screen, white bg.
+Animation (Lottie or SVG sequence):
+  Phase 1 (0.0–0.4s): Accent circle expands from centre.
+  Phase 2 (0.4–0.8s): White checkmark draws itself inside circle.
+  Phase 3 (0.8–1.2s): "₦3,552.50" rises up and fades in above circle.
+  Phase 4 (1.2–1.6s): Confetti burst — small violet and navy pieces fall.
+  Phase 5 (1.6s+): Static success state, buttons appear.
+
+Static state:
+  Checkmark (64px, Accent circle, white tick).
+  Heading: "Task is live! 🎉" (22px Bold).
+  Subheading: "Your funds are secured in escrow." (Neutral 700, 15px).
+
+Summary pill (Neutral 50 bg, border, radius pill):
+  🔒 ₦3,500 locked · Released when you approve
+
+Two buttons stacked:
+  Primary: "View my task →"
+  Ghost:   "Post another task"
+
+---
+
+### 21 / My Tasks (poster view)
+
+Top bar: "My Tasks"
+Filter tabs: All | Active | Completed | Disputed
+  Tab bar: underline style, Accent underline on selected.
+
+Task list using TaskCard component.
+Each card shows current state chip.
+
+Floating action: "+" button bottom right → Post a Task.
+
+---
+
+### 22 / My Gigs (doer view)
+
+Top bar: "My Gigs"
+Filter tabs: Available | Active | Completed | Earnings
+
+Available tab: task board filtered to tasks doer can accept (by tier).
+Active tab: tasks doer has accepted or submitted.
+Completed tab: settled tasks with earnings.
+Earnings tab: total earned, pending, withdrawal button.
+
+---
+
+### 23 / Task Progress — Active
+
+Task header (compact): title + category chip.
+
+Progress stepper (horizontal, 5 steps):
+  ① Posted  ② Accepted  ③ Submitted  ④ Approved  ⑤ Done
+  Completed steps: Accent fill circle + white tick.
+  Current step: Accent border circle, Accent text.
+  Future steps: Neutral 200 circle.
+  Connecting lines between circles.
+
+Current step card (Accent light bg, Accent border, radius 12px):
+  For doer in LOCKED state:
+    Heading: "Work in progress"
+    Body: "Submit your work before Wednesday, 11 Jun at 11:59 PM."
+    Countdown: "Time left: 2 days, 14 hours" (live countdown)
+    Button: "Submit work →" (Accent fill)
+
+For poster in LOCKED state:
+  Heading: "Waiting for doer"
+  Body: "[Doer handle] accepted your task. Work is in progress."
+  OuiScoreBadge of doer.
+  No action button.
+
+Dispute section (collapsed by default):
+  "Something wrong?" → "Raise a dispute" link.
+  Only visible when state is SUBMITTED.
+
+---
+
+### 24 / Task Progress — Submitted
+
+Stepper: step 3 (Submitted) active.
+
+For poster:
+  Alert card (Warning amber bg):
+    ⚠️ "Work has been submitted. Review it and approve or raise a dispute."
+  Two buttons:
+    Primary: "Approve work ✓" (Success green fill)
+    Ghost:   "Raise dispute"  (Danger text, border)
+  Auto-release notice:
+    "If you don't respond, funds release automatically in 47:23:11"
+    (live countdown, updates every second)
+
+For doer:
+  Card: "Waiting for approval"
+  Body: "Poster has 48 hours to review."
+  Countdown: same auto-release timer.
+
+---
+
+### 25 / Task Progress — Dispute Raised
+
+Stepper: between Submitted and Done, "Disputed" sub-step shown in Warning amber.
+
+Alert card (Warning bg):
+  ⚠️ "Dispute in progress"
+  "5 community arbiters will review and vote within 24 hours."
+
+Dispute details:
+  Raised by: [poster/doer handle]
+  Time raised: "2 hours ago"
+
+Arbiter progress:
+  "Votes cast: 2 of 5"
+  5 avatar slots — filled ones show anonymous arbiter avatars, empty ones greyed.
+  Progress bar: 2/5 filled, Accent colour.
+
+Countdown: "Voting closes in: 21:44:32"
+
+Note (Neutral 500, 12px):
+  "Arbiters are verified Diamond-tier community members.
+   Their votes are final and recorded on-chain."
+
+---
+
+### 26 / Task Progress — Dispute Voting
+(Shown to Diamond/Gold tier arbiters who open a disputed task)
+
+Alert card (Accent light bg):
+  ⭐ "You're invited to arbitrate"
+  "Review the evidence and cast your vote. You earn ₦100 for voting."
+
+Task summary:
+  Title, description, amount.
+
+Evidence tabs:
+  [Poster's claim] | [Doer's claim]
+  Each tab: text + optional attachment.
+
+Vote buttons (full width, stacked):
+  Primary Accent:  "Release to doer →"   (work was done)
+  Outline Danger:  "Refund the poster →" (work was not done)
+
+Warning: "Your vote is final and recorded on-chain."
+
+---
+
+### 27 / Task Progress — Resolved
+
+Stepper: step 5 Done, Success green.
+
+Resolution card (Success light bg, Success border):
+  ✅ Heading: "Task completed"
+  or
+  ❌ Heading: "Dispute resolved" (if via dispute)
+
+Outcome row:
+  Who received funds + amount.
+
+OuiScore update animation:
+  Score ring animates from old to new score.
+  "+12 OuiScore" floats up in Accent colour and fades.
+
+Action: "Leave a rating" (1–5 stars, tappable).
+After rating: "Thanks! Rating saved." → done.
+
+---
+
+### 28 / Housing Board
+
+Top bar: "Find a Room"
+Search bar: "Search by area, campus..."
+
+Filter row (horizontal scroll):
+  All | Self-con | Room + parlour | Shared | Studio
+  + "Price" filter chip (opens range slider bottom sheet)
+  + "Distance" filter chip
+
+Room cards (vertical list):
+  Photo (full width, 180px height, radius 12px top only).
+  Below photo (padding 12px):
+    Price: "₦85,000/yr" (Bold) + location: "Akoka, 5 min walk"
+    Amenities chips: "Water · Light · Security"
+    Landlord row: avatar + name + OuiScoreBadge
+
+---
+
+### 29 / Room Detail
+
+Photo carousel (swipeable, dots indicator).
+Back arrow over photo (white circle bg).
+
+Details below photo:
+  Price (24px Bold) + period chip ("Per year")
+  Location with map pin icon.
+
+Amenities section: icon grid.
+Description: full text.
+
+Landlord card: avatar + name + OuiScore badge + "Member since" date.
+
+Deposit section (Accent light bg, border, radius 12px, padding 16px):
+  🔒 "Secure deposit via escrow"
+  "Your deposit is locked until move-in is confirmed.
+   Full refund if landlord cancels."
+  Deposit amount: ₦25,000
+
+Sticky bottom bar:
+  Left: "₦85,000/yr"
+  Right: "Secure deposit →" (Accent pill button)
+
+---
+
+### 30 / Housing Deposit Flow
+
+Same payment flow as tasks (screens 16→17→18→19→20) but:
+  Title on method select: "Secure your deposit"
+  Amount: deposit amount
+  Success screen heading: "Deposit secured! 🏠"
+  Success subheading: "Your ₦25,000 deposit is locked in escrow."
+
+---
+
+### 31 / Marketplace
+
+Top bar: "Marketplace"
+Search + filter (same pattern as Task Board).
+
+Categories horizontal scroll:
+  📱 Electronics  👕 Clothes  📚 Textbooks  🍱 Food  🎮 Gaming  Other
+
+Product grid: 2 columns.
+
+Product card:
+  Photo (square, radius 8px).
+  Price (Bold).
+  Title (2 lines).
+  Seller OuiScoreBadge.
+
+---
+
+### 32 / Product Detail
+
+Photo carousel.
+Title (20px Bold). Price (22px Bold, Accent). Condition chip.
+Seller card: avatar + name + score.
+Description.
+Bottom bar: "Message seller" + "Buy now" buttons.
+
+---
+
+### 33 / OuiScore Profile
+
+Top: avatar (80px circle) + handle + school + level.
+    Settings icon top right.
+
+OuiScore card (Primary bg, white text, radius 16px):
+  Left: large score ring (80px) — tier colour arc, score inside.
+  Right:
+    Score: "847" (32px Bold, white)
+    Tier: "Diamond ✦" (tier colour)
+    "Top 3% on campus" (12px, white 70% opacity)
+
+Stats row (4 columns, Neutral 50 bg):
+  Tasks done | On-time % | Rating | Disputes
+  Each: number (Bold) + label (Caption).
+
+Skills section: tag chips (your top categories by task count).
+
+Credential section:
+  Card (Accent light bg):
+    "Share your OuiScore as a credential"
+    "Employers, landlords, and scholarship bodies can verify your profile."
+    Button: "Generate credential link →"
+
+Activity feed: last 5 completed tasks (title + date + amount earned).
+
+---
+
+### 34 / Credential Share
+
+Bottom sheet, 75% height.
+Title: "Share your OuiScore"
+
+Privacy selector:
+  Three rows, radio style (same as screen 09 but compact):
+  ● Anonymous / ◉ Pseudonymous / ○ Public
+
+Expiry selector:
+  Pill group: "7 days" | "30 days" | "No expiry"
+  Selected: Accent fill.
+
+Preview card (Neutral 50 bg, border, radius 12px):
+  Label: "Preview — what recipients will see:"
+  Shows simulated credential card based on selected privacy level.
+
+Primary button: "Generate link →"
+After tapping:
+  URL appears in a copy field (monospace, truncated).
+  "Copy link" button right.
+  "Download PDF" ghost button.
+  Share icon → native share sheet.
+
+---
+
+### 35 / Credential Public Page
+
+This is a web page (not app screen), opened via link.
+Design as a mobile-optimised web page, 390px max width centred on desktop.
+
+Header: Oui Market wordmark + "Verified Credential" badge.
+
+Credential card (Primary bg, white text, rounded, padded):
+  If PUBLIC:
+    Name: "Chukwuemeka A."
+    School: "University of Lagos · Computer Science · 300L"
+  If PSEUDONYMOUS:
+    Handle: "Eagle_UNILAG_300L"
+    School: "University of Lagos · CS dept"
+  If ANONYMOUS:
+    "Anonymous OuiScore holder"
+  Score ring (large, tier colour).
+  Score: 847 | Tier: Diamond
+  Issued: June 2025 | Expires: July 2025
+
+Skills breakdown (if PUBLIC or PSEUDONYMOUS):
+  Bar chart of task categories completed.
+
+Verification row:
+  "Verified on Base blockchain"
+  Link: "View on Basescan →"
+
+Footer: "Powered by Oui Market · ouimarket.com"
+
+---
+
+### 36 / Notifications
+
+Top bar: "Notifications" + "Mark all read" right.
+
+Notification rows (full width, 12px gap):
+  Unread: Accent light bg left border (4px) + white bg.
+  Read: Neutral 50 bg.
+
+  Each row:
+    Icon (48px circle, category bg colour).
+    Title (14px SemiBold) + body (13px Neutral 700, 1 line).
+    Time right (12px Neutral 500).
+
+Notification types and icons:
+  💸 Task funded           (Success green icon)
+  ✅ Work approved         (Success green)
+  ⏰ Auto-release in 2h   (Warning amber)
+  ⚠️ Dispute raised       (Danger red)
+  ⭐ You're invited to vote (Accent violet)
+  🔔 Score updated         (Primary navy)
+  💰 Payout sent           (Success green)
+
+---
+
+### 37 / Wallet / Earnings
+
+Top bar: "My Wallet"
+
+Balance card (Primary bg, white, radius 16px):
+  "Available balance"
+  "₦12,450" (36px Bold, white)
+  Two buttons: "Withdraw →" | "History"
+
+Pending card (Warning light bg, Warning border):
+  "₦3,220 pending" — from submitted tasks awaiting approval.
+
+Recent transactions list:
+  Each row:
+    Icon (category) + task title + date.
+    Amount right: green for credit (+₦3,220), red for debit (−₦3,552).
+
+Withdrawal bottom sheet (on "Withdraw →"):
+  Shows linked bank account (name + last 4 digits of account).
+  Amount input.
+  "Withdraw" button → confirms payout.
+
+---
+
+### 38 / Settings
+
+Top bar: "Settings" + back arrow.
+
+Profile section: avatar + name + "Edit profile" link.
+
+Sections (grouped lists):
+
+  Account:
+    Edit profile
+    Change password
+    Linked bank account
+    Notification preferences
+
+  Identity:
+    My DID — shows current privacy level + "Change privacy" link
+    View my credential history
+
+  Security:
+    Two-factor authentication (toggle)
+    Active sessions
+
+  Support:
+    Help centre
+    Report a problem
+    Contact us
+
+  About:
+    Terms of service
+    Privacy policy
+    Version 1.0.0
+
+  Danger zone:
+    "Delete account" (Danger red text)
+
+---
+
+### 39 / Empty States (3 frames)
+
+Empty Task Board:
+  Illustration: empty billboard, sad face.
+  Heading: "No tasks yet"
+  Body: "Be the first to post a task on campus."
+  Button: "Post a task →"
+
+Empty Notifications:
+  Illustration: empty bell.
+  Heading: "You're all caught up"
+  Body: "Notifications about tasks, payments, and your score will appear here."
+
+Empty My Gigs:
+  Illustration: person looking around.
+  Heading: "No gigs yet"
+  Body: "Browse tasks and start earning on campus."
+  Button: "Browse tasks →"
+
+---
+
+### 40 / Error State
+
+Full screen or inline card variant.
+Illustration: broken signal / wifi icon.
+Heading: "Something went wrong"
+Body: "We couldn't load this page. Check your connection and try again."
+Button: "Try again"
+
+---
+
+## BOTTOM NAVIGATION BAR
+
+Fixed. 5 items. Height: 64px + safe area.
+Background: white. Top border: Neutral 200.
+
+Items:
+  🏠 Home
+  📋 Tasks
+  ➕ Post       ← centre, elevated Accent circle button, 56px, shadow
+  🏠 Housing
+  👤 Profile
+
+Active state: icon + label in Accent violet.
+Inactive: icon + label in Neutral 500.
+Centre Post button: always Accent fill regardless of active tab.
+
+---
+
+## COMPONENT LIBRARY
+
+Build all as Figma components with variants:
+
+  Button/Primary    — default, hover, loading, disabled
+  Button/Ghost      — default, hover, disabled
+  Button/Danger     — default, hover
+  Input/Default     — empty, focused, filled, error, disabled
+  Input/OTP         — empty, focused, filled (single box)
+  Card/Task         — default, pressed
+  Card/Room         — default
+  Card/Payment      — default, selected
+  Badge/OuiScore    — sm, lg, each tier variant (4 tiers × 2 sizes = 8)
+  Badge/Status      — OPEN, LOCKED, SUBMITTED, APPROVED, DISPUTED, RESOLVED
+  Chip/Category     — selected, unselected
+  Chip/Filter       — selected, unselected
+  Toast             — success, error, info (copy confirmation etc.)
+  Bottom Sheet      — with drag handle, various heights (40%, 60%, 75%, 90%)
+  Stepper           — horizontal progress steps, 5 variants
+  Avatar            — 28px, 48px, 80px, with score dot overlay
+  Timer             — normal state, warning state (< 5min), expired
+
+---
+
+## ANIMATION NOTES FOR DEVELOPER
+
+Splash → Onboarding: fade + slight upward slide, 300ms.
+Onboarding swipe: horizontal slide between cards.
+Bottom sheet open: spring up from bottom, 350ms ease-out.
+Bottom sheet dismiss: slide down, 250ms ease-in.
+Payment success: Lottie animation as specced in screen 20.
+OuiScore ring: SVG arc animation, 600ms ease-out on load.
+Score update: number count-up animation, 800ms.
+Confetti: particle burst on payment success, 60 particles, Accent + Primary colours.
+Toast: slide in from top, 200ms; auto-dismiss after 3s with slide out.
+Tab switch: content cross-fade, 150ms.
+Card press: scale to 0.97, 100ms.
+Copy action: scale flash on account number, toast from top.
+Timer: CSS countdown, updates every second, colour transition at 5min mark.
+Stepper: step completion plays checkmark draw animation, 300ms.
+
+---
+
+## FIGMA FILE STRUCTURE
+
+Pages:
+  1. Cover          — file cover with app name and version
+  2. Design tokens  — colours, typography, spacing, all as styles
+  3. Components     — all reusable components with variants
+  4. Screens        — all 40 screens, grouped by flow:
+       Onboarding (01–09)
+       Main app (10–12)
+       Tasks (13–27)
+       Housing (28–30)
+       Marketplace (31–32)
+       Profile + DID (33–35)
+       Utils (36–40)
+  5. Prototype      — prototype connections for full clickable flow
+
+Prototype flow:
+  01 Splash → 02 Onboarding 1 (auto, 2s)
+  02 → 03 → 04 (swipe)
+  04 → 05 Sign Up
+  05 → 06 OTP → 07 Create Profile → 08 DID → 09 Home
+  Home → 11 Task Board → 12 Task Detail → 13 Post Task 1 → 14 → 15 → 16 Payment
+  16 → 17 Card or 18 Transfer → 19 Processing → 20 Success
+  20 → 21 My Tasks → 23 Task Progress
+
+---
+
+## WHAT THE DESIGNER MUST NOT DO
+
+  ✗ No dark mode in v1 — light only
+  ✗ No hamburger menus
+  ✗ No tabs inside tabs (max one level of tabs)
+  ✗ No lorem ipsum — use realistic Nigerian student content
+  ✗ No crypto/blockchain language anywhere in UI
+  ✗ No wallet addresses shown unless student explicitly goes to credential page
+  ✗ No "gas fee" language — fees are shown in Naira only
+  ✗ No gradients except on splash screen
+  ✗ No more than 2 font weights per screen
+  ✗ No icons without labels on bottom nav
+
+---
+
+## REALISTIC CONTENT TO USE IN MOCKUPS
+
+Task titles:
+  "Write my BUS 301 Business Law essay (1500 words)"
+  "Design my event flyer for Faculty Week"
+  "Tutor me in Calculus before my exam on Friday"
+  "Help me move my things from Akoka to Yaba"
+  "Edit my YouTube video — 10 min footage"
+
+Usernames: @emeka_dev, @fatimah.writes, @seun_designs, @chidi_codes
+
+School: University of Lagos, UNILAG
+
+Amounts: ₦2,000 · ₦3,500 · ₦5,000 · ₦8,500 · ₦12,000 · ₦25,000
+
+Room prices: ₦75,000/yr · ₦120,000/yr · ₦200,000/yr
+
+OuiScores: 423 (Bronze) · 672 (Gold) · 847 (Diamond) · 312 (Starter)
+
+---
+
+---
+
+## MISSING SCREENS — PATCH (add to Figma file under existing groups)
+
+---
+
+### 41 / Forgot Password — Enter Phone/Email
+
+Back arrow. Title: "Reset your password".
+Subtitle: "Enter your phone number or email and we'll send a reset code."
+Field: phone or email input.
+Primary button: "Send reset code →"
+
+---
+
+### 42 / Forgot Password — OTP
+
+Identical layout to screen 06 (Sign Up OTP).
+Title: "Enter reset code"
+Subtitle: "Sent to [phone/email]"
+6-box OTP input. Resend timer. "Verify →" button.
+
+---
+
+### 43 / Forgot Password — New Password
+
+Title: "Create new password"
+Field 1: "New password" — with show/hide toggle.
+Field 2: "Confirm password" — with show/hide toggle.
+Password strength bar below field 1:
+  Weak (red) → Fair (amber) → Strong (green) — updates as user types.
+Primary button: "Save new password →"
+On success: toast "Password updated" → navigate to Log In.
+
+---
+
+### 44 / Task — Apply Screen
+
+Triggered when doer taps "Apply for this task →" on Task Detail.
+Bottom sheet, 65% height.
+
+Task summary at top (compact): title + amount chip.
+
+Fields:
+  "Why are you the right person?" — multiline text, 3 rows,
+  placeholder: "Briefly describe your experience with this type of task..."
+  Char limit: 300. Counter bottom right.
+
+  "When can you deliver?" — date picker (within task deadline window).
+
+  Attach portfolio (optional):
+    Row of 3 add-photo slots (dashed border, "+" icon).
+    Tap to upload image or file. Shows thumbnail when uploaded.
+
+Doer's OuiScore shown at bottom of sheet:
+  "Your OuiScore: 672 — Gold tier"
+  If tier not met for this task → warning card shown instead:
+  ⚠️ "This task requires Bronze tier. Keep completing tasks to qualify."
+
+Primary button: "Submit application →"
+  Disabled if text field empty.
+
+---
+
+### 45 / Task — Applications List (poster view)
+
+Shown when poster opens their OPEN task.
+Tab added to Task Detail: [Details] [Applications (3)]
+
+Applications tab:
+  List of applicant cards (each):
+    Avatar (48px) + handle + OuiScoreBadge (tier + score).
+    Delivery date offered.
+    Short message (2 lines, truncated).
+    "View full →" link.
+    "Select this doer →" button (Accent outline).
+
+  Selecting a doer:
+    Confirmation bottom sheet:
+      "Accept [handle] for this task?"
+      Shows their score + delivery date.
+      Two buttons: "Confirm ✓" (Accent fill) | "Back"
+    On confirm → task state → LOCKED → navigate to Task Progress Active.
+
+Empty state: "No applications yet. Share your task to get more visibility."
+
+---
+
+### 46 / Applicant Profile Preview
+
+Bottom sheet (80% height), opened from Applications List.
+
+Compact profile card:
+  Avatar (64px) + handle + school + level.
+  OuiScore ring (medium) + tier badge.
+  Stats row: tasks done | on-time % | avg rating (stars).
+
+Their application message (full text).
+Delivery date offered.
+Portfolio images (if attached) — horizontal scroll, tap to zoom.
+
+Two buttons at bottom:
+  "Select this doer →" (Accent fill, full width)
+  "Close" (ghost)
+
+---
+
+### 47 / Submit Work Screen
+
+Triggered when doer taps "Submit work →" in Task Progress Active.
+Bottom sheet, 70% height.
+
+Title: "Submit your work"
+Task title shown (compact).
+
+Fields:
+  "Describe what you've done" — multiline, 4 rows,
+    placeholder: "Summarise the work delivered..."
+    300 char limit + counter.
+
+  Attachments — upload area:
+    Large dashed box (full width, 100px height):
+      Upload icon + "Add files or photos"
+      Supported: images, PDF, Word, links.
+    Shows uploaded file chips below (name + size + ✕ remove).
+
+  Delivery link (optional):
+    Text input: "Google Docs, Drive, or any link..."
+
+Warning notice (amber, icon):
+  ⚠️ "Once submitted, the poster has 48 hours to approve.
+     If they don't respond, funds release automatically."
+
+Primary button: "Submit work →"
+  On tap → confirmation dialog → "Are you sure you're ready to submit?"
+    [Cancel] [Yes, submit →]
+  On confirm → state SUBMITTED → navigate to Task Progress Submitted.
+
+---
+
+### 48 / In-App Messaging — Inbox
+
+Top bar: "Messages"
+Search bar: "Search conversations..."
+
+Conversation list (each row):
+  Avatar (48px) + handle + OuiScoreBadge dot.
+  Last message preview (1 line, truncated) + time right.
+  Unread count badge (Accent fill, white text) if unread.
+  Task context chip below handle: "RE: Business Law Essay" (12px, Neutral 500).
+
+Unread rows: slightly heavier text weight.
+
+Empty state:
+  Icon: empty speech bubbles.
+  "No messages yet"
+  "Messages with task posters and doers appear here."
+
+---
+
+### 49 / In-App Messaging — Conversation
+
+Top bar: back arrow + other user's avatar (32px) + handle + OuiScoreBadge.
+  Right: task context chip (tappable → opens Task Detail).
+
+Message bubbles:
+  Own messages: right-aligned, Accent fill, white text, radius 16px 16px 4px 16px.
+  Their messages: left-aligned, Neutral 100 bg, Primary text, radius 16px 16px 16px 4px.
+  Timestamp: centred, Neutral 500, 11px, shown once per time block.
+
+System messages (centred, italic, Neutral 500):
+  "[Handle] accepted your task"
+  "Work was submitted"
+  "Funds released ✓"
+
+Note bar pinned above input (Neutral 50 bg, border-bottom):
+  ⚠️ "Keep all agreements inside the app. Payments made outside
+     escrow are not protected." (12px, Neutral 700)
+
+Input bar (fixed bottom):
+  Text input (rounded, "Type a message...").
+  Attachment icon left.
+  Send button right (Accent, arrow icon, activates when text not empty).
+
+---
+
+### 50 / Add Bank Account
+
+Triggered from Settings → Linked bank account, or first withdrawal attempt.
+Title: "Add your bank account"
+Subtitle: "This is where your earnings will be sent."
+
+Fields:
+  Bank name — searchable dropdown (shows major Nigerian banks with logos):
+    GTBank, Access, UBA, Zenith, First Bank, Opay, Kuda, Moniepoint, others.
+  Account number — numeric input, 10 digits, JetBrains Mono.
+  Account name — auto-populated after number entered (Paystack name lookup).
+    Shows: "Fetching name..." spinner → then "Chukwuemeka Adeyemi ✓" (green).
+    If not found: "Account not found. Check the number." (red).
+
+BVN note (Neutral 50 bg, info icon):
+  ℹ️ "Your BVN is not required. Account name is verified via Paystack."
+
+Primary button: "Save bank account →"
+  Disabled until name verified.
+
+On success: toast "Bank account saved ✓" → back to previous screen.
+
+---
+
+### 51 / Referral / Invite Friends
+
+Accessible from Profile screen → "Invite friends" row in Settings.
+Title: "Invite friends. Earn rewards."
+
+Reward card (Accent light bg, Accent border, radius 16px):
+  Heading: "You earn +50 OuiScore per referral"
+  Sub: "Up to 50 referrals · Max +100 bonus score"
+  Current: "You've referred: 4 friends"
+  Score bar: 4/50 filled.
+
+Referral code box (white bg, border, radius 12px, centred):
+  Label: "Your invite code"
+  Code: "OUI-EMEKA07" (JetBrains Mono, 24px Bold, Primary)
+  Copy icon right → clipboard + toast.
+
+Share row:
+  "Share your link:"
+  [📱 WhatsApp] [📸 Instagram] [🔗 Copy link]
+  Each: pill button, icon + label.
+
+How it works (3 rows with icons):
+  1. 🔗 Friend signs up with your code
+  2. ✅ Friend completes their first transaction
+  3. ⭐ You earn +50 OuiScore automatically
+
+---
+
+### 52 / Tier Upgrade Celebration
+
+Full-screen modal, appears automatically when student crosses a tier threshold.
+This should feel like a reward moment — not a notification.
+
+Background: radial gradient — tier colour at centre fading to white.
+  BRONZE: amber gradient.
+  GOLD:   violet gradient.
+  DIAMOND: sky-blue gradient.
+
+Animation sequence (Lottie):
+  Phase 1: Stars/sparkles burst from centre.
+  Phase 2: New tier badge animates in (scales up with bounce).
+  Phase 3: Confetti falls.
+  Phase 4: Static celebration state.
+
+Static state:
+  New tier badge (large, 80px icon).
+  Heading: "You reached [GOLD] tier! 🎉" (24px Bold).
+  Score: "Your OuiScore: 601" (18px, tier colour).
+
+Unlocked perks (3 rows, each with icon):
+  (varies by tier — show relevant perks)
+  BRONZE: ✅ Escrow access · ✅ Tasks up to ₦50,000 · ✅ Can vote on disputes
+  GOLD:   ✅ Priority listings · ✅ BNPL access · ✅ Verified badge
+  DIAMOND:✅ Employer visibility · ✅ Zero dispute fees · ✅ Arbiter status · ✅ Quarterly leaderboard
+
+Primary button: "Keep going →" (dismisses modal).
+Ghost link: "Share achievement" → share sheet with achievement card image.
+
+---
+
+### 53 / Achievement Share Card
+
+Generated image (not a screen — an exportable card at 1080×1080px for Instagram/WhatsApp).
+
+Background: tier gradient colour.
+Centre: Oui Market wordmark (white).
+Tier badge (large).
+Text: "I just reached [DIAMOND] tier on Oui Market!"
+Sub: "OuiScore: 847 — Top 3% on campus"
+Bottom: "Join me → ouimarket.com" + QR code.
+
+---
+
+### 54 / Public Profile (another user)
+
+Triggered by tapping any user's avatar or handle anywhere in the app.
+
+Top: back arrow.
+Profile header: avatar (80px) + handle + school + level.
+
+OuiScore card (same as screen 33 but read-only — no edit, no credential button).
+Stats row.
+Skills chips.
+
+If ANONYMOUS: only score and tier shown. No name, no school.
+If PSEUDONYMOUS: handle + school dept + score.
+If PUBLIC: full name + school + score + skills.
+
+"Recent activity" (completed tasks only, titles shown):
+  3 most recent.
+
+Action buttons (if viewer is poster viewing potential doer):
+  "Message [handle] →"
+
+---
+
+### 55 / Search Results
+
+Triggered by search bar on Task Board, Housing, or Marketplace.
+
+Top: search bar (active, with query text) + "Cancel" right.
+Filter chips below (same as board screens).
+
+Results count: "14 results for 'essay'"
+
+Results: same card components as the boards.
+
+If no results:
+  "No results for '[query]'"
+  "Try different keywords or browse all tasks →"
+
+---
+
+### 56 / Cancel Task (poster)
+
+Bottom sheet, 50% height.
+Triggered from task options (⋯ menu on My Tasks).
+Only available if task state is OPEN (no doer yet).
+
+Title: "Cancel this task?"
+Body: "Your escrow funds will be refunded in full within minutes."
+
+Reason selector (optional, helps platform data):
+  ○ I found someone outside the app
+  ○ Task is no longer needed
+  ○ Budget changed
+  ○ Other
+
+Two buttons:
+  Primary Danger: "Yes, cancel task"
+  Ghost: "Never mind"
+
+On cancel: refund triggers → success toast "Task cancelled. ₦3,552.50 refunded." → task removed from list.
+
+---
+
+### 57 / Withdrawal Confirmation + Success
+
+Withdrawal confirm (bottom sheet, 50% height):
+  Title: "Confirm withdrawal"
+  Amount: "₦12,450" (28px Bold).
+  To: bank icon + "GT Bank · ****6789" (Neutral 700).
+  Timeline: "Arrives in 10–30 minutes via Paystack."
+  Two buttons: "Confirm withdrawal →" | "Cancel"
+
+Withdrawal success (replaces bottom sheet content):
+  Green checkmark (animated, same as payment success but smaller).
+  "₦12,450 is on its way!"
+  "Expected arrival: within 30 minutes"
+  "View transaction history" link.
+
+---
+
+### 58 / Leaderboard
+
+Accessible from OuiScore Profile → "Campus leaderboard" link.
+Title: "Campus Leaderboard"
+Subtitle: "Top earners and highest scores this month"
+
+Toggle tabs: [OuiScore] [Earnings]
+
+OuiScore tab:
+  Top 3 podium (special layout):
+    #2 (left, slightly lower) | #1 (centre, elevated) | #3 (right, slightly lower)
+    Each: avatar + handle + score + tier badge.
+    #1 has gold crown icon above avatar.
+
+  Remaining list (#4 onwards):
+    Rank number | avatar + handle + OuiScoreBadge | score right.
+
+  Current user row (pinned above bottom nav if not in top 10):
+    Highlighted in Accent light bg: "Your rank: #47 · 847 pts"
+
+Earnings tab: same layout but shows monthly Naira earned.
+
+Note: "Rankings reset monthly. Top 10 Diamond arbiters earn a cash bonus."
+
+---
+
+## UPDATED SCREEN COUNT
+
+Total screens: 58 frames + components page.
+
+Updated Figma file structure:
+  Onboarding (01–09)
+  Auth (05–07, 41–43)
+  Main app (10–12, 54–55)
+  Tasks (13–27, 44–47, 56)
+  Messaging (48–49)
+  Housing (28–30)
+  Marketplace (31–32)
+  Payments (16–20, 57)
+  Profile + DID (33–35, 50–53, 58)
+  Notifications (36)
+  Wallet (37, 57)
+  Settings (38, 50, 51)
+  Empty + Error (39–40)
+
+---
+
+## FINAL CHECKLIST — EVERY FLOW COVERED
+
+Auth:
+  ✅ Splash → Onboarding → Sign up → OTP → Profile → DID
+  ✅ Log in
+  ✅ Forgot password → OTP → New password
+
+Tasks (poster):
+  ✅ Post task (3 steps) → Payment (card or transfer) → Processing → Success
+  ✅ View applications → Select doer
+  ✅ View task progress (all states)
+  ✅ Approve work
+  ✅ Raise dispute
+  ✅ Cancel task (OPEN state only)
+  ✅ Claim refund (deadline missed)
+
+Tasks (doer):
+  ✅ Browse task board → Search + filter → Task detail
+  ✅ Apply to task → Application submitted
+  ✅ Submit work → Upload files + description
+  ✅ Auto-release flow (wait screen)
+  ✅ Dispute vote (arbiters)
+
+Disputes:
+  ✅ Raise dispute screen
+  ✅ Dispute in progress (both parties view)
+  ✅ Arbiter voting screen
+  ✅ Resolved (doer wins / poster wins / tie)
+
+Payments:
+  ✅ Method select (card or transfer)
+  ✅ Card payment (Paystack popup)
+  ✅ Bank transfer (DVA account + timer)
+  ✅ Processing screen
+  ✅ Success screen + animation
+  ✅ Withdrawal + confirmation + success
+
+Housing:
+  ✅ Browse rooms → Filter → Room detail
+  ✅ Housing deposit flow (same payment flow)
+
+Marketplace:
+  ✅ Browse → Filter → Product detail → Buy
+
+Identity + OuiScore:
+  ✅ Create DID (onboarding)
+  ✅ OuiScore profile (own)
+  ✅ Public profile (other user, privacy-aware)
+  ✅ Credential share (generate link)
+  ✅ Credential public page (web)
+  ✅ Tier upgrade celebration
+  ✅ Achievement share card
+  ✅ Leaderboard
+
+Social:
+  ✅ Messaging inbox
+  ✅ Conversation (with task context)
+  ✅ Referral + invite friends
+
+Wallet:
+  ✅ Balance + earnings
+  ✅ Transaction history
+  ✅ Withdrawal + confirmation + success
+  ✅ Add bank account
+
+Settings:
+  ✅ Full settings screen
+  ✅ Edit profile
+  ✅ Change privacy (DID)
+  ✅ Notification preferences
+  ✅ Linked bank account
+
+Utility:
+  ✅ Notifications (all types)
+  ✅ Search results
+  ✅ Empty states (3)
+  ✅ Error state

@@ -1,0 +1,159 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+
+  /* Grind Brand Colors */
+  --grind-primary: #1A1A2E;
+  --grind-accent: #6C63FF;
+  --grind-accent-light: #EAE8FF;
+  --grind-success: #12B76A;
+  --grind-warning: #F79009;
+  --grind-danger: #F04438;
+  --grind-neutral-900: #101828;
+  --grind-neutral-700: #344054;
+  --grind-neutral-500: #667085;
+  --grind-neutral-200: #EAECF0;
+  --grind-neutral-50: #F9FAFB;
+
+  /* Tier Colors */
+  --grind-tier-starter: #98A2B3;
+  --grind-tier-bronze: #F79009;
+  --grind-tier-gold: #6C63FF;
+  --grind-tier-diamond: #0BA5EC;
+
+  /* Theme mappings */
+  --background: #ffffff;
+  --foreground: var(--grind-neutral-900);
+  --card: #ffffff;
+  --card-foreground: var(--grind-neutral-900);
+  --popover: #ffffff;
+  --popover-foreground: var(--grind-neutral-900);
+  --primary: var(--grind-primary);
+  --primary-foreground: #ffffff;
+  --secondary: var(--grind-neutral-50);
+  --secondary-foreground: var(--grind-neutral-900);
+  --muted: var(--grind-neutral-50);
+  --muted-foreground: var(--grind-neutral-500);
+  --accent: var(--grind-accent);
+  --accent-foreground: #ffffff;
+  --destructive: var(--grind-danger);
+  --destructive-foreground: #ffffff;
+  --border: var(--grind-neutral-200);
+  --input: transparent;
+  --input-background: var(--grind-neutral-50);
+  --switch-background: var(--grind-neutral-200);
+  --font-weight-semibold: 600;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: var(--grind-accent);
+
+  /* Border radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+  --radius: 12px;
+}
+
+/* No dark mode in v1 */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+
+  /* Grind-specific colors */
+  --color-grind-primary: var(--grind-primary);
+  --color-grind-accent: var(--grind-accent);
+  --color-grind-accent-light: var(--grind-accent-light);
+  --color-grind-success: var(--grind-success);
+  --color-grind-warning: var(--grind-warning);
+  --color-grind-danger: var(--grind-danger);
+  --color-grind-neutral-900: var(--grind-neutral-900);
+  --color-grind-neutral-700: var(--grind-neutral-700);
+  --color-grind-neutral-500: var(--grind-neutral-500);
+  --color-grind-neutral-200: var(--grind-neutral-200);
+  --color-grind-neutral-50: var(--grind-neutral-50);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  h1 {
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  h2 {
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  h4 {
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+}
