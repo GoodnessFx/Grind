@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { LogoMark } from "./brand/LogoMark";
 
 interface SplashProps {
   onComplete: () => void;
@@ -24,13 +25,7 @@ export function Splash({ onComplete }: SplashProps) {
 
       {/* Center logo */}
       <div className="flex flex-col items-center gap-5 animate-in fade-in zoom-in duration-700">
-        <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center shadow-2xl">
-          <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
-            <path d="M26 4C13.85 4 4 13.85 4 26s9.85 22 22 22 22-9.85 22-22S38.15 4 26 4z" fill="#00A651" />
-            <path d="M26 12c-7.73 0-14 6.27-14 14s6.27 14 14 14 14-6.27 14-14-6.27-14-14-14z" fill="white" />
-            <path d="M26 18c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z" fill="#00A651" />
-          </svg>
-        </div>
+        <LogoMark size={54} tone="dark" framed />
         <div className="text-center">
           <h1 className="text-4xl font-extrabold text-white tracking-tight">Grind</h1>
           <p className="text-white/80 text-sm font-medium mt-1">Campus Gig Economy</p>

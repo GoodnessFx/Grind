@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Tv2, Users, Heart, Send, Gift, Eye, Mic, MicOff,
   Video, VideoOff, X, Plus, ChevronLeft, Radio,
-  Crown, Star, Flame, Zap
+  Crown, Star, Flame, Zap, ThumbsUp
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "../../lib/utils";
@@ -30,6 +30,7 @@ interface ChatMessage {
   text: string;
   color: string;
   badge?: string;
+  // future: replies could be added here
 }
 
 const MOCK_STREAMS: Stream[] = [
@@ -77,6 +78,11 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
   const [liveCategory, setLiveCategory] = useState("Talk");
   const [isStreaming, setIsStreaming] = useState(false);
   const [liveSeconds, setLiveSeconds] = useState(0);
+  // Stream like count
+  const [streamLikes, setStreamLikes] = useState(0);
+  // Reply handling
+  const [replyTargetId, setReplyTargetId] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState("");
   const chatRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
 
@@ -144,6 +150,19 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
     setChatInput("");
   };
 
+  const handleSendReply = (replyToUser: string) => {
+    if (!replyText.trim()) return;
+    setMessages((prev) => [...prev, {
+      id: Date.now(),
+      user: user.userName,
+      text: `↳ @${replyToUser}: ${replyText.trim()}`,
+      color: "text-accent",
+      badge: user.tier,
+    }]);
+    setReplyText("");
+    setReplyTargetId(null);
+  };
+
   const handleGift = (gift: typeof GIFTS[0]) => {
     if (user.walletBalance < gift.price) {
       toast.error("Insufficient balance. Top up your wallet first.");
@@ -172,11 +191,9 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
 
   const filtered = MOCK_STREAMS.filter((s) => filter === "All" || s.category === filter);
 
-  // ── Browse ─────────────────────────────────────────────
   if (view === "browse") {
     return (
       <div className="pb-28">
-        {/* Header */}
         <div className="bg-white px-5 pt-12 pb-4">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -192,7 +209,6 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
             </button>
           </div>
 
-          {/* Category filter */}
           <div className="flex gap-2 overflow-x-auto scrollbar-hide">
             {STREAM_CATEGORIES.map((cat) => (
               <button
@@ -209,7 +225,6 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
           </div>
         </div>
 
-        {/* Featured stream */}
         {filtered[0] && (
           <div className="px-4 mt-4 mb-4">
             <button
@@ -241,7 +256,6 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
           </div>
         )}
 
-        {/* All streams grid */}
         <div className="px-4">
           <h3 className="text-sm font-bold text-gray-700 mb-3">All Streams</h3>
           <div className="space-y-3">
@@ -280,11 +294,9 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
     );
   }
 
-  // ── Watch ──────────────────────────────────────────────
   if (view === "watch" && activeStream) {
     return (
       <div className="h-full flex flex-col bg-black">
-        {/* Video placeholder */}
         <div className="relative bg-gradient-to-br from-gray-900 via-accent/20 to-gray-900 flex-shrink-0" style={{ height: "45%" }}>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center">
@@ -292,7 +304,6 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
             </div>
           </div>
 
-          {/* Overlay controls */}
           <div className="absolute top-12 left-4 right-4 flex items-center justify-between">
             <button onClick={() => setView("browse")} className="w-9 h-9 bg-black/40 rounded-full flex items-center justify-center">
               <ChevronLeft className="w-5 h-5 text-white" />
@@ -305,10 +316,12 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
               <div className="flex items-center gap-1 bg-black/40 px-2.5 py-1 rounded-full text-white text-xs">
                 <Eye className="w-3 h-3" /> {viewers.toLocaleString()}
               </div>
+              <button onClick={() => setStreamLikes((c) => c + 1)} className="flex items-center gap-1 bg-black/40 px-2.5 py-1 rounded-full text-white text-xs">
+                <ThumbsUp className="w-3 h-3" /> {streamLikes}
+              </button>
             </div>
           </div>
 
-          {/* Bottom stream info */}
           <div className="absolute bottom-4 left-4 right-4">
             <p className="text-white font-bold text-sm line-clamp-1 mb-1">{activeStream.title}</p>
             <div className="flex items-center gap-2">
@@ -325,13 +338,11 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
             </div>
           </div>
 
-          {/* Heart burst animation */}
           {heartBurst && (
             <div className="absolute right-8 bottom-20 text-3xl animate-bounce">❤️</div>
           )}
         </div>
 
-        {/* Chat area */}
         <div className="flex-1 flex flex-col min-h-0 bg-gray-950">
           <div ref={chatRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
             {messages.map((msg) => (
@@ -343,42 +354,61 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
                   )}:
                 </span>
                 <span className="text-white/80 text-xs">{msg.text}</span>
+                <button onClick={() => setReplyTargetId(msg.id)} className="ml-2 text-xs text-accent hover:underline">Reply</button>
               </div>
             ))}
           </div>
 
-          {/* Chat input */}
-          <div className="px-4 py-3 pb-safe flex items-center gap-2 border-t border-white/10">
-            <button
-              onClick={() => setHeartBurst(true)}
-              className="w-10 h-10 flex items-center justify-center text-xl active:scale-90 transition-transform"
-            >
-              ❤️
-            </button>
-            <input
-              type="text"
-              placeholder="Say something..."
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
-              className="flex-1 h-10 px-4 bg-white/10 text-white placeholder-white/40 rounded-2xl text-sm border-none focus:outline-none focus:ring-2 focus:ring-accent/40"
-            />
-            <button
-              onClick={() => setShowGifts(true)}
-              className="w-10 h-10 flex items-center justify-center text-xl active:scale-90 transition-transform"
-            >
-              🎁
-            </button>
-            <button
-              onClick={handleSendChat}
-              className="w-10 h-10 bg-accent rounded-2xl flex items-center justify-center active:scale-95 transition-all"
-            >
-              <Send className="w-4 h-4 text-white" />
-            </button>
+          <div className="px-4 py-3 pb-safe flex flex-col border-t border-white/10">
+            {replyTargetId !== null && (
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  type="text"
+                  placeholder="Reply..."
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  className="flex-1 h-8 px-2 bg-white/10 text-white placeholder-white/40 rounded-md text-sm border-none focus:outline-none"
+                  onKeyDown={(e) => e.key === "Enter" && handleSendReply(messages.find(m => m.id === replyTargetId)?.user || "")}
+                />
+                <button
+                  onClick={() => handleSendReply(messages.find(m => m.id === replyTargetId)?.user || "")}
+                  className="px-3 py-1 bg-accent text-white rounded-md text-xs font-bold"
+                >
+                  Send
+                </button>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setHeartBurst(true)}
+                className="w-10 h-10 flex items-center justify-center text-xl active:scale-90 transition-transform"
+              >
+                ❤️
+              </button>
+              <input
+                type="text"
+                placeholder="Say something..."
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
+                className="flex-1 h-10 px-4 bg-white/10 text-white placeholder-white/40 rounded-2xl text-sm border-none focus:outline-none focus:ring-2 focus:ring-accent/40"
+              />
+              <button
+                onClick={() => setShowGifts(true)}
+                className="w-10 h-10 flex items-center justify-center text-xl active:scale-90 transition-transform"
+              >
+                🎁
+              </button>
+              <button
+                onClick={handleSendChat}
+                className="w-10 h-10 bg-accent rounded-2xl flex items-center justify-center active:scale-95 transition-all"
+              >
+                <Send className="w-4 h-4 text-white" />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Gift panel */}
         {showGifts && (
           <div className="fixed inset-0 z-50 flex flex-col justify-end">
             <div className="absolute inset-0 bg-black/60" onClick={() => setShowGifts(false)} />
@@ -410,7 +440,6 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
     );
   }
 
-  // ── Go Live ────────────────────────────────────────────
   return (
     <div className="h-full flex flex-col bg-white">
       <div className="px-5 pt-12 pb-4 border-b border-gray-100">
@@ -424,7 +453,6 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
 
       {isStreaming ? (
         <div className="flex-1 flex flex-col">
-          {/* Live preview */}
           <div className="bg-gray-900 flex-shrink-0 relative" style={{ height: "40%" }}>
             <div className="absolute inset-0 flex items-center justify-center">
               {isCamOn ? (
@@ -447,7 +475,6 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
             </div>
           </div>
 
-          {/* Live controls */}
           <div className="px-5 py-5 border-t border-gray-100">
             <p className="font-bold text-gray-900 text-sm mb-1">{liveTitle}</p>
             <p className="text-xs text-gray-500 mb-5">{liveCategory} • You are live</p>
@@ -483,7 +510,6 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto px-5 py-6 space-y-5">
-          {/* Preview */}
           <div className="bg-gray-900 rounded-3xl h-44 flex flex-col items-center justify-center gap-3">
             <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center">
               {isCamOn
@@ -501,7 +527,6 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
             </div>
           </div>
 
-          {/* Stream title */}
           <div>
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">Stream Title *</label>
             <input
@@ -513,7 +538,6 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
             />
           </div>
 
-          {/* Category */}
           <div>
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">Category</label>
             <div className="grid grid-cols-3 gap-2">
@@ -532,7 +556,6 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
             </div>
           </div>
 
-          {/* Creator tip */}
           {!user.isCreator && (
             <div className="bg-yellow-50 border border-yellow-100 rounded-2xl p-4 flex items-start gap-3">
               <Crown className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />

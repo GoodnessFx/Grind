@@ -1,0 +1,101 @@
+import type { PublicStudent, SkillCategory } from "./social";
+
+const mkGigs = (category: SkillCategory, count: number, titlePrefix: string) =>
+  Array.from({ length: count }).map((_, i) => ({
+    id: 1000 + Math.floor(Math.random() * 9000) + i,
+    title: `${titlePrefix} #${i + 1}`,
+    category,
+    price: 2500 + i * 750,
+    completedAt: `2026-0${(i % 8) + 1}-1${(i % 9) + 1}`,
+    rating: 4.2 + (i % 3) * 0.2,
+  }));
+
+export const SEED_STUDENTS: PublicStudent[] = [
+  {
+    id: "stu-001",
+    displayName: "Aisha Bello",
+    handle: "@aisha.ui",
+    bio: "Product designer. I ship clean mobile UI and fast landing pages.",
+    school: "Ahmadu Bello University",
+    level: "400L",
+    showSchoolTag: true,
+    tier: "DIAMOND",
+    score: 910,
+    rating: 4.8,
+    skills: ["Design", "Writing"],
+    completedGigs: [
+      ...mkGigs("Design", 6, "Design system + UI kit"),
+      ...mkGigs("Writing", 3, "UX copy pass"),
+    ],
+    links: [{ label: "Portfolio", url: "https://example.com" }],
+  },
+  {
+    id: "stu-002",
+    displayName: "Chinedu Okafor",
+    handle: "@chinedu.dev",
+    bio: "Backend + APIs. Node/Express, Supabase, and clean architecture.",
+    school: "University of Nigeria, Nsukka",
+    level: "300L",
+    showSchoolTag: true,
+    tier: "GOLD",
+    score: 702,
+    rating: 4.6,
+    skills: ["Coding", "Research"],
+    completedGigs: [
+      ...mkGigs("Coding", 5, "REST API build"),
+      ...mkGigs("Research", 2, "Tech research brief"),
+    ],
+  },
+  {
+    id: "stu-003",
+    displayName: "Zainab Yusuf",
+    handle: "@zainab.writes",
+    bio: "Writing + editing. Essays, statements, proposals. Fast turnaround.",
+    school: "University of Ilorin",
+    level: "200L",
+    showSchoolTag: false,
+    tier: "BRONZE",
+    score: 410,
+    rating: 4.4,
+    skills: ["Writing", "Research"],
+    completedGigs: [
+      ...mkGigs("Writing", 5, "Essay + proofreading"),
+      ...mkGigs("Research", 1, "Sources + citations"),
+    ],
+  },
+  {
+    id: "stu-004",
+    displayName: "Tunde Adeyemi",
+    handle: "@tunde.video",
+    bio: "Video editor. Captions, pacing, transitions, clean sound.",
+    school: "Obafemi Awolowo University",
+    level: "300L",
+    showSchoolTag: true,
+    tier: "GOLD",
+    score: 650,
+    rating: 4.7,
+    skills: ["Video", "Design"],
+    completedGigs: [
+      ...mkGigs("Video", 5, "Short-form edit"),
+      ...mkGigs("Design", 1, "Thumbnail design"),
+    ],
+  },
+  {
+    id: "stu-005",
+    displayName: "Mariam Ibrahim",
+    handle: "@mariam.tutor",
+    bio: "Tutoring: Calculus, Physics, and basic programming. Patient and clear.",
+    school: "Bayero University Kano",
+    level: "400L",
+    showSchoolTag: true,
+    tier: "DIAMOND",
+    score: 860,
+    rating: 4.9,
+    skills: ["Tutoring", "Coding"],
+    completedGigs: [
+      ...mkGigs("Tutoring", 7, "Tutoring session"),
+      ...mkGigs("Coding", 2, "Intro programming help"),
+    ],
+  },
+];
+

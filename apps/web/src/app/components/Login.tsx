@@ -1,10 +1,26 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Eye, EyeOff, ArrowRight, Shield, ChevronLeft, Phone, Mail } from "lucide-react";
 import { toast } from "sonner";
 import type { UserData } from "../App";
+import { LogoMark } from "./brand/LogoMark";
+import { cn } from "../../lib/utils";
 
 interface LoginProps {
   onLogin: (userData: UserData) => void;
+  /**
+   * Optional context shown on the welcome step (used for referral / gig deep-link landings).
+   */
+  context?: {
+    title?: string;
+    subtitle?: string;
+    prelude?: React.ReactNode;
+  };
+  initialStep?: Step;
+  /**
+   * `full`: default full-screen login page
+   * `card`: renders without enforcing full-height/background (meant to be embedded in a shell)
+   */
+  layout?: "full" | "card";
 }
 
 type Step = "welcome" | "phone" | "email" | "otp" | "register";
@@ -38,8 +54,8 @@ function makeUser(overrides: Partial<UserData> = {}): UserData {
   };
 }
 
-export function Login({ onLogin }: LoginProps) {
-  const [step, setStep] = useState<Step>("welcome");
+export function Login({ onLogin, context, initialStep, layout = "full" }: LoginProps) {
+  const [step, setStep] = useState<Step>(initialStep ?? "welcome");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,6 +63,12 @@ export function Login({ onLogin }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
+
+  const welcomeTitle = useMemo(() => context?.title ?? "Welcome to Grind", [context?.title]);
+  const welcomeSubtitle = useMemo(
+    () => context?.subtitle ?? "The campus gig economy for Nigerian students",
+    [context?.subtitle]
+  );
 
   const handleGoogleLogin = () => {
     setLoading(true);
@@ -133,10 +155,10 @@ export function Login({ onLogin }: LoginProps) {
   };
 
   return (
-    <div className="h-full bg-white flex flex-col overflow-y-auto">
+    <div className={cn(layout === "full" ? "h-full bg-white flex flex-col overflow-y-auto" : "flex flex-col")}>
       {/* Header */}
       {step !== "welcome" && (
-        <div className="flex items-center gap-3 px-5 pt-12 pb-2">
+        <div className={cn("flex items-center gap-3 px-5 pb-2", layout === "full" ? "pt-12" : "pt-6")}>
           <button
             onClick={() => setStep(step === "otp" ? "phone" : step === "register" ? "email" : "welcome")}
             className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center"
@@ -146,22 +168,23 @@ export function Login({ onLogin }: LoginProps) {
         </div>
       )}
 
-      <div className="flex-1 flex flex-col px-6">
+      <div className={cn(layout === "full" ? "flex-1 flex flex-col px-6" : "flex flex-col px-6")}>
         {/* ── Welcome ─────────────────────────────────────────── */}
         {step === "welcome" && (
-          <div className="flex flex-col flex-1">
-            {/* Logo area */}
-            <div className="flex flex-col items-center pt-16 pb-10">
-              <div className="w-20 h-20 bg-accent rounded-3xl flex items-center justify-center mb-6 shadow-lg">
-                <svg width="44" height="44" viewBox="0 0 52 52" fill="none">
-                  <path d="M26 4C13.85 4 4 13.85 4 26s9.85 22 22 22 22-9.85 22-22S38.15 4 26 4z" fill="white" />
-                  <path d="M26 12c-7.73 0-14 6.27-14 14s6.27 14 14 14 14-6.27 14-14-6.27-14-14-14z" fill="#00A651" />
-                  <path d="M26 18c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z" fill="white" />
-                </svg>
+          <div className={cn("flex flex-col", layout === "full" ? "flex-1" : "")}>
+            {context?.prelude && (
+              <div className={cn("pt-7", layout === "full" ? "pb-2" : "pb-3")}>
+                {context.prelude}
               </div>
-              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Welcome to Grind</h1>
+            )}
+            {/* Logo area */}
+            <div className={cn("flex flex-col items-center", layout === "full" ? "pt-16 pb-10" : "pt-4 pb-7")}>
+              <div className="w-20 h-20 bg-accent rounded-3xl flex items-center justify-center mb-6 shadow-lg">
+                <LogoMark size={46} tone="light" />
+              </div>
+              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">{welcomeTitle}</h1>
               <p className="text-gray-500 text-sm mt-2 text-center leading-relaxed">
-                The campus gig economy for Nigerian students
+                {welcomeSubtitle}
               </p>
             </div>
 

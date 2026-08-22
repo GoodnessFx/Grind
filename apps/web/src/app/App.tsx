@@ -9,10 +9,11 @@ import { PostTask } from "./components/PostTask";
 import { Wallet } from "./components/Wallet";
 import { Profile } from "./components/Profile";
 import { Settings } from "./components/Settings";
-import { LiveStream } from "./components/LiveStream";
+import { DiscoveryFeed } from "./components/DiscoveryFeed";
 import { BottomNav } from "./components/BottomNav";
+import { PublicGigEntry, PublicReferralEntry } from "./components/PublicEntry";
 
-export type Tab = "home" | "gigs" | "live" | "wallet" | "profile";
+export type Tab = "home" | "gigs" | "discovery" | "wallet" | "profile";
 
 export interface UserData {
   id: string;
@@ -30,6 +31,14 @@ export interface UserData {
   referrals: number;
   bio?: string;
   phone?: string;
+  socialLinks?: {
+    twitter?: string;
+    linkedin?: string;
+    instagram?: string;
+  };
+  skills?: string[];
+  portfolio?: Array<{title: string, url: string}>;
+  showSchool?: boolean;
 }
 
 export interface Transaction {
@@ -52,6 +61,8 @@ export interface Notification {
 type Screen =
   | { name: "splash" }
   | { name: "login" }
+  | { name: "public-gig"; gigId: number }
+  | { name: "public-referral"; ref: string }
   | { name: "main"; tab: Tab }
   | { name: "task-detail"; taskId: number }
   | { name: "post-task" }
@@ -82,23 +93,71 @@ export default function App() {
     }
   }, []);
 
+  const getPublicIntent = useCallback(() => {
+    const path = window.location.pathname || "/";
+    const gigMatch = path.match(/^\/gig\/(\d+)\/?$/);
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+
+    if (gigMatch?.[1]) {
+      const gigId = Number(gigMatch[1]);
+      if (Number.isFinite(gigId)) return { kind: "gig" as const, gigId };
+    }
+    if (ref) return { kind: "ref" as const, ref };
+    return { kind: "none" as const };
+  }, []);
+
   const handleSplashComplete = useCallback(() => {
     const savedUser = localStorage.getItem("grind_user");
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        const parsed = JSON.parse(savedUser);
+        setUser(parsed);
+
+        const intent = getPublicIntent();
+        if (intent.kind === "gig") {
+          sessionStorage.removeItem("post_login_gig");
+          setScreen({ name: "task-detail", taskId: intent.gigId });
+          window.history.replaceState({}, "", "/");
+          return;
+        }
+
         setScreen({ name: "main", tab: "home" });
       } catch {
-        setScreen({ name: "login" });
+        const intent = getPublicIntent();
+        if (intent.kind === "gig") {
+          sessionStorage.setItem("post_login_gig", String(intent.gigId));
+          setScreen({ name: "public-gig", gigId: intent.gigId });
+        } else if (intent.kind === "ref") {
+          setScreen({ name: "public-referral", ref: intent.ref });
+        } else {
+          setScreen({ name: "login" });
+        }
       }
     } else {
-      setScreen({ name: "login" });
+      const intent = getPublicIntent();
+      if (intent.kind === "gig") {
+        sessionStorage.setItem("post_login_gig", String(intent.gigId));
+        setScreen({ name: "public-gig", gigId: intent.gigId });
+      } else if (intent.kind === "ref") {
+        setScreen({ name: "public-referral", ref: intent.ref });
+      } else {
+        setScreen({ name: "login" });
+      }
     }
-  }, []);
+  }, [getPublicIntent]);
 
   const handleLogin = useCallback((userData: UserData) => {
     setUser(userData);
     localStorage.setItem("grind_user", JSON.stringify(userData));
+    const pendingGig = sessionStorage.getItem("post_login_gig");
+    if (pendingGig) {
+      const gigId = Number(pendingGig);
+      sessionStorage.removeItem("post_login_gig");
+      setScreen({ name: "task-detail", taskId: gigId });
+      window.history.replaceState({}, "", "/");
+      return;
+    }
     setScreen({ name: "main", tab: "home" });
   }, []);
 
@@ -140,6 +199,26 @@ export default function App() {
   // ── Splash ──────────────────────────────────────────────────────────────────
   if (screen.name === "splash") {
     return <Splash onComplete={handleSplashComplete} />;
+  }
+
+  // ── Public Gig Deep Link (logged out) ───────────────────────────────────────
+  if (screen.name === "public-gig") {
+    return (
+      <>
+        <Toaster position="top-center" richColors />
+        <PublicGigEntry gigId={screen.gigId} onLogin={handleLogin} />
+      </>
+    );
+  }
+
+  // ── Public Referral Deep Link (logged out) ──────────────────────────────────
+  if (screen.name === "public-referral") {
+    return (
+      <>
+        <Toaster position="top-center" richColors />
+        <PublicReferralEntry ref={screen.ref} onLogin={handleLogin} />
+      </>
+    );
   }
 
   // ── Login ───────────────────────────────────────────────────────────────────
@@ -219,8 +298,8 @@ export default function App() {
             onPostTask={openPostTask}
           />
         )}
-        {tab === "live" && (
-          <LiveStream user={user} onUpdateUser={updateUser} />
+        {tab === "discovery" && (
+          <DiscoveryFeed user={user} onNavigate={navigate} />
         )}
         {tab === "wallet" && (
           <Wallet

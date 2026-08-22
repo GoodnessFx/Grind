@@ -13,6 +13,7 @@ export interface TaskCardData {
   posterScore: number;
   deadline: string;
   status?: string;
+  squadSize?: number;
   onClick?: () => void;
 }
 
@@ -31,10 +32,13 @@ const categoryColors: Record<string, string> = {
   Delivery: "bg-orange-50 text-orange-600",
   Research: "bg-yellow-50 text-yellow-700",
   Video: "bg-red-50 text-red-600",
+  Squads: "bg-indigo-50 text-indigo-600",
   Other: "bg-gray-100 text-gray-600",
 };
 
-export function TaskCard({ category, price, title, description, posterHandle, posterTier, posterScore, deadline, status, onClick }: TaskCardData) {
+import { Users } from "lucide-react";
+
+export function TaskCard({ category, price, title, description, posterHandle, posterTier, posterScore, deadline, status, squadSize, onClick }: TaskCardData) {
   const urgent = deadline.includes("hour") || deadline.includes("1 day");
 
   return (
@@ -44,9 +48,17 @@ export function TaskCard({ category, price, title, description, posterHandle, po
     >
       {/* Top row */}
       <div className="flex items-center justify-between mb-3">
-        <span className={cn("px-2.5 py-1 rounded-full text-[11px] font-semibold", categoryColors[category] ?? "bg-gray-100 text-gray-600")}>
-          {category}
-        </span>
+        <div className="flex gap-2 items-center">
+          <span className={cn("px-2.5 py-1 rounded-full text-[11px] font-semibold", categoryColors[category] ?? "bg-gray-100 text-gray-600")}>
+            {category}
+          </span>
+          {squadSize && (
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100">
+              <Users className="w-3 h-3" />
+              Squad of {squadSize}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-1">
           <span className="text-base font-extrabold text-gray-900">₦{price.toLocaleString()}</span>
           <span className="text-[10px] font-bold text-accent bg-grind-accent-light px-1.5 py-0.5 rounded-md">cNGN</span>

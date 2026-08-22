@@ -1,4 +1,4 @@
-# Oui Market — Figma Design Prompt
+# Grind Market — Figma Design Prompt
 # Complete UI/UX spec from splash to payment success
 # Hand this to your Figma designer exactly as written
 
@@ -6,7 +6,7 @@
 
 ## APP NAME
 
-**Oui Market**
+**Grind Market**
 Tagline: *"Campus life, sorted."*
 Sub-tagline: *"Post tasks. Get paid. Build your rep."*
 
@@ -39,7 +39,7 @@ Colours:
   Neutral 50:    #F9FAFB   (page backgrounds)
   White:         #FFFFFF
 
-Tier colours (OuiScore):
+Tier colours (GrindScore):
   STARTER:  #98A2B3   (slate)
   BRONZE:   #F79009   (amber)
   GOLD:     #6C63FF   (violet — matches accent)
@@ -105,7 +105,7 @@ Name frames exactly as written.
   30 / Housing Deposit Flow
   31 / Marketplace (buy/sell goods)
   32 / Product Detail
-  33 / OuiScore Profile
+  33 / GrindScore Profile
   34 / Credential Share
   35 / Credential Public Page
   36 / Notifications
@@ -123,7 +123,7 @@ Name frames exactly as written.
 ### 01 / Splash
 
 Full screen. Colour: Primary (#1A1A2E).
-Centre: Oui Market wordmark in white, Plus Jakarta Sans Bold, 32px.
+Centre: Grind Market wordmark in white, Plus Jakarta Sans Bold, 32px.
 Below wordmark: tagline "Campus life, sorted." in Neutral 500, 14px.
 Bottom 40% of screen: subtle upward gradient from #6C63FF at 8% opacity to transparent.
 Loading indicator: thin violet progress bar at very bottom, animating left to right.
@@ -215,7 +215,7 @@ Primary button: "Verify" (disabled until all 6 filled).
 ### 07 / Log In
 
 Title: "Welcome back"
-Subtitle: "Sign in to your Oui Market account"
+Subtitle: "Sign in to your Grind Market account"
 
 Fields:
   Email or phone number
@@ -257,7 +257,7 @@ Primary button: "Continue"
 
 Progress bar: Step 2 of 2.
 Title: "Choose your identity level"
-Subtitle: "This controls what employers and others see when you share your OuiScore."
+Subtitle: "This controls what employers and others see when you share your GrindScore."
 
 Three option cards, stacked, selectable (radio style):
   Each card has: icon left, title, description, chevron right.
@@ -295,11 +295,11 @@ Status bar area. Top bar:
   Left: "Good morning, [Name] 👋" (18px SemiBold)
   Right: notification bell icon (with unread dot if notifications exist)
 
-OuiScore strip — horizontal card, Accent light background, full width, 12px radius:
+GrindScore strip — horizontal card, Accent light background, full width, 12px radius:
   Left: score ring (60px) — animated arc showing score out of 1000
     Tier colour fills the arc. Score number inside. Tier name below.
   Right:
-    "Your OuiScore" label (12px, Neutral 500)
+    "Your GrindScore" label (12px, Neutral 500)
     Progress to next tier (thin bar)
     "See credential" link (violet, 13px)
 
@@ -333,7 +333,7 @@ Row 2: Task title — 2 lines max, 15px SemiBold, Primary
 Row 3: Short description — 1 line, 13px Regular, Neutral 700, ellipsis
 Row 4: Poster row:
   Left: avatar (28px circle) + poster handle (13px, Neutral 700)
-        + OuiScoreBadge (dot + tier name, 11px)
+        + GrindScoreBadge (dot + tier name, 11px)
   Right: deadline chip "Due in 2 days" (amber if < 24h, green if > 3 days)
 Row 5 (if poster is viewer): status chip — OPEN / LOCKED / SUBMITTED etc.
 
@@ -365,7 +365,7 @@ Back arrow + "Task" title.
 Share icon top right.
 
 Poster row:
-  Avatar (48px) + Name + OuiScoreBadge (tier dot + score)
+  Avatar (48px) + Name + GrindScoreBadge (tier dot + score)
   Posted time (e.g. "2 hours ago") — right aligned
 
 Title: 22px Bold, Primary.
@@ -667,7 +667,7 @@ Current step card (Accent light bg, Accent border, radius 12px):
 For poster in LOCKED state:
   Heading: "Waiting for doer"
   Body: "[Doer handle] accepted your task. Work is in progress."
-  OuiScoreBadge of doer.
+  GrindScoreBadge of doer.
   No action button.
 
 Dispute section (collapsed by default):
@@ -756,9 +756,9 @@ Resolution card (Success light bg, Success border):
 Outcome row:
   Who received funds + amount.
 
-OuiScore update animation:
+GrindScore update animation:
   Score ring animates from old to new score.
-  "+12 OuiScore" floats up in Accent colour and fades.
+  "+12 GrindScore" floats up in Accent colour and fades.
 
 Action: "Leave a rating" (1–5 stars, tappable).
 After rating: "Thanks! Rating saved." → done.
@@ -780,7 +780,7 @@ Room cards (vertical list):
   Below photo (padding 12px):
     Price: "₦85,000/yr" (Bold) + location: "Akoka, 5 min walk"
     Amenities chips: "Water · Light · Security"
-    Landlord row: avatar + name + OuiScoreBadge
+    Landlord row: avatar + name + GrindScoreBadge
 
 ---
 
@@ -796,7 +796,7 @@ Details below photo:
 Amenities section: icon grid.
 Description: full text.
 
-Landlord card: avatar + name + OuiScore badge + "Member since" date.
+Landlord card: avatar + name + GrindScore badge + "Member since" date.
 
 Deposit section (Accent light bg, border, radius 12px, padding 16px):
   🔒 "Secure deposit via escrow"
@@ -834,7 +834,7 @@ Product card:
   Photo (square, radius 8px).
   Price (Bold).
   Title (2 lines).
-  Seller OuiScoreBadge.
+  Seller GrindScoreBadge.
 
 ---
 
@@ -848,12 +848,12 @@ Bottom bar: "Message seller" + "Buy now" buttons.
 
 ---
 
-### 33 / OuiScore Profile
+### 33 / GrindScore Profile
 
 Top: avatar (80px circle) + handle + school + level.
     Settings icon top right.
 
-OuiScore card (Primary bg, white text, radius 16px):
+GrindScore card (Primary bg, white text, radius 16px):
   Left: large score ring (80px) — tier colour arc, score inside.
   Right:
     Score: "847" (32px Bold, white)
@@ -868,7 +868,7 @@ Skills section: tag chips (your top categories by task count).
 
 Credential section:
   Card (Accent light bg):
-    "Share your OuiScore as a credential"
+    "Share your GrindScore as a credential"
     "Employers, landlords, and scholarship bodies can verify your profile."
     Button: "Generate credential link →"
 
@@ -879,7 +879,7 @@ Activity feed: last 5 completed tasks (title + date + amount earned).
 ### 34 / Credential Share
 
 Bottom sheet, 75% height.
-Title: "Share your OuiScore"
+Title: "Share your GrindScore"
 
 Privacy selector:
   Three rows, radio style (same as screen 09 but compact):
@@ -907,7 +907,7 @@ After tapping:
 This is a web page (not app screen), opened via link.
 Design as a mobile-optimised web page, 390px max width centred on desktop.
 
-Header: Oui Market wordmark + "Verified Credential" badge.
+Header: Grind Market wordmark + "Verified Credential" badge.
 
 Credential card (Primary bg, white text, rounded, padded):
   If PUBLIC:
@@ -917,7 +917,7 @@ Credential card (Primary bg, white text, rounded, padded):
     Handle: "Eagle_UNILAG_300L"
     School: "University of Lagos · CS dept"
   If ANONYMOUS:
-    "Anonymous OuiScore holder"
+    "Anonymous GrindScore holder"
   Score ring (large, tier colour).
   Score: 847 | Tier: Diamond
   Issued: June 2025 | Expires: July 2025
@@ -929,7 +929,7 @@ Verification row:
   "Verified on Base blockchain"
   Link: "View on Basescan →"
 
-Footer: "Powered by Oui Market · ouimarket.com"
+Footer: "Powered by Grind Market · grindmarket.com"
 
 ---
 
@@ -1079,7 +1079,7 @@ Build all as Figma components with variants:
   Card/Task         — default, pressed
   Card/Room         — default
   Card/Payment      — default, selected
-  Badge/OuiScore    — sm, lg, each tier variant (4 tiers × 2 sizes = 8)
+  Badge/GrindScore    — sm, lg, each tier variant (4 tiers × 2 sizes = 8)
   Badge/Status      — OPEN, LOCKED, SUBMITTED, APPROVED, DISPUTED, RESOLVED
   Chip/Category     — selected, unselected
   Chip/Filter       — selected, unselected
@@ -1098,7 +1098,7 @@ Onboarding swipe: horizontal slide between cards.
 Bottom sheet open: spring up from bottom, 350ms ease-out.
 Bottom sheet dismiss: slide down, 250ms ease-in.
 Payment success: Lottie animation as specced in screen 20.
-OuiScore ring: SVG arc animation, 600ms ease-out on load.
+GrindScore ring: SVG arc animation, 600ms ease-out on load.
 Score update: number count-up animation, 800ms.
 Confetti: particle burst on payment success, 60 particles, Accent + Primary colours.
 Toast: slide in from top, 200ms; auto-dismiss after 3s with slide out.
@@ -1169,7 +1169,7 @@ Amounts: ₦2,000 · ₦3,500 · ₦5,000 · ₦8,500 · ₦12,000 · ₦25,000
 
 Room prices: ₦75,000/yr · ₦120,000/yr · ₦200,000/yr
 
-OuiScores: 423 (Bronze) · 672 (Gold) · 847 (Diamond) · 312 (Starter)
+GrindScores: 423 (Bronze) · 672 (Gold) · 847 (Diamond) · 312 (Starter)
 
 ---
 
@@ -1227,8 +1227,8 @@ Fields:
     Row of 3 add-photo slots (dashed border, "+" icon).
     Tap to upload image or file. Shows thumbnail when uploaded.
 
-Doer's OuiScore shown at bottom of sheet:
-  "Your OuiScore: 672 — Gold tier"
+Doer's GrindScore shown at bottom of sheet:
+  "Your GrindScore: 672 — Gold tier"
   If tier not met for this task → warning card shown instead:
   ⚠️ "This task requires Bronze tier. Keep completing tasks to qualify."
 
@@ -1244,7 +1244,7 @@ Tab added to Task Detail: [Details] [Applications (3)]
 
 Applications tab:
   List of applicant cards (each):
-    Avatar (48px) + handle + OuiScoreBadge (tier + score).
+    Avatar (48px) + handle + GrindScoreBadge (tier + score).
     Delivery date offered.
     Short message (2 lines, truncated).
     "View full →" link.
@@ -1267,7 +1267,7 @@ Bottom sheet (80% height), opened from Applications List.
 
 Compact profile card:
   Avatar (64px) + handle + school + level.
-  OuiScore ring (medium) + tier badge.
+  GrindScore ring (medium) + tier badge.
   Stats row: tasks done | on-time % | avg rating (stars).
 
 Their application message (full text).
@@ -1319,7 +1319,7 @@ Top bar: "Messages"
 Search bar: "Search conversations..."
 
 Conversation list (each row):
-  Avatar (48px) + handle + OuiScoreBadge dot.
+  Avatar (48px) + handle + GrindScoreBadge dot.
   Last message preview (1 line, truncated) + time right.
   Unread count badge (Accent fill, white text) if unread.
   Task context chip below handle: "RE: Business Law Essay" (12px, Neutral 500).
@@ -1335,7 +1335,7 @@ Empty state:
 
 ### 49 / In-App Messaging — Conversation
 
-Top bar: back arrow + other user's avatar (32px) + handle + OuiScoreBadge.
+Top bar: back arrow + other user's avatar (32px) + handle + GrindScoreBadge.
   Right: task context chip (tappable → opens Task Detail).
 
 Message bubbles:
@@ -1389,7 +1389,7 @@ Accessible from Profile screen → "Invite friends" row in Settings.
 Title: "Invite friends. Earn rewards."
 
 Reward card (Accent light bg, Accent border, radius 16px):
-  Heading: "You earn +50 OuiScore per referral"
+  Heading: "You earn +50 GrindScore per referral"
   Sub: "Up to 50 referrals · Max +100 bonus score"
   Current: "You've referred: 4 friends"
   Score bar: 4/50 filled.
@@ -1407,7 +1407,7 @@ Share row:
 How it works (3 rows with icons):
   1. 🔗 Friend signs up with your code
   2. ✅ Friend completes their first transaction
-  3. ⭐ You earn +50 OuiScore automatically
+  3. ⭐ You earn +50 GrindScore automatically
 
 ---
 
@@ -1430,7 +1430,7 @@ Animation sequence (Lottie):
 Static state:
   New tier badge (large, 80px icon).
   Heading: "You reached [GOLD] tier! 🎉" (24px Bold).
-  Score: "Your OuiScore: 601" (18px, tier colour).
+  Score: "Your GrindScore: 601" (18px, tier colour).
 
 Unlocked perks (3 rows, each with icon):
   (varies by tier — show relevant perks)
@@ -1448,11 +1448,11 @@ Ghost link: "Share achievement" → share sheet with achievement card image.
 Generated image (not a screen — an exportable card at 1080×1080px for Instagram/WhatsApp).
 
 Background: tier gradient colour.
-Centre: Oui Market wordmark (white).
+Centre: Grind Market wordmark (white).
 Tier badge (large).
-Text: "I just reached [DIAMOND] tier on Oui Market!"
-Sub: "OuiScore: 847 — Top 3% on campus"
-Bottom: "Join me → ouimarket.com" + QR code.
+Text: "I just reached [DIAMOND] tier on Grind Market!"
+Sub: "GrindScore: 847 — Top 3% on campus"
+Bottom: "Join me → grindmarket.com" + QR code.
 
 ---
 
@@ -1463,7 +1463,7 @@ Triggered by tapping any user's avatar or handle anywhere in the app.
 Top: back arrow.
 Profile header: avatar (80px) + handle + school + level.
 
-OuiScore card (same as screen 33 but read-only — no edit, no credential button).
+GrindScore card (same as screen 33 but read-only — no edit, no credential button).
 Stats row.
 Skills chips.
 
@@ -1538,20 +1538,20 @@ Withdrawal success (replaces bottom sheet content):
 
 ### 58 / Leaderboard
 
-Accessible from OuiScore Profile → "Campus leaderboard" link.
+Accessible from GrindScore Profile → "Campus leaderboard" link.
 Title: "Campus Leaderboard"
 Subtitle: "Top earners and highest scores this month"
 
-Toggle tabs: [OuiScore] [Earnings]
+Toggle tabs: [GrindScore] [Earnings]
 
-OuiScore tab:
+GrindScore tab:
   Top 3 podium (special layout):
     #2 (left, slightly lower) | #1 (centre, elevated) | #3 (right, slightly lower)
     Each: avatar + handle + score + tier badge.
     #1 has gold crown icon above avatar.
 
   Remaining list (#4 onwards):
-    Rank number | avatar + handle + OuiScoreBadge | score right.
+    Rank number | avatar + handle + GrindScoreBadge | score right.
 
   Current user row (pinned above bottom nav if not in top 10):
     Highlighted in Accent light bg: "Your rank: #47 · 847 pts"
@@ -1627,9 +1627,9 @@ Housing:
 Marketplace:
   ✅ Browse → Filter → Product detail → Buy
 
-Identity + OuiScore:
+Identity + GrindScore:
   ✅ Create DID (onboarding)
-  ✅ OuiScore profile (own)
+  ✅ GrindScore profile (own)
   ✅ Public profile (other user, privacy-aware)
   ✅ Credential share (generate link)
   ✅ Credential public page (web)

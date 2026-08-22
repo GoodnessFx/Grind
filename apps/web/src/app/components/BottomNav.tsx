@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, Briefcase, Tv2, Wallet, User, Plus } from "lucide-react";
+import { Home, Briefcase, Search, Wallet, User, Plus } from "lucide-react";
 import { cn } from "../../lib/utils";
 import type { Tab } from "../App";
 
@@ -12,7 +12,7 @@ interface BottomNavProps {
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "home", label: "Home", icon: Home },
   { id: "gigs", label: "Gigs", icon: Briefcase },
-  { id: "live", label: "Live", icon: Tv2 },
+  { id: "discovery", label: "Discovery", icon: Search },
   { id: "wallet", label: "Wallet", icon: Wallet },
   { id: "profile", label: "Profile", icon: User },
 ];
@@ -35,10 +35,7 @@ export function BottomNav({ activeTab, onTabChange, onPostTask }: BottomNavProps
         {TABS.map((tab, i) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
-          // Split around the center gap
-          const isLeft = i < 2;
-          const isRight = i >= 3;
-          const isCenter = i === 2; // "Live" sits under the FAB
+          const isCenter = i === 2; // "Discovery" sits under the FAB
 
           return (
             <button
@@ -46,32 +43,19 @@ export function BottomNav({ activeTab, onTabChange, onPostTask }: BottomNavProps
               onClick={() => onTabChange(tab.id)}
               className={cn(
                 "flex-1 flex flex-col items-center justify-end gap-0.5 pb-2 pt-1 transition-all",
-                isCenter && "pt-6", // push Live label down under FAB
+                isCenter && "pt-4", // keep space for FAB while still showing the icon
                 isActive ? "text-accent" : "text-gray-400"
               )}
             >
-              {!isCenter && (
-                <>
-                  <div className="relative">
-                    <Icon className={cn("w-6 h-6 transition-all", isActive ? "stroke-[2.5]" : "stroke-[1.5]")} />
-                    {/* Dot indicator */}
-                    {isActive && (
-                      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-accent rounded-full" />
-                    )}
-                  </div>
-                  <span className={cn("text-[10px] font-semibold leading-tight", isActive ? "opacity-100" : "opacity-60")}>
-                    {tab.label}
-                  </span>
-                </>
-              )}
-              {isCenter && (
-                <>
-                  {/* Empty space where FAB sits, just the label */}
-                  <span className={cn("text-[10px] font-semibold leading-tight mt-1", isActive ? "opacity-100 text-accent" : "opacity-60 text-gray-400")}>
-                    {tab.label}
-                  </span>
-                </>
-              )}
+              <div className={cn("relative", isCenter && "mt-1")}>
+                <Icon className={cn(isCenter ? "w-5 h-5" : "w-6 h-6", "transition-all", isActive ? "stroke-[2.5]" : "stroke-[1.5]")} />
+                {isActive && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-accent rounded-full" />
+                )}
+              </div>
+              <span className={cn("text-[10px] font-semibold leading-tight", isActive ? "opacity-100" : "opacity-60")}>
+                {tab.label}
+              </span>
             </button>
           );
         })}
