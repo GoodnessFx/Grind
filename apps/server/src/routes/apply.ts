@@ -12,13 +12,16 @@ const applySchema = z.object({
   socialLinks: z.string().max(500).trim().optional().default(''),
 });
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const getTransporter = () => {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) return null;
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+};
 
 router.post(
   '/apply',
@@ -42,10 +45,11 @@ router.post(
     };
 
     try {
-      if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      const transporter = getTransporter();
+      if (transporter) {
         await transporter.sendMail(mailOptions);
       } else {
-        // Log to console in dev when email env vars aren't set
+        // Log to console in dev/demo mode when email env vars aren't set
         console.log('Creator application (email not configured):', { studentName, schoolEmail });
       }
 

@@ -10,7 +10,7 @@ import http from 'http';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 8080;
 
 app.use(cors());
 app.use(express.json());
@@ -28,7 +28,10 @@ app.get(['/health', '/healthcheck', '/ping'], (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Serve frontend in production if built
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Root health OK' });
+});
+
 const webDistPath = path.resolve(__dirname, '../../web/dist');
 if (fs.existsSync(webDistPath)) {
   app.use(express.static(webDistPath));
@@ -42,7 +45,6 @@ const server = http.createServer(app);
 // Initialize Socket.io for real‑time chat
 initChat(server);
 
-const PORT = Number(process.env.PORT) || 3001;
 const HOST = '0.0.0.0';
 
 server.listen(PORT, HOST, () => {

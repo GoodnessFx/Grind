@@ -10,6 +10,7 @@
     "build": "pnpm --filter web build && pnpm --filter server build",
     "build:web": "pnpm --filter web build",
     "build:server": "pnpm --filter server build",
+    "postinstall": "pnpm build",
     "start": "node server.js"
   }
 }
