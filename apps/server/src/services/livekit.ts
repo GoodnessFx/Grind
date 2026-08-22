@@ -18,9 +18,15 @@ const roomService = livekitHost
 
 export const LivekitRoomService = {
   async createRoom({ title, creatorId }: { title: string; creatorId: string }) {
-    if (!roomService) throw new Error('LiveKit is not configured');
+    const roomName = `room-${creatorId.slice(0, 8)}-${Date.now()}`;
+    if (!roomService || !apiKey || !apiSecret) {
+      // Demo / offline mode fallback
+      return {
+        name: roomName,
+        token: `demo-creator-token-${Date.now()}`
+      };
+    }
 
-    const roomName = `${creatorId}-${Date.now()}`;
     const room = await roomService.createRoom({
       name: roomName,
       emptyTimeout: 300,
@@ -38,7 +44,10 @@ export const LivekitRoomService = {
   },
 
   async generateToken({ roomId, userId }: { roomId: string; userId: string }) {
-    if (!apiKey || !apiSecret) throw new Error('LiveKit is not configured');
+    if (!apiKey || !apiSecret) {
+      // Demo / offline mode fallback
+      return { token: `demo-viewer-token-${userId}-${Date.now()}` };
+    }
 
     const token = new AccessToken(apiKey, apiSecret, {
       identity: userId,
