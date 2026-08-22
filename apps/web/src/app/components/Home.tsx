@@ -14,6 +14,7 @@ interface HomeProps {
   onPostTask: () => void;
   onTaskClick: (taskId: number) => void;
   onUpdateUser: (updates: Partial<UserData>) => void;
+  onGoLive: () => void;
 }
 
 const FEATURED_GIGS = [
@@ -41,14 +42,14 @@ const tierColors: Record<string, string> = {
   DIAMOND: "#0BA5EC",
 };
 
-export function Home({ user, onNavigate, onPostTask, onTaskClick, onUpdateUser }: HomeProps) {
+export function Home({ user, onNavigate, onPostTask, onTaskClick, onUpdateUser, onGoLive }: HomeProps) {
   const [balanceHidden, setBalanceHidden] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const unreadCount = user.notifications?.filter((n) => !n.read).length ?? 0;
 
   const handleQuickAction = (id: string) => {
     if (id === "gigs") onNavigate("gigs");
-    else if (id === "live") onNavigate("live");
+    else if (id === "live") onGoLive();
     else if (id === "wallet") onNavigate("wallet");
     else if (id === "refer") {
       const link = `https://grind.market/ref/${user.handle.replace("@", "")}`;

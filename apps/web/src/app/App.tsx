@@ -10,6 +10,7 @@ import { Wallet } from "./components/Wallet";
 import { Profile } from "./components/Profile";
 import { Settings } from "./components/Settings";
 import { DiscoveryFeed } from "./components/DiscoveryFeed";
+import { LiveStream } from "./components/LiveStream";
 import { BottomNav } from "./components/BottomNav";
 import { PublicGigEntry, PublicReferralEntry } from "./components/PublicEntry";
 
@@ -66,7 +67,8 @@ type Screen =
   | { name: "main"; tab: Tab }
   | { name: "task-detail"; taskId: number }
   | { name: "post-task" }
-  | { name: "settings" };
+  | { name: "settings" }
+  | { name: "live" };
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: "splash" });
@@ -188,6 +190,10 @@ export default function App() {
     setScreen({ name: "settings" });
   }, []);
 
+  const openLive = useCallback(() => {
+    setScreen({ name: "live" });
+  }, []);
+
   const openTaskDetail = useCallback((taskId: number) => {
     setScreen({ name: "task-detail", taskId });
   }, []);
@@ -259,6 +265,20 @@ export default function App() {
     );
   }
 
+  // ── Live Stream ─────────────────────────────────────────────────────────────
+  if (screen.name === "live") {
+    return (
+      <div className="h-full bg-white overflow-y-auto">
+        <Toaster position="top-center" richColors />
+        <LiveStream
+          user={user}
+          onUpdateUser={updateUser}
+          onBack={() => setScreen({ name: "main", tab: "home" })}
+        />
+      </div>
+    );
+  }
+
   // ── Task Detail ─────────────────────────────────────────────────────────────
   if (screen.name === "task-detail") {
     return (
@@ -289,6 +309,7 @@ export default function App() {
             onPostTask={openPostTask}
             onTaskClick={openTaskDetail}
             onUpdateUser={updateUser}
+            onGoLive={openLive}
           />
         )}
         {tab === "gigs" && (

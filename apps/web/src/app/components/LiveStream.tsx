@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Tv2, Users, Heart, Send, Gift, Eye, Mic, MicOff,
   Video, VideoOff, X, Plus, ChevronLeft, Radio,
-  Crown, Star, Flame, Zap, ThumbsUp
+  Crown, Star, Flame, Zap, ThumbsUp, Monitor, MonitorOff, AlertCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "../../lib/utils";
@@ -11,6 +11,7 @@ import type { UserData } from "../App";
 interface LiveStreamProps {
   user: UserData;
   onUpdateUser: (updates: Partial<UserData>) => void;
+  onBack: () => void;
 }
 
 interface Stream {
@@ -30,7 +31,6 @@ interface ChatMessage {
   text: string;
   color: string;
   badge?: string;
-  // future: replies could be added here
 }
 
 const MOCK_STREAMS: Stream[] = [
@@ -63,7 +63,7 @@ const tierColors: Record<string, string> = {
   STARTER: "#98A2B3", BRONZE: "#CD7F32", GOLD: "#F79009", DIAMOND: "#0BA5EC",
 };
 
-export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
+export function LiveStream({ user, onUpdateUser, onBack }: LiveStreamProps) {
   const [view, setView] = useState<"browse" | "watch" | "go-live">("browse");
   const [activeStream, setActiveStream] = useState<Stream | null>(null);
   const [filter, setFilter] = useState("All");
@@ -78,13 +78,119 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
   const [liveCategory, setLiveCategory] = useState("Talk");
   const [isStreaming, setIsStreaming] = useState(false);
   const [liveSeconds, setLiveSeconds] = useState(0);
-  // Stream like count
   const [streamLikes, setStreamLikes] = useState(0);
-  // Reply handling
   const [replyTargetId, setReplyTargetId] = useState<number | null>(null);
   const [replyText, setReplyText] = useState("");
+
+  const [isScreenShare, setIsScreenShare] = useState(false);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
+
   const chatRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
+  const previewVideoRef = useRef<HTMLVideoElement>(null);
+  const liveVideoRef = useRef<HTMLVideoElement>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+
+  // Start camera / screen + mic with graceful permission handling
+  const startMedia = useCallback(async (shareScreen = isScreenShare) => {
+    try {
+      setPermissionError(null);
+      // Stop any existing stream first
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+      }
+
+      let stream: MediaStream;
+      if (shareScreen) {
+        if (!navigator.mediaDevices?.getDisplayMedia) {
+          toast.error("Screen sharing is not supported on this browser.");
+          return;
+        }
+        stream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: isMicOn,
+        });
+
+        // If user stops sharing from browser UI
+        stream.getVideoTracks()[0].onended = () => {
+          setIsScreenShare(false);
+          startMedia(false);
+        };
+      } else {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: isCamOn ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" } : false,
+          audio: isMicOn,
+        });
+      }
+
+      mediaStreamRef.current = stream;
+
+      if (previewVideoRef.current) {
+        previewVideoRef.current.srcObject = stream;
+      }
+      if (liveVideoRef.current) {
+        liveVideoRef.current.srcObject = stream;
+      }
+    } catch (err: any) {
+      console.error("Camera/mic/screen access error:", err);
+      let errorMsg = "Could not access device camera or microphone.";
+      if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+        errorMsg = "Camera/Microphone permission was denied. Please allow camera and mic permissions in your browser URL bar.";
+      } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
+        errorMsg = "No camera or microphone device found on this system.";
+      }
+      setPermissionError(errorMsg);
+      toast.error(errorMsg);
+    }
+  }, [isCamOn, isMicOn, isScreenShare]);
+
+  // Stop all tracks
+  const stopMedia = useCallback(() => {
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+      mediaStreamRef.current = null;
+    }
+  }, []);
+
+  // Start camera when entering go-live or streaming
+  useEffect(() => {
+    if (view === "go-live") {
+      startMedia();
+    }
+    return () => {
+      // Only stop if leaving go-live and not streaming
+      if (view === "go-live" && !isStreaming) {
+        stopMedia();
+      }
+    };
+  }, [view, startMedia, stopMedia, isStreaming]);
+
+  // Toggle camera track on/off
+  useEffect(() => {
+    const stream = mediaStreamRef.current;
+    if (!stream) return;
+    const videoTrack = stream.getVideoTracks()[0];
+    if (videoTrack) videoTrack.enabled = isCamOn;
+  }, [isCamOn]);
+
+  // Toggle mic track on/off
+  useEffect(() => {
+    const stream = mediaStreamRef.current;
+    if (!stream) return;
+    const audioTrack = stream.getAudioTracks()[0];
+    if (audioTrack) audioTrack.enabled = isMicOn;
+  }, [isMicOn]);
+
+  // Re-attach stream when switching between preview and live video elements
+  useEffect(() => {
+    if (mediaStreamRef.current) {
+      if (isStreaming && liveVideoRef.current) {
+        liveVideoRef.current.srcObject = mediaStreamRef.current;
+      } else if (!isStreaming && previewVideoRef.current) {
+        previewVideoRef.current.srcObject = mediaStreamRef.current;
+      }
+    }
+  }, [isStreaming]);
 
   // Simulated viewer count fluctuation
   useEffect(() => {
@@ -189,16 +295,30 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
     onUpdateUser({ isCreator: true });
   };
 
+  const handleEndStream = () => {
+    setIsStreaming(false);
+    setLiveSeconds(0);
+    stopMedia();
+    toast.success("Stream ended. Great session!");
+    setView("browse");
+  };
+
   const filtered = MOCK_STREAMS.filter((s) => filter === "All" || s.category === filter);
 
+  // ── Browse ─────────────────────────────────────────────────────
   if (view === "browse") {
     return (
       <div className="pb-28">
         <div className="bg-white px-5 pt-12 pb-4">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-extrabold text-gray-900">Live</h2>
-              <p className="text-xs text-gray-500">{MOCK_STREAMS.filter((s) => s.isLive).length} streams live now</p>
+            <div className="flex items-center gap-3">
+              <button onClick={onBack} className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
+                <ChevronLeft className="w-5 h-5 text-gray-700" />
+              </button>
+              <div>
+                <h2 className="text-xl font-extrabold text-gray-900">Live</h2>
+                <p className="text-xs text-gray-500">{MOCK_STREAMS.filter((s) => s.isLive).length} streams live now</p>
+              </div>
             </div>
             <button
               onClick={() => setView("go-live")}
@@ -225,6 +345,7 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
           </div>
         </div>
 
+        {/* Featured stream */}
         {filtered[0] && (
           <div className="px-4 mt-4 mb-4">
             <button
@@ -256,6 +377,7 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
           </div>
         )}
 
+        {/* All streams grid */}
         <div className="px-4">
           <h3 className="text-sm font-bold text-gray-700 mb-3">All Streams</h3>
           <div className="space-y-3">
@@ -294,9 +416,11 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
     );
   }
 
+  // ── Watch ──────────────────────────────────────────────────────
   if (view === "watch" && activeStream) {
     return (
       <div className="h-full flex flex-col bg-black">
+        {/* Video area */}
         <div className="relative bg-gradient-to-br from-gray-900 via-accent/20 to-gray-900 flex-shrink-0" style={{ height: "45%" }}>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center">
@@ -304,6 +428,7 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
             </div>
           </div>
 
+          {/* Overlay controls */}
           <div className="absolute top-12 left-4 right-4 flex items-center justify-between">
             <button onClick={() => setView("browse")} className="w-9 h-9 bg-black/40 rounded-full flex items-center justify-center">
               <ChevronLeft className="w-5 h-5 text-white" />
@@ -316,12 +441,13 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
               <div className="flex items-center gap-1 bg-black/40 px-2.5 py-1 rounded-full text-white text-xs">
                 <Eye className="w-3 h-3" /> {viewers.toLocaleString()}
               </div>
-              <button onClick={() => setStreamLikes((c) => c + 1)} className="flex items-center gap-1 bg-black/40 px-2.5 py-1 rounded-full text-white text-xs">
+              <button onClick={() => setStreamLikes((c) => c + 1)} className="flex items-center gap-1 bg-black/40 px-2.5 py-1 rounded-full text-white text-xs active:scale-95 transition-transform">
                 <ThumbsUp className="w-3 h-3" /> {streamLikes}
               </button>
             </div>
           </div>
 
+          {/* Stream info */}
           <div className="absolute bottom-4 left-4 right-4">
             <p className="text-white font-bold text-sm line-clamp-1 mb-1">{activeStream.title}</p>
             <div className="flex items-center gap-2">
@@ -343,6 +469,7 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
           )}
         </div>
 
+        {/* Chat area */}
         <div className="flex-1 flex flex-col min-h-0 bg-gray-950">
           <div ref={chatRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
             {messages.map((msg) => (
@@ -354,12 +481,19 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
                   )}:
                 </span>
                 <span className="text-white/80 text-xs">{msg.text}</span>
-                <button onClick={() => setReplyTargetId(msg.id)} className="ml-2 text-xs text-accent hover:underline">Reply</button>
+                <button onClick={() => setReplyTargetId(msg.id)} className="ml-2 text-xs text-accent hover:underline shrink-0">Reply</button>
               </div>
             ))}
           </div>
 
+          {/* Chat input */}
           <div className="px-4 py-3 pb-safe flex flex-col border-t border-white/10">
+            {replyTargetId !== null && (
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] text-white/50">Replying to {messages.find(m => m.id === replyTargetId)?.user}</span>
+                <button onClick={() => setReplyTargetId(null)} className="text-xs text-red-400 ml-auto">Cancel</button>
+              </div>
+            )}
             {replyTargetId !== null && (
               <div className="flex items-center gap-2 mb-2">
                 <input
@@ -367,12 +501,13 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
                   placeholder="Reply..."
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
-                  className="flex-1 h-8 px-2 bg-white/10 text-white placeholder-white/40 rounded-md text-sm border-none focus:outline-none"
+                  className="flex-1 h-8 px-3 bg-white/10 text-white placeholder-white/40 rounded-xl text-sm border-none focus:outline-none"
                   onKeyDown={(e) => e.key === "Enter" && handleSendReply(messages.find(m => m.id === replyTargetId)?.user || "")}
+                  autoFocus
                 />
                 <button
                   onClick={() => handleSendReply(messages.find(m => m.id === replyTargetId)?.user || "")}
-                  className="px-3 py-1 bg-accent text-white rounded-md text-xs font-bold"
+                  className="px-3 py-1.5 bg-accent text-white rounded-xl text-xs font-bold"
                 >
                   Send
                 </button>
@@ -380,7 +515,7 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
             )}
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setHeartBurst(true)}
+                onClick={() => { setHeartBurst(true); setTimeout(() => setHeartBurst(false), 1000); }}
                 className="w-10 h-10 flex items-center justify-center text-xl active:scale-90 transition-transform"
               >
                 ❤️
@@ -409,6 +544,7 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
           </div>
         </div>
 
+        {/* Gift panel */}
         {showGifts && (
           <div className="fixed inset-0 z-50 flex flex-col justify-end">
             <div className="absolute inset-0 bg-black/60" onClick={() => setShowGifts(false)} />
@@ -440,11 +576,12 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
     );
   }
 
+  // ── Go Live ────────────────────────────────────────────────────
   return (
     <div className="h-full flex flex-col bg-white">
       <div className="px-5 pt-12 pb-4 border-b border-gray-100">
         <div className="flex items-center gap-3">
-          <button onClick={() => setView("browse")} className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
+          <button onClick={() => { if (isStreaming) { handleEndStream(); } else { stopMedia(); setView("browse"); } }} className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
             <ChevronLeft className="w-5 h-5 text-gray-700" />
           </button>
           <h2 className="font-bold text-gray-900">{isStreaming ? "You're Live 🔴" : "Start Streaming"}</h2>
@@ -453,14 +590,21 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
 
       {isStreaming ? (
         <div className="flex-1 flex flex-col">
+          {/* Live camera feed */}
           <div className="bg-gray-900 flex-shrink-0 relative" style={{ height: "40%" }}>
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-0">
               {isCamOn ? (
-                <div className="w-24 h-24 bg-accent/20 rounded-full flex items-center justify-center text-4xl font-bold text-accent">
-                  {user.userName[0]}
-                </div>
+                <video
+                  ref={liveVideoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                <VideoOff className="w-12 h-12 text-white/30" />
+                <div className="w-full h-full flex items-center justify-center">
+                  <VideoOff className="w-12 h-12 text-white/30" />
+                </div>
               )}
             </div>
             <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
@@ -475,9 +619,10 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
             </div>
           </div>
 
+          {/* Live controls */}
           <div className="px-5 py-5 border-t border-gray-100">
             <p className="font-bold text-gray-900 text-sm mb-1">{liveTitle}</p>
-            <p className="text-xs text-gray-500 mb-5">{liveCategory} • You are live</p>
+            <p className="text-xs text-gray-500 mb-5">{liveCategory} • You are broadcasting live to all connected users</p>
             <div className="flex justify-around">
               <button
                 onClick={() => setIsMicOn((v) => !v)}
@@ -495,11 +640,17 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
               </button>
               <button
                 onClick={() => {
-                  setIsStreaming(false);
-                  setLiveSeconds(0);
-                  toast.success("Stream ended. Great session!");
-                  setView("browse");
+                  const nextScreen = !isScreenShare;
+                  setIsScreenShare(nextScreen);
+                  startMedia(nextScreen);
                 }}
+                className={cn("flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all", isScreenShare ? "bg-accent/10 text-accent" : "bg-gray-100 text-gray-700")}
+              >
+                {isScreenShare ? <Monitor className="w-6 h-6 text-accent" /> : <Monitor className="w-6 h-6 text-gray-700" />}
+                <span className="text-[10px] font-medium">{isScreenShare ? "Sharing Screen" : "Share Screen"}</span>
+              </button>
+              <button
+                onClick={handleEndStream}
                 className="flex flex-col items-center gap-1.5 p-3 bg-red-50 rounded-2xl"
               >
                 <X className="w-6 h-6 text-red-500" />
@@ -510,23 +661,75 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto px-5 py-6 space-y-5">
-          <div className="bg-gray-900 rounded-3xl h-44 flex flex-col items-center justify-center gap-3">
-            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center">
-              {isCamOn
-                ? <span className="text-3xl font-bold text-white">{user.userName[0]}</span>
-                : <VideoOff className="w-8 h-8 text-white/40" />
-              }
+          {permissionError && (
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-bold text-red-800 mb-1">Permissions Needed</p>
+                <p className="text-xs text-red-700 leading-relaxed">{permissionError}</p>
+                <button
+                  onClick={() => startMedia(isScreenShare)}
+                  className="mt-2 text-xs font-bold text-red-800 underline"
+                >
+                  Retry Access
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <button onClick={() => setIsMicOn((v) => !v)} className={cn("w-10 h-10 rounded-full flex items-center justify-center", isMicOn ? "bg-white/20" : "bg-red-500/80")}>
-                {isMicOn ? <Mic className="w-4 h-4 text-white" /> : <MicOff className="w-4 h-4 text-white" />}
+          )}
+
+          {/* Camera / Screen preview — real feed */}
+          <div className="bg-gray-900 rounded-3xl h-52 overflow-hidden relative shadow-inner">
+            {isCamOn || isScreenShare ? (
+              <video
+                ref={previewVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+                <VideoOff className="w-8 h-8 text-white/40" />
+                <span className="text-white/40 text-xs">Camera / Screen preview off</span>
+              </div>
+            )}
+            {/* Cam/Mic/Screen toggle overlay */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/50 backdrop-blur-md p-1.5 rounded-full">
+              <button
+                onClick={() => setIsMicOn((v) => !v)}
+                title="Toggle Mic"
+                className={cn("w-10 h-10 rounded-full flex items-center justify-center transition-all", isMicOn ? "bg-white/20 text-white" : "bg-red-500 text-white")}
+              >
+                {isMicOn ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
               </button>
-              <button onClick={() => setIsCamOn((v) => !v)} className={cn("w-10 h-10 rounded-full flex items-center justify-center", isCamOn ? "bg-white/20" : "bg-red-500/80")}>
-                {isCamOn ? <Video className="w-4 h-4 text-white" /> : <VideoOff className="w-4 h-4 text-white" />}
+              <button
+                onClick={() => {
+                  setIsCamOn((v) => !v);
+                  if (isScreenShare) {
+                    setIsScreenShare(false);
+                    startMedia(false);
+                  }
+                }}
+                title="Toggle Camera"
+                className={cn("w-10 h-10 rounded-full flex items-center justify-center transition-all", isCamOn && !isScreenShare ? "bg-white/20 text-white" : "bg-red-500 text-white")}
+              >
+                {isCamOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
+              </button>
+              <button
+                onClick={() => {
+                  const nextScreen = !isScreenShare;
+                  setIsScreenShare(nextScreen);
+                  startMedia(nextScreen);
+                }}
+                title="Share Screen to show what you are building"
+                className={cn("w-10 h-10 rounded-full flex items-center justify-center transition-all", isScreenShare ? "bg-accent text-white" : "bg-white/20 text-white")}
+              >
+                <Monitor className="w-4 h-4" />
               </button>
             </div>
           </div>
 
+          {/* Stream title */}
           <div>
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">Stream Title *</label>
             <input
@@ -538,6 +741,7 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
             />
           </div>
 
+          {/* Category */}
           <div>
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">Category</label>
             <div className="grid grid-cols-3 gap-2">
@@ -556,6 +760,7 @@ export function LiveStream({ user, onUpdateUser }: LiveStreamProps) {
             </div>
           </div>
 
+          {/* Creator tip */}
           {!user.isCreator && (
             <div className="bg-yellow-50 border border-yellow-100 rounded-2xl p-4 flex items-start gap-3">
               <Crown className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
