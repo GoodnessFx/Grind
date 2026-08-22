@@ -1,359 +1,361 @@
 import React, { useState } from "react";
-import { 
-  Settings, Share2, TrendingUp, LogOut, Camera, Edit2, 
-  Check, Download, History, X as CloseIcon, 
-  Star, Shield, Briefcase, Clock, AlertCircle, Sparkles,
-  ArrowUpRight, ExternalLink
+import {
+  Settings, Share2, TrendingUp, LogOut, Camera, Edit2,
+  Check, Download, History, X as CloseIcon,
+  Star, Shield, Briefcase, ChevronRight,
+  Crown, Clock, Users
 } from "lucide-react";
-import { Button } from "./Button";
 import { toast } from "sonner";
 import { cn } from "../../lib/utils";
+import type { UserData } from "../App";
 
 interface ProfileProps {
-  userName: string;
-  handle: string;
-  school: string;
-  level: string;
-  score: number;
-  tier: "STARTER" | "BRONZE" | "GOLD" | "DIAMOND";
+  user: UserData;
   onLogout?: () => void;
-  onUpdate?: (updates: any) => void;
+  onUpdate?: (updates: Partial<UserData>) => void;
+  onOpenSettings?: () => void;
 }
 
-const tierColors = {
+const tierColors: Record<string, string> = {
   STARTER: "#98A2B3",
-  BRONZE: "#F79009",
-  GOLD: "#6C63FF",
+  BRONZE: "#CD7F32",
+  GOLD: "#F79009",
   DIAMOND: "#0BA5EC",
 };
 
-const skills = ["Writing", "Design", "Research", "Tutoring"];
+const tierBg: Record<string, string> = {
+  STARTER: "bg-gray-100 text-gray-500",
+  BRONZE: "bg-orange-50 text-orange-500",
+  GOLD: "bg-yellow-50 text-yellow-600",
+  DIAMOND: "bg-blue-50 text-blue-500",
+};
 
-const recentActivity = [
-  { title: "Business Law Essay", date: "2 days ago", amount: 3500, type: "earn" },
-  { title: "Event Flyer Design", date: "5 days ago", amount: 5000, type: "earn" },
-  { title: "Calculus Tutoring", date: "1 week ago", amount: 8500, type: "earn" },
-];
-
-export function Profile({
-  userName,
-  handle,
-  school,
-  level,
-  score,
-  tier,
-  onLogout,
-  onUpdate,
-}: ProfileProps) {
+export function Profile({ user, onLogout, onUpdate, onOpenSettings }: ProfileProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedName, setEditedName] = useState(userName);
-  const [editedLevel, setEditedLevel] = useState(level);
+  const [editedName, setEditedName] = useState(user.userName);
+  const [editedBio, setEditedBio] = useState(user.bio ?? "");
   const [showHistory, setShowHistory] = useState(false);
-  const [showGrowthStats, setShowGrowthStats] = useState(false);
+  const [showStats, setShowStats] = useState(false);
 
   const handleSave = () => {
-    onUpdate?.({ userName: editedName, level: editedLevel });
+    onUpdate?.({ userName: editedName, bio: editedBio });
     setIsEditing(false);
-    toast.success("Profile updated successfully!");
-  };
-
-  const handleImageUpload = () => {
-    toast.info("Image upload starting...");
-    setTimeout(() => {
-      toast.success("Profile picture updated!");
-    }, 1000);
+    toast.success("Profile updated!");
   };
 
   const handleShare = () => {
-    const refLink = `https://oui.market/ref/${handle.replace("@", "")}`;
-    navigator.clipboard.writeText(refLink);
-    toast.success("Referral link copied to clipboard!");
+    const link = `https://grind.market/ref/${user.handle.replace("@", "")}`;
+    navigator.clipboard.writeText(link);
+    toast.success("Referral link copied!");
   };
 
+  const totalEarned = user.transactions
+    .filter((t) => (t.type === "earn" || t.amount > 0) && t.amount > 0)
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const tierNext: Record<string, string> = {
+    STARTER: "BRONZE",
+    BRONZE: "GOLD",
+    GOLD: "DIAMOND",
+    DIAMOND: "MAX",
+  };
+  const tierThresholds: Record<string, number> = {
+    STARTER: 400,
+    BRONZE: 600,
+    GOLD: 800,
+    DIAMOND: 1000,
+  };
+  const nextTier = tierNext[user.tier] ?? "MAX";
+  const nextThreshold = tierThresholds[user.tier] ?? 1000;
+  const tierProgress = Math.min((user.score / nextThreshold) * 100, 100);
+
   return (
-    <div className="pb-32 px-4 max-w-[600px] mx-auto">
-      <div className="pt-6 pb-6 flex items-center justify-between sticky top-0 bg-grind-neutral-50 z-20">
-        <h2 className="text-2xl font-black text-grind-neutral-900 tracking-tight">Profile</h2>
+    <div className="pb-28">
+      {/* ── Top bar ────────────────────────────────────────── */}
+      <div className="bg-white px-5 pt-12 pb-4 flex items-center justify-between">
+        <h2 className="text-xl font-extrabold text-gray-900">Profile</h2>
         <div className="flex items-center gap-2">
-          <button onClick={handleShare} className="p-2.5 bg-white border border-grind-neutral-100 rounded-xl shadow-sm hover:bg-grind-neutral-50 transition-colors">
-            <Share2 className="w-5 h-5 text-grind-neutral-700" />
-          </button>
-          <button onClick={onLogout} className="p-2.5 bg-white border border-grind-neutral-100 rounded-xl shadow-sm hover:text-grind-warning transition-colors">
-            <LogOut className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
-      {/* GrindScore Header Card */}
-      <div className="bg-primary text-white rounded-[40px] p-8 mb-8 relative overflow-hidden shadow-2xl">
-        <div className="relative z-10">
-          <div className="flex items-center gap-8 mb-8">
-            <div className="relative">
-              <svg className="w-24 h-24 transform -rotate-90">
-                <circle cx="48" cy="48" r="42" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8" />
-                <circle
-                  cx="48"
-                  cy="48"
-                  r="42"
-                  fill="none"
-                  stroke={tierColors[tier]}
-                  strokeWidth="8"
-                  strokeDasharray={`${(score / 1000) * 264} 264`}
-                  strokeLinecap="round"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-3xl font-black">{score}</span>
-              </div>
-            </div>
-            <div className="flex-1">
-              <p className="text-xs opacity-70 uppercase tracking-widest font-bold mb-1">Your GrindScore</p>
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: tierColors[tier] }} />
-                <span className="text-xl font-black tracking-tight">{tier}</span>
-                <Sparkles className="w-4 h-4 text-accent fill-accent" />
-              </div>
-              <p className="text-sm font-medium opacity-80 italic">Top 15% on campus</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-4 gap-4 pt-6 border-t border-white/10">
-            <div className="text-center">
-              <p className="text-xl font-black">34</p>
-              <p className="text-[10px] font-bold opacity-60 uppercase tracking-wider">Tasks</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xl font-black">98%</p>
-              <p className="text-[10px] font-bold opacity-60 uppercase tracking-wider">On-time</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xl font-black">4.8</p>
-              <p className="text-[10px] font-bold opacity-60 uppercase tracking-wider">Rating</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xl font-black text-grind-warning">0</p>
-              <p className="text-[10px] font-bold opacity-60 uppercase tracking-wider">Disputes</p>
-            </div>
-          </div>
-        </div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-accent/20 rounded-full -mr-32 -mt-32 blur-3xl" />
-      </div>
-
-      {/* Skills Section */}
-      <div className="mb-8">
-        <h3 className="font-black text-sm uppercase tracking-widest text-grind-neutral-400 mb-4">Core Skills</h3>
-        <div className="flex flex-wrap gap-2">
-          {skills.map((skill) => (
-            <span
-              key={skill}
-              className="px-6 py-2.5 bg-white border border-grind-neutral-100 rounded-2xl text-sm font-bold text-grind-neutral-700 shadow-sm hover:border-accent transition-all"
-            >
-              {skill}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Credential Share Card */}
-      <div className="bg-accent/5 border-2 border-accent/10 rounded-[32px] p-6 mb-8 relative group">
-        <div className="flex items-start gap-4 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
-            <Share2 className="w-6 h-6" />
-          </div>
-          <div>
-            <h4 className="font-black text-primary mb-1">Share your GrindScore as a credential</h4>
-            <p className="text-xs text-grind-neutral-500 leading-relaxed">
-              Employers, landlords, and scholarship bodies can verify your on-chain profile.
-            </p>
-          </div>
-        </div>
-        <button 
-          onClick={handleShare}
-          className="w-full bg-white border border-grind-neutral-100 py-4 rounded-2xl font-black text-sm text-primary hover:border-accent transition-all flex items-center justify-center gap-2 shadow-sm"
-        >
-          Generate credential link <ArrowUpRight className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Profile Info Section */}
-      <div className="bg-white border border-grind-neutral-100 rounded-[32px] p-8 mb-8 shadow-sm">
-        <div className="relative w-32 h-32 mx-auto mb-6 group">
-          <div className="w-full h-full bg-gradient-to-br from-accent to-grind-tier-diamond rounded-[40px] flex items-center justify-center text-4xl font-black text-white shadow-xl rotate-3 transition-transform group-hover:rotate-0">
-            {userName[0]}
-          </div>
-          <button 
-            onClick={handleImageUpload}
-            className="absolute -bottom-2 -right-2 p-3 bg-white rounded-2xl shadow-lg border border-grind-neutral-100 text-accent hover:scale-110 transition-transform"
+          <button
+            onClick={handleShare}
+            className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center"
           >
-            <Camera className="w-5 h-5" />
+            <Share2 className="w-4 h-4 text-gray-600" />
+          </button>
+          <button
+            onClick={onOpenSettings}
+            className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center"
+          >
+            <Settings className="w-4 h-4 text-gray-600" />
           </button>
         </div>
+      </div>
 
-        {isEditing ? (
-          <div className="space-y-4">
-            <input 
-              value={editedName}
-              onChange={(e) => setEditedName(e.target.value)}
-              className="w-full px-6 py-4 bg-grind-neutral-50 border border-grind-neutral-100 rounded-2xl text-center font-black text-xl focus:outline-none focus:ring-2 focus:ring-accent"
-              placeholder="Full Name"
-            />
-            <input 
-              value={editedLevel}
-              onChange={(e) => setEditedLevel(e.target.value)}
-              className="w-full px-6 py-4 bg-grind-neutral-50 border border-grind-neutral-100 rounded-2xl text-center text-sm font-bold focus:outline-none focus:ring-2 focus:ring-accent"
-              placeholder="Level (e.g. 300L)"
-            />
-            <Button onClick={handleSave} className="w-full h-14 font-black">
-              <Check className="w-5 h-5 mr-2" /> SAVE CHANGES
-            </Button>
-          </div>
-        ) : (
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <h3 className="font-black text-3xl text-grind-neutral-900 tracking-tight">{userName}</h3>
-              <button onClick={() => setIsEditing(true)} className="p-1.5 hover:bg-grind-neutral-100 rounded-lg text-grind-neutral-400">
-                <Edit2 className="w-4 h-4" />
+      {/* ── Avatar + name card ─────────────────────────────── */}
+      <div className="px-4 mb-4">
+        <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
+          <div className="flex items-start gap-4">
+            {/* Avatar */}
+            <div className="relative">
+              <div className="w-20 h-20 rounded-3xl bg-accent flex items-center justify-center text-white text-3xl font-extrabold shadow-lg">
+                {user.userName?.[0]?.toUpperCase() ?? "G"}
+              </div>
+              <button
+                onClick={() => toast.info("Camera access needed to change photo")}
+                className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full border-2 border-gray-100 flex items-center justify-center shadow-md"
+              >
+                <Camera className="w-3.5 h-3.5 text-gray-600" />
               </button>
             </div>
-            <p className="text-sm font-black text-accent mb-2 uppercase tracking-widest">{handle}</p>
-            <p className="text-sm text-grind-neutral-500 font-bold">
-              {school} • {level}
-            </p>
-          </div>
-        )}
-      </div>
 
-      {/* Action List */}
-      <div className="space-y-4 mb-8">
-        <button 
-          onClick={() => setShowGrowthStats(true)}
-          className="w-full bg-white border border-grind-neutral-100 p-6 rounded-3xl flex items-center justify-between group hover:border-accent transition-all shadow-sm"
-        >
-          <div className="flex items-center gap-5">
-            <div className="w-12 h-12 rounded-2xl bg-grind-warning/10 flex items-center justify-center text-grind-warning transition-transform group-hover:scale-110">
-              <TrendingUp className="w-6 h-6" />
-            </div>
-            <div className="text-left">
-              <span className="font-black text-grind-neutral-900 block">Growth Stats</span>
-              <span className="text-[10px] font-bold text-grind-success uppercase">+12% performance boost</span>
-            </div>
-          </div>
-          <ExternalLink className="w-5 h-5 text-grind-neutral-300 group-hover:text-accent transition-all" />
-        </button>
-
-        <button 
-          onClick={() => setShowHistory(true)}
-          className="w-full bg-white border border-grind-neutral-100 p-6 rounded-3xl flex items-center justify-between group hover:border-accent transition-all shadow-sm"
-        >
-          <div className="flex items-center gap-5">
-            <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent transition-transform group-hover:scale-110">
-              <History className="w-6 h-6" />
-            </div>
-            <div className="text-left">
-              <span className="font-black text-grind-neutral-900 block">Work History</span>
-              <span className="text-[10px] font-bold text-grind-neutral-400 uppercase">34 tasks completed</span>
-            </div>
-          </div>
-          <ExternalLink className="w-5 h-5 text-grind-neutral-300 group-hover:text-accent transition-all" />
-        </button>
-      </div>
-
-      {/* Recent Activity List */}
-      <div className="mb-8">
-        <h3 className="font-black text-sm uppercase tracking-widest text-grind-neutral-400 mb-4">Recent Activity</h3>
-        <div className="space-y-4">
-          {recentActivity.map((activity, index) => (
-            <div key={index} className="flex items-center justify-between p-5 bg-white border border-grind-neutral-100 rounded-[24px] hover:shadow-md transition-all group">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-grind-success/10 flex items-center justify-center text-grind-success group-hover:scale-110 transition-transform">
-                  <TrendingUp className="w-6 h-6" />
+            {/* Name + details */}
+            <div className="flex-1 min-w-0">
+              {isEditing ? (
+                <div className="space-y-2">
+                  <input
+                    value={editedName}
+                    onChange={(e) => setEditedName(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-accent/20"
+                    placeholder="Full name"
+                  />
+                  <textarea
+                    value={editedBio}
+                    onChange={(e) => setEditedBio(e.target.value)}
+                    rows={2}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs resize-none focus:outline-none focus:ring-2 focus:ring-accent/20"
+                    placeholder="Short bio..."
+                  />
+                  <div className="flex gap-2">
+                    <button onClick={handleSave} className="flex-1 bg-accent text-white py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1">
+                      <Check className="w-3.5 h-3.5" /> Save
+                    </button>
+                    <button onClick={() => setIsEditing(false)} className="flex-1 bg-gray-100 text-gray-600 py-2 rounded-xl text-xs font-bold">
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-black text-grind-neutral-900">{activity.title}</p>
-                  <p className="text-[10px] font-bold text-grind-neutral-400 uppercase">{activity.date}</p>
-                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-extrabold text-gray-900 text-lg truncate">{user.userName}</h3>
+                    <button onClick={() => setIsEditing(true)} className="shrink-0">
+                      <Edit2 className="w-3.5 h-3.5 text-gray-400" />
+                    </button>
+                  </div>
+                  <p className="text-xs text-accent font-semibold">{user.handle}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{user.school} • {user.level}</p>
+                  {user.bio && <p className="text-xs text-gray-600 mt-1.5 leading-relaxed">{user.bio}</p>}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Tier badge */}
+          <div className={cn("mt-4 flex items-center gap-2 px-4 py-2.5 rounded-2xl border w-full", tierBg[user.tier], "border-current/10")}>
+            <Crown className="w-4 h-4 shrink-0" />
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold">Tier {user.tier}</span>
+                {nextTier !== "MAX" && <span className="text-[10px] font-medium opacity-70">→ {nextTier} at {nextThreshold} pts</span>}
               </div>
-              <div className="text-right">
-                <p className="font-black text-grind-success text-lg">+₦{activity.amount.toLocaleString()}</p>
-                <p className="text-[10px] font-bold text-accent uppercase tracking-widest">cNGN</p>
+              <div className="h-1.5 bg-current/10 rounded-full overflow-hidden">
+                <div className="h-full bg-current rounded-full transition-all" style={{ width: `${tierProgress}%` }} />
               </div>
             </div>
-          ))}
+            <span className="text-sm font-extrabold shrink-0">{user.score}</span>
+          </div>
         </div>
       </div>
 
-      {/* Growth Stats Modal */}
-      {showGrowthStats && (
-        <div className="fixed inset-0 bg-black/60 z-[100] flex items-end justify-center backdrop-blur-sm">
-          <div className="bg-white w-full max-w-[600px] rounded-t-[40px] p-8 animate-in slide-in-from-bottom duration-500">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h3 className="text-2xl font-black text-primary">Performance Growth</h3>
-                <p className="text-xs font-bold text-grind-neutral-400 uppercase tracking-widest">Last 30 Days</p>
+      {/* ── Stats row ──────────────────────────────────────── */}
+      <div className="px-4 mb-4">
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: "Tasks Done", value: "34", icon: Briefcase, color: "text-accent" },
+            { label: "On-Time", value: "98%", icon: Clock, color: "text-green-500" },
+            { label: "Rating", value: "4.8★", icon: Star, color: "text-yellow-500" },
+          ].map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <div key={stat.label} className="bg-white rounded-2xl p-4 text-center border border-gray-100 shadow-sm">
+                <Icon className={cn("w-5 h-5 mx-auto mb-1.5", stat.color)} />
+                <p className="text-lg font-extrabold text-gray-900">{stat.value}</p>
+                <p className="text-[10px] text-gray-400 font-medium">{stat.label}</p>
               </div>
-              <button onClick={() => setShowGrowthStats(false)} className="p-2.5 bg-grind-neutral-50 rounded-2xl hover:bg-grind-neutral-100 transition-colors">
-                <CloseIcon className="w-6 h-6" />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Total Earned card ──────────────────────────────── */}
+      <div className="px-4 mb-4">
+        <div className="bg-grind-accent-light border border-accent/20 rounded-3xl p-5 flex items-center justify-between">
+          <div>
+            <p className="text-xs text-gray-600 font-medium mb-1">Total Earned</p>
+            <p className="text-2xl font-extrabold text-gray-900">₦{totalEarned.toLocaleString()}</p>
+            <p className="text-[10px] text-accent font-semibold mt-0.5">cNGN • Campus Verified</p>
+          </div>
+          <div className="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center shadow-lg shadow-accent/30">
+            <TrendingUp className="w-7 h-7 text-white" />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Credential share ────────────────────────────────── */}
+      <div className="px-4 mb-4">
+        <button
+          onClick={handleShare}
+          className="w-full bg-white border border-gray-100 rounded-3xl p-4 flex items-center gap-4 shadow-sm active:scale-[0.99] transition-all"
+        >
+          <div className="w-11 h-11 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-500">
+            <Users className="w-5 h-5" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="font-bold text-gray-900 text-sm">Share Referral Link</p>
+            <p className="text-xs text-gray-500">Earn ₦500 for every friend who joins</p>
+          </div>
+          <div className="flex items-center gap-1 text-accent">
+            <span className="text-xs font-semibold">x{user.referrals ?? 0}</span>
+            <ChevronRight className="w-4 h-4" />
+          </div>
+        </button>
+      </div>
+
+      {/* ── Action list ─────────────────────────────────────── */}
+      <div className="px-4 space-y-3 mb-4">
+        <button
+          onClick={() => setShowStats(true)}
+          className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-4 shadow-sm active:scale-[0.99] transition-all"
+        >
+          <div className="w-11 h-11 rounded-2xl bg-orange-50 flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 text-orange-500" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="font-bold text-gray-900 text-sm">Growth Stats</p>
+            <p className="text-xs text-green-500 font-semibold">+12% this month</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-gray-300" />
+        </button>
+
+        <button
+          onClick={() => setShowHistory(true)}
+          className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-4 shadow-sm active:scale-[0.99] transition-all"
+        >
+          <div className="w-11 h-11 rounded-2xl bg-accent/10 flex items-center justify-center">
+            <History className="w-5 h-5 text-accent" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="font-bold text-gray-900 text-sm">Work History</p>
+            <p className="text-xs text-gray-500">34 tasks completed</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-gray-300" />
+        </button>
+
+        <button
+          onClick={onOpenSettings}
+          className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-4 shadow-sm active:scale-[0.99] transition-all"
+        >
+          <div className="w-11 h-11 rounded-2xl bg-gray-100 flex items-center justify-center">
+            <Settings className="w-5 h-5 text-gray-600" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="font-bold text-gray-900 text-sm">Settings</p>
+            <p className="text-xs text-gray-500">Account, security, notifications</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-gray-300" />
+        </button>
+
+        <button
+          onClick={onLogout}
+          className="w-full bg-red-50 border border-red-100 rounded-2xl p-4 flex items-center gap-4 active:scale-[0.99] transition-all"
+        >
+          <div className="w-11 h-11 rounded-2xl bg-red-100 flex items-center justify-center">
+            <LogOut className="w-5 h-5 text-red-500" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="font-bold text-red-600 text-sm">Sign Out</p>
+            <p className="text-xs text-red-400">You can sign back in anytime</p>
+          </div>
+        </button>
+      </div>
+
+      {/* ── Growth Stats Modal ──────────────────────────────── */}
+      {showStats && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowStats(false)} />
+          <div className="relative bg-white rounded-t-3xl px-5 pt-5 pb-8 animate-in slide-in-from-bottom duration-300">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold text-gray-900">Performance Growth</h3>
+              <button onClick={() => setShowStats(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                <CloseIcon className="w-4 h-4 text-gray-600" />
               </button>
             </div>
-            
-            <div className="space-y-6">
-              <div className="p-6 bg-accent/5 border-2 border-accent/10 rounded-3xl">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="font-black text-sm">Income Growth</span>
-                  <span className="text-grind-success font-black">+24.5%</span>
+            <div className="space-y-4">
+              {[
+                { label: "Income Growth", pct: "24.5%", value: 75 },
+                { label: "Response Rate", pct: "98%", value: 98 },
+                { label: "Completion Rate", pct: "100%", value: 100 },
+              ].map((item) => (
+                <div key={item.label} className="bg-gray-50 rounded-2xl p-4">
+                  <div className="flex justify-between text-sm font-semibold text-gray-800 mb-2">
+                    <span>{item.label}</span>
+                    <span className="text-green-500">{item.pct}</span>
+                  </div>
+                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-accent rounded-full" style={{ width: `${item.value}%` }} />
+                  </div>
                 </div>
-                <div className="h-2 bg-accent/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-accent rounded-full w-[75%]" />
+              ))}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gray-50 rounded-2xl p-4 text-center border border-gray-100">
+                  <Clock className="w-5 h-5 text-orange-500 mx-auto mb-1.5" />
+                  <p className="text-xl font-extrabold text-gray-900">1.2d</p>
+                  <p className="text-[10px] text-gray-400 font-medium">Avg. Delivery</p>
+                </div>
+                <div className="bg-gray-50 rounded-2xl p-4 text-center border border-gray-100">
+                  <Shield className="w-5 h-5 text-green-500 mx-auto mb-1.5" />
+                  <p className="text-xl font-extrabold text-gray-900">100%</p>
+                  <p className="text-[10px] text-gray-400 font-medium">Safety Score</p>
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-6 bg-grind-neutral-50 rounded-3xl border border-grind-neutral-100 text-center">
-                  <Clock className="w-6 h-6 text-grind-warning mx-auto mb-2" />
-                  <p className="text-2xl font-black text-primary">1.2d</p>
-                  <p className="text-[10px] font-bold text-grind-neutral-400 uppercase tracking-widest">Avg. Delivery</p>
-                </div>
-                <div className="p-6 bg-grind-neutral-50 rounded-3xl border border-grind-neutral-100 text-center">
-                  <Shield className="w-6 h-6 text-grind-success mx-auto mb-2" />
-                  <p className="text-2xl font-black text-primary">100%</p>
-                  <p className="text-[10px] font-bold text-grind-neutral-400 uppercase tracking-widest">Safety Score</p>
-                </div>
-              </div>
-
-              <Button onClick={() => setShowGrowthStats(false)} className="w-full h-14 font-black">
-                BACK TO PROFILE
-              </Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* History Modal */}
+      {/* ── Work History Modal ──────────────────────────────── */}
       {showHistory && (
-        <div className="fixed inset-0 bg-black/60 z-[100] flex items-end justify-center backdrop-blur-sm">
-          <div className="bg-white w-full max-w-[600px] rounded-t-[40px] p-8 animate-in slide-in-from-bottom duration-500">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl font-black">Work History</h3>
-              <button onClick={() => setShowHistory(false)} className="p-2.5 bg-grind-neutral-50 rounded-2xl">
-                <CloseIcon className="w-6 h-6" />
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowHistory(false)} />
+          <div className="relative bg-white rounded-t-3xl px-5 pt-5 pb-8 max-h-[75vh] flex flex-col animate-in slide-in-from-bottom duration-300">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold text-gray-900">Work History</h3>
+              <button onClick={() => setShowHistory(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                <CloseIcon className="w-4 h-4 text-gray-600" />
               </button>
             </div>
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-              <div className="p-6 bg-grind-neutral-50 rounded-[32px] border border-grind-neutral-100 hover:border-accent transition-all group">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h4 className="font-black text-lg group-hover:text-accent transition-colors">Business Law Essay</h4>
-                    <p className="text-[10px] font-bold text-grind-neutral-400 uppercase">June 4, 2026 • 1500 words</p>
+            <div className="overflow-y-auto flex-1 space-y-3">
+              {user.transactions.filter((t) => t.amount > 0).map((tx) => (
+                <div key={tx.id} className="bg-gray-50 rounded-2xl p-4 flex items-center justify-between border border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-green-50 flex items-center justify-center">
+                      <Briefcase className="w-4 h-4 text-green-500" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 text-sm">{tx.title}</p>
+                      <p className="text-[10px] text-gray-400">{tx.date} • {tx.status}</p>
+                    </div>
                   </div>
-                  <span className="px-3 py-1 bg-grind-success/10 text-grind-success text-[10px] font-black rounded-full uppercase tracking-widest">COMPLETED</span>
+                  <div className="text-right">
+                    <p className="font-extrabold text-green-500 text-sm">+₦{tx.amount.toLocaleString()}</p>
+                    <button
+                      onClick={() => toast.success("Downloading receipt…")}
+                      className="text-[10px] text-accent font-semibold flex items-center gap-0.5 mt-0.5"
+                    >
+                      <Download className="w-3 h-3" /> Receipt
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <p className="font-black text-primary">₦3,500 <span className="text-[10px] opacity-60">cNGN</span></p>
-                  <button onClick={() => toast.success("Downloading receipt...")} className="flex items-center gap-2 text-[10px] font-black text-accent uppercase tracking-widest hover:underline">
-                    <Download className="w-3 h-3" /> RECEIPT
-                  </button>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -361,6 +363,3 @@ export function Profile({
     </div>
   );
 }
-
-
-

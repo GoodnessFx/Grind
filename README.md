@@ -1,169 +1,305 @@
-# Grind — The Trustless Campus Gig Economy
+# Grind — Campus Gig Economy
 
-Grind is a decentralized task marketplace for Nigerian university students. Post tasks, earn money, and build a verifiable on-chain reputation. Every payment is protected by a smart contract — no WhatsApp drama, no scams, no middleman running with your money.
-
-Built on **Base**. Powered by **cNGN**. Designed for students who grind.
+> **Production-ready MVP.** A trustless campus gig marketplace for Nigerian university students — post gigs, earn cNGN, stream live, and chat, all secured by smart-contract escrow.
 
 ---
 
-## What Grind Does
+## Table of Contents
 
-A student needs their Business Law essay written. They post it for ₦3,500. Another student (the "Doer") accepts, does the work, and submits it. The ₦3,500 was locked in a smart contract the moment it was posted — not in someone's bank account, not with Grind, but in a secure contract.
-
-The poster approves the work, and the contract releases the money. If the poster ghosts, the contract releases it automatically after 48 hours. If there's a dispute, five Diamond-tier community members vote and the contract executes the result.
-
-**No human at Grind can touch that ₦3,500. That is the entire product.**
-
-On top of that: every completed task, every on-time payment, and every clean dispute record gets minted as a **GrindScore** delta on-chain. Permanently. When that student graduates and wants to prove they completed 40 gigs without a single dispute, they generate a verifiable credential from their **OuiDID** and send a link. The employer clicks it and sees cryptographic proof. No fake CV. No forged transcript.
-
----
-
-## Architecture
-
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                        STUDENT'S PHONE                          │
-│   React 18 + TypeScript + Vite + Tailwind + shadcn/ui           │
-│   Zustand (state) · Framer Motion (animations) · Sonner (toast) │
-└────────────────────────┬────────────────────────────────────────┘
-                         │ HTTPS
-┌────────────────────────▼────────────────────────────────────────┐
-│                        BACKEND (Node.js + Express)              │
-│                                                                 │
-│  Routes          Webhooks        Services                       │
-│  /tasks          /paystack       blockchain.js  (ethers v6)     │
-│  /credentials    /auth           paystack.js    (DVA + payout)  │
-│  /wallet                         did.js         (credential)    │
-│  /admin                          ipfs.js        (Pinata)        │
-│                                  email.js       (Resend)        │
-│                                  admin.js       (dashboard)     │
-│                                                                 │
-│  Middleware: HMAC-SHA512 webhook verify · JWT auth · rate limit │
-│  DB: PostgreSQL (Supabase) · Redis (idempotency + sessions)     │
-└──────┬───────────────────────────────────────┬──────────────────┘
-       │                                       │
-┌──────▼──────┐                    ┌───────────▼──────────────────┐
-│   PAYSTACK  │                    │     BASE BLOCKCHAIN (L2)      │
-│             │                    │                               │
-│ DVA API     │                    │  OuiScore.sol                 │
-│ Card inline │                    │  OuiDID.sol                   │
-│ Transfers   │                    │  OuiEscrow.sol                │
-│ Webhook     │                    │                               │
-│ Payouts     │                    │  cNGN token (ERC-20)          │
-└─────────────┘                    │  Biconomy Paymaster (gas)     │
-                                   │  Privy (smart wallets)        │
-                                   └──────────────────────────────┘
-```
-
-The student never sees the blockchain layer. They pay in Naira, receive Naira. The contracts run underneath.
-
----
-
-## Smart Contracts
-
-Three core contracts deployed on the Base network. Each depends on the previous to ensure a closed-loop trust system.
-
-```text
-OuiScore.sol  ──▶  OuiDID.sol(ouiScoreAddress)  ──▶  OuiEscrow.sol(cNGN, ouiScore, ouiDID, treasury)
-                                                           │
-                                          ouiScore.authorizeContract(ouiEscrowAddress)
-```
-
-### OuiScore.sol
-
-Permanent on-chain reputation. A score from 0 to 1000. Written only by authorized contracts (like the Escrow). Read by anyone. No admin can modify a student's score. No student can inflate their own.
-
-**Score formula — integer math only, multiply before divide:**
-
-- `completionRate = completionScore * 100 / completionTotal` (Weight: 300)
-- `paymentRate = paymentScore * 100 / paymentTotal` (Weight: 250)
-- `avgRating = ratingTotal * 20 / ratingCount` (Weight: 200 — 1-5 stars × 20 = 20-100)
-- `disputePenalty = (total - lost) * 100 / disputesTotal` (Weight: 150 — clean = 100)
-- `referralScore = min(referrals, 50) * 2` (Weight: 100 — capped at 50 refs)
-
-`totalScore = (cR*300 + pR*250 + aR*200 + dP*150 + rS*100) / 1000`
-
-**Tiers:**
-
-| Tier    | Score   | What it unlocks                                          |
-|---------|---------|----------------------------------------------------------|
-| STARTER | 0–399   | Browse tasks, post tasks (no escrow gating)              |
-| BRONZE  | 400–599 | Accept escrow tasks up to ₦50,000                        |
-| GOLD    | 600–799 | Priority placement, BNPL access, tasks up to ₦200,000    |
-| DIAMOND | 800–1000| Employer visibility, dispute arbitration, zero fees      |
-
----
-
-### OuiDID.sol
-
-W3C-inspired Decentralised Identifier. Every student gets a unique ID: `did:oui:<bytes32Id>`.
-
-Two identity layers:
-- **On-chain:** wallet address + GrindScore + tier. Permanent. Unfakeable.
-- **Off-chain:** real name, school, skills. Stored on IPFS (encrypted). Student-controlled.
-
-**Privacy levels:**
-
-| Level       | What shows on credential          | Can arbitrate disputes? |
-|-------------|-----------------------------------|-------------------------|
-| ANONYMOUS   | 0x address + score only           | No                      |
-| PSEUDONYMOUS| Handle + school dept + score      | Yes                     |
-| PUBLIC      | Real name + school + score + skills| Yes                    |
-
----
-
-### OuiEscrow.sol
-
-The heart of the product. Trustless escrow holding cNGN for task gigs. No backend or owner function can unilaterally release funds. Only the state machine logic moves money.
-
-**Constants:**
-
-- `PLATFORM_FEE_BPS = 800` (8% — goes to treasury)
-- `ESCROW_FEE_BPS = 150` (1.5% — operational cost)
-- `AUTO_RELEASE_WINDOW = 48 hours` (poster silence = auto-release)
-- `DISPUTE_FEE = 500e18` (500 cNGN — "skin in the game")
-- `ADMIN_DELAY = 96 hours` (admin cannot act before this)
-
-**State Machine:**
-
-```text
-OPEN ──▶ LOCKED ──▶ SUBMITTED ──▶ APPROVED
-                               ──▶ DISPUTED ──▶ RESOLVED
-                                              ──▶ ADMIN_RESOLVED
-          └──────────────────────────────────▶ REFUNDED
-```
-
----
-
-## Security Hardening
-
-We have implemented rigorous security measures to protect student funds and data:
-
-1.  **Reentrancy Protection**: Every fund-moving function uses `ReentrancyGuard` and follows the **Checks-Effects-Interactions (CEI)** pattern.
-2.  **SafeERC20**: All token operations use OpenZeppelin's `SafeERC20` to handle non-standard ERC-20 behaviors.
-3.  **Fee-on-Transfer Guard**: Balance checks before and after transfers prevent accounting errors from deflationary tokens.
-4.  **Admin Delay**: A 96-hour delay is enforced for any admin resolution, giving students time to respond to potential disputes.
-5.  **Gas Optimization**: Nested mappings and O(1) operations ensure the contract remains efficient even as the user base grows.
-6.  **No Upgradeability**: To ensure maximum transparency, contracts are not upgradeable. Every logic change requires a new deployment and user migration.
-
----
-
-## Payment System
-
-Grind supports two primary payment rails for Nigerian students:
-
--   **Card Deposit (Instant)**: Integrated via Paystack. Funds are instantly converted to cNGN and locked in the escrow contract.
--   **Bank Transfer (USSD/Mobile App)**: Students can transfer Naira to a Dedicated Virtual Account (DVA). Paystack webhooks trigger the on-chain minting of cNGN.
+1. [Tech Stack](#tech-stack)
+2. [Screens Overview](#screens-overview)
+3. [Feature Details](#feature-details)
+4. [Design System](#design-system)
+5. [Running Locally](#running-locally)
+6. [Environment Variables](#environment-variables)
+7. [API Reference](#api-reference)
+8. [Smart Contracts](#smart-contracts)
+9. [Added Features (beyond original spec)](#added-features)
 
 ---
 
 ## Tech Stack
 
--   **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Lucide Icons.
--   **Smart Contracts**: Solidity 0.8.24, OpenZeppelin v5.
--   **Network**: Base (L2).
--   **Backend**: Node.js, Express, PostgreSQL (Supabase), Redis.
+| Layer | Stack |
+|---|---|
+| Frontend | React 19 + Vite + TailwindCSS v4 + Radix UI + Lucide + Sonner |
+| Backend | Node.js + Express + Socket.io |
+| Auth | Supabase (email / phone OTP / Google OAuth) |
+| Payments | Smart-contract escrow (cNGN token) + Paystack |
+| Streaming | LiveKit WebRTC |
+| Database | Supabase Postgres |
+| Monorepo | pnpm workspaces |
 
 ---
 
-Built with security and campus life in mind. **Grind on.**
+## Screens Overview
+
+| Screen | Entry Point |
+|---|---|
+| Splash | App load (2.2 s auto-advance) |
+| Login — Welcome | `/login` |
+| Login — Phone + OTP | Phone flow |
+| Login — Email + Register | Email flow |
+| Home Dashboard | `home` tab |
+| Gigs Board | `gigs` tab |
+| Gig Detail + Chat | Tap any gig card |
+| Post Gig (3 steps) | FAB `+` button |
+| Live — Browse | `live` tab |
+| Live — Watch + Chat + Gifts | Tap any stream |
+| Live — Go Live / Creator | "Go Live" button |
+| Wallet + Leaderboard | `wallet` tab |
+| Profile | `profile` tab |
+| Settings (6 sub-screens) | From Profile |
+
+---
+
+## Feature Details
+
+### Authentication
+- Animated splash screen with brand logo, auto-advances after 2.2 s
+- Welcome screen with three sign-in paths: **Google**, **Phone**, **Email**
+- Phone flow → 6-digit OTP verification (any code works in demo)
+- Email flow → Registration form (name, email pre-filled, password with show/hide)
+- Password minimum 6 characters enforced client-side
+- Persistent sessions stored in `localStorage`, restored on reload
+- Protected routes — unauthenticated users always land on Login
+- Referral tracking via `?ref=` URL param stored in `sessionStorage`
+
+### Home Dashboard
+- Personalised greeting (Good morning / afternoon / evening)
+- **Balance card** — cNGN balance with show/hide eye toggle, GrindScore + tier badge
+- Three wallet quick-buttons on card: Add Money, Transfer, Withdraw
+- **Quick Actions row** — Browse Gigs, Go Live, Refer Friend, Top Up
+- **Smart Pick banner** — dark card with "Post your first gig" CTA
+- **Exclusive Rewards** banner linking to wallet
+- Recommended gig feed (3 featured gigs)
+- **Notification bell** — unread red dot, slide-up notification panel
+- Mark all notifications read in one tap
+- Notification panel shows per-item read/unread styling
+
+### Gigs Board
+- **Search bar** with clear button — filters title, description, category in real time
+- **8 categories** — Writing, Design, Coding, Tutoring, Delivery, Research, Video, Other
+- **Filter chips** — toggle category drawer with `SlidersHorizontal` button
+- **Sort dropdown** — Newest First, Highest Pay, Lowest Pay, Most Urgent
+- Result count with "clear filters" shortcut
+- Empty state with icon and clear-all link
+- **Post Gig** button in header (same as FAB)
+- 10 seeded real gigs covering every category
+
+### Gig Card
+- Category colour badge (8 unique colour combos)
+- Formatted cNGN price with badge
+- 2-line title + 1-line description (clipped)
+- Poster avatar initial, handle, tier colour dot
+- Deadline badge — red for urgent (hours / 1 day), green otherwise
+- Escrow shield badge on every card
+
+### Gig Detail
+- Full poster card — avatar, handle, tier dot, GrindScore, 5-star rating
+- **Chat button** opens in-app messenger with the poster
+- Category + deadline chips
+- Full title and description
+- **Payment breakdown table** — budget, platform fee (8%), escrow fee (1.5%), doer earnings
+- **Trustless Escrow** info card with smart contract explanation
+- Poster profile section with completed task count and dispute rate
+- **Apply for Gig** button → pitch modal with 300-char textarea
+- Applied state — button replaced by green "Applied!" confirmation
+- **Share gig** — copies `grind.market/gig/:id` to clipboard
+- **In-app chat panel** — slide-up messenger, sent/received bubble UI, simulated auto-reply, send on Enter or tap
+
+### Post a Gig (3-step wizard)
+- **Progress bar** across 3 steps, back navigation on each
+- **Step 1 — Details:** title (100 char), 8-icon category grid, description (500 char), character counters
+- **Step 2 — Budget & Timeline:** large ₦ input, live fee breakdown (platform fee + escrow + doer earnings + total you pay), 5 deadline presets (1 / 3 / 7 / 14 / 30 days), minimum ₦500 validation
+- **Step 3 — Payment:** summary card, three payment methods:
+  - **Wallet** — instant deduction from cNGN balance
+  - **Debit Card** — Paystack integration
+  - **Bank Transfer** — generates unique virtual account + reference number in a toast
+- Escrow protection reminder on payment screen
+- **Success screen** — checkmark animation, "Gig is Live!" confirmation, back to board
+
+### Live Streaming
+- **Browse page** — featured stream hero card + all streams list
+- Live/Offline status indicator with animated pulse dot
+- Viewer count on every stream card
+- Category filter bar: All, Coding, Design, Tutoring, Talk, Music, Gaming
+- **Go Live button** — red with Radio icon
+- **Watch screen:**
+  - Simulated video player (LiveKit-ready placeholder)
+  - Live viewer count that fluctuates every 3 s
+  - Creator name, follow button, tier dot
+  - **YouTube-style live chat** — coloured usernames, tier/gift badges, auto-scrolls
+  - Simulated incoming messages every 2.5 s
+  - **Heart reaction** button — burst animation on tap
+  - **Gift panel** — 4 gift tiers: Rose ₦50, Fire ₦100, Crown ₦500, Diamond ₦1000
+  - Gifting deducts from sender's cNGN wallet balance in real time
+  - Gift appears in chat as a highlighted message
+  - Send message on Enter or tap Send
+- **Go Live screen:**
+  - Camera / mic preview (toggleable)
+  - Stream title input
+  - Category selector (6 options)
+  - **Creator onboarding card** — shown on first stream
+  - Start Stream → sets `isCreator: true` on user object
+- **Live controls** — live timer, mute toggle, camera toggle, end stream
+- End stream returns to browse, shows "Great session!" toast
+
+### Wallet
+- cNGN balance card with show/hide toggle
+- **Add Money modal:**
+  - Quick-amount chips: ₦1,000 / ₦2,500 / ₦5,000 / ₦10,000
+  - Card payment (Paystack)
+  - Bank Transfer — virtual account + unique reference in toast
+  - Balance updates in real time after funding
+- **Withdraw modal** — amount input, balance validation, minimum ₦500, "Arrives in 1-2 hours" toast
+- **Send cNGN modal** — recipient handle (`@username`) + amount, peer-to-peer transfer, balance validation
+- Transaction history — every transaction stored with title, amount, date, status, type
+- Type-aware icons — green arrow for earnings, red arrow for spending
+- **Download statement** — toast confirmation (PDF export hook)
+- **Campus Leaderboard tab:**
+  - Trophy banner showing user's campus rank
+  - User's own rank card highlighted in green
+  - Top 5 leaderboard with rank medals (gold/silver/bronze)
+  - GrindScore + tier colour dot per entry
+
+### Profile
+- Avatar with camera icon (change photo prompt)
+- **Inline edit mode** — tap pencil to edit name + bio, save/cancel buttons
+- Tier badge row with animated **progress bar** toward next tier, score display
+- **Stats row** — Tasks Done, On-Time Rate, Rating (3 cards)
+- **Total Earned** cNGN card with accent styling
+- **Referral link** — copies `grind.market/ref/:handle` to clipboard, shows referral count
+- **Growth Stats modal** — Income Growth, Response Rate, Completion Rate bars, Avg Delivery, Safety Score
+- **Work History modal** — filterable by positive transactions, per-gig receipt download button
+- Settings button (top bar + list item)
+- Sign Out button (danger red card)
+
+### Settings (6 sub-screens)
+- User summary card at top with Edit shortcut
+- **My Profile** — name, phone, bio edit form, save with validation
+- **Login Settings** — current + new password with show/hide, Transaction PIN setup button
+- **Payment Settings** — Add Debit Card, Add Bank Account, Withdrawal Settings, Transaction Limits
+- **School & Level** — display-only (contact support to change)
+- **Notifications** — 4 per-type toggles: New Gig Matches, Chat Messages, Wallet Activity, Promotions
+- **Security Center** — Biometrics toggle, 2FA toggle, Active Sessions link
+- **Connected Accounts** — Google / socials (coming soon)
+- **Themes** — Dark mode (coming soon)
+- **Feedback & Suggestions** — 500-char textarea, sends to backend
+- **Help Center**, **Terms & Privacy Policy**, **About Grind** (v1.0.0)
+- **Sign Out** + **Delete Account** (danger zone, routes to support email)
+
+---
+
+## Design System
+
+| Token | Value |
+|---|---|
+| Brand green (accent) | `#00A651` |
+| Accent dark | `#007A3D` |
+| Accent light (bg tint) | `#E6F7EE` |
+| Primary (navy) | `#0A2540` |
+| Background | `#F4F6F8` |
+| Card | `#ffffff` |
+| Border | `#EAECF0` |
+| Danger | `#F04438` |
+| Warning | `#F79009` |
+| Tier — Starter | `#98A2B3` |
+| Tier — Bronze | `#CD7F32` |
+| Tier — Gold | `#F79009` |
+| Tier — Diamond | `#0BA5EC` |
+
+- **Font:** Inter (body) + Plus Jakarta Sans (headings, 700–800)
+- **Radius:** `rounded-2xl` (12px) cards, `rounded-3xl` (24px) large cards, `rounded-full` pills
+- **Mobile-first:** `max-width: 480px`, safe-area insets (`env(safe-area-inset-bottom)`), `scrollbar-hide`
+- **Motion:** `animate-in fade-in slide-in-from-bottom` on modals/panels, `active:scale-95` on all tappable elements
+- **Shadows:** `shadow-sm` on cards, `shadow-lg shadow-accent/30` on primary CTAs
+
+---
+
+## Running Locally
+
+```bash
+# Install all workspace deps from root
+pnpm install
+
+# Frontend (http://localhost:5173)
+pnpm --filter web dev
+
+# Backend (http://localhost:3001)
+pnpm --filter server dev
+```
+
+---
+
+## Environment Variables
+
+Create `apps/server/.env`:
+
+```env
+PORT=3001
+CLIENT_ORIGIN=http://localhost:5173
+
+# Email (Gmail app password)
+EMAIL_USER=your_gmail@gmail.com
+EMAIL_PASS=your_app_password
+ADMIN_EMAIL=goodnessiyamah1@gmail.com
+
+# LiveKit
+LIVEKIT_HOST=wss://your-project.livekit.cloud
+LIVEKIT_API_KEY=your_api_key
+LIVEKIT_API_SECRET=your_api_secret
+
+# Supabase
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your_anon_key
+```
+
+---
+
+## API Reference
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/apply` | Submit creator application (email notification) |
+| `POST` | `/api/chat/message` | HTTP fallback — send chat message |
+| `POST` | `/api/streams` | Create LiveKit room + return creator token |
+| `GET` | `/api/streams/:roomId/token` | Generate viewer join token |
+| `POST` | `/api/gifts` | Log a gift sent during live stream |
+| `GET` | `/api/gifts/:streamId` | Get all gifts for a stream |
+| WS | `socket.io` | Real-time chat (joinRoom / leaveRoom / chatMessage events) |
+
+---
+
+## Smart Contracts
+
+Located in `packages/contracts/`:
+
+| Contract | Description |
+|---|---|
+| `GrindEscrow.sol` | Locks gig payment, releases on approval or refunds after timeout |
+| `GrindScore.sol` | On-chain reputation score, updated on task completion |
+| `GrindDID.sol` | Decentralised identity for campus-verified students |
+
+---
+
+## Added Features (beyond original spec)
+
+| Feature | Details |
+|---|---|
+| OPay-inspired green UI | Full design system overhaul — green `#00A651`, card layouts, mobile-perfect |
+| 5-tab navigation | Home, Gigs, Live, Wallet, Profile with floating Post Gig FAB |
+| Referral system | Shareable link, referral count tracked on user object |
+| Notification centre | In-app bell panel, per-item read state, mark-all-read |
+| Creator tier progression | Progress bar toward next tier with score threshold display |
+| Gift economy | Rose / Fire / Crown / Diamond gifts during live streams, wallet-debited |
+| cNGN peer transfer | Send cNGN to any user by `@handle` |
+| Transaction PIN | PIN setup flow in Login Settings |
+| Feedback form | 500-char in-app feedback submission |
+| Escrow fee breakdown | Live calculation table before every gig payment |
+| Statement download | Wallet transaction history export |
+| Security toggles | Biometrics + 2FA toggles in Security Center |
+| Profanity filter | Server-side chat message sanitisation |
+| Gifts API | Persistent in-memory gift log (swap for DB in production) |
+| Smart contract rename | `Oui*` → `Grind*` contracts for brand consistency |
+| CSS bug fix | Resolved TailwindCSS v4 `@theme inline` import chain issue |

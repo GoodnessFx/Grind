@@ -1,164 +1,373 @@
 import React, { useState } from "react";
-import { Mail, ArrowRight, Shield, Phone } from "lucide-react";
-import { Button } from "./Button";
+import { Eye, EyeOff, ArrowRight, Shield, ChevronLeft, Phone, Mail } from "lucide-react";
 import { toast } from "sonner";
+import type { UserData } from "../App";
 
 interface LoginProps {
-  onLogin: (userData: any) => void;
+  onLogin: (userData: UserData) => void;
+}
+
+type Step = "welcome" | "phone" | "email" | "otp" | "register";
+
+function makeUser(overrides: Partial<UserData> = {}): UserData {
+  return {
+    id: crypto.randomUUID(),
+    userName: "Goodness",
+    handle: "@goodness_grind",
+    email: "goodness@unilag.edu.ng",
+    school: "University of Lagos",
+    level: "300L",
+    score: 672,
+    tier: "GOLD",
+    walletBalance: 12500,
+    isCreator: false,
+    referrals: 3,
+    bio: "Campus hustler. Writing | Design | Tutoring",
+    phone: "+234 807 202 7335",
+    transactions: [
+      { id: "TX001", title: "Calculus Tutoring", amount: 8500, date: "Aug 18, 2026", status: "Completed", type: "earn" },
+      { id: "TX002", title: "Event Flyer Design", amount: 5000, date: "Aug 15, 2026", status: "Completed", type: "earn" },
+      { id: "TX003", title: "Wallet Funding", amount: 10000, date: "Aug 10, 2026", status: "Completed", type: "fund" },
+      { id: "TX004", title: "Business Law Essay", amount: -3500, date: "Aug 5, 2026", status: "Completed", type: "spend" },
+    ],
+    notifications: [
+      { id: 1, title: "Welcome to Grind!", message: "Start earning cNGN by completing campus gigs.", time: "Just now", read: false },
+      { id: 2, title: "New gig matched", message: "A writing gig matching your skills just dropped.", time: "2h ago", read: false },
+    ],
+    ...overrides,
+  };
 }
 
 export function Login({ onLogin }: LoginProps) {
+  const [step, setStep] = useState<Step>("welcome");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [step, setStep] = useState<"choice" | "email">("choice");
-
-  const simulateWelcomeEmail = (userData: any) => {
-    toast.custom((t) => (
-      <div className="bg-white border-2 border-accent rounded-[32px] p-6 shadow-2xl max-w-sm animate-in zoom-in duration-300">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-white">
-            <Mail className="w-6 h-6" />
-          </div>
-          <div>
-            <h4 className="font-black text-primary">Welcome to Grind!</h4>
-            <p className="text-[10px] font-bold text-grind-neutral-400 uppercase tracking-widest">New Email Notification</p>
-          </div>
-        </div>
-        <p className="text-xs text-grind-neutral-600 leading-relaxed mb-4">
-          Hi <b>{userData.userName}</b>, we're excited to have you on campus! <br/><br/>
-          Your account is now active. You can start earning cNGN by completing tasks or post your own. <br/><br/>
-          <b>Support Hotline:</b> +2348072027335
-        </p>
-        <Button onClick={() => toast.dismiss(t)} className="w-full h-10 py-0 text-[10px] font-black">
-          GOT IT
-        </Button>
-      </div>
-    ), { duration: 10000 });
-  };
+  const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [name, setName] = useState("");
 
   const handleGoogleLogin = () => {
-    const userData = {
-      userName: "IG",
-      handle: "@ig_grind",
-      email: "ig@university.edu.ng",
-      school: "University of Lagos",
-      level: "300L",
-      score: 672,
-      tier: "GOLD",
-      walletBalance: 12500,
-      transactions: [
-        { id: "TX123", title: "Business Law Essay", amount: -3500, date: "2026-06-04", status: "Completed" },
-        { id: "TX122", title: "Wallet Funding (Card)", amount: 5000, date: "2026-06-03", status: "Completed" },
-      ],
-      referrals: 12,
-      notifications: [
-        { id: 1, title: "Welcome to Grind!", message: "Get started by browsing available gigs.", time: "Just now" }
-      ]
-    };
-    simulateWelcomeEmail(userData);
-    onLogin(userData);
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      toast.success("Welcome back to Grind!");
+      onLogin(makeUser());
+    }, 1200);
+  };
+
+  const handlePhoneSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phone || phone.replace(/\D/g, "").length < 10) {
+      toast.error("Enter a valid phone number");
+      return;
+    }
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setStep("otp");
+    }, 800);
   };
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      const userData = {
-        userName: email.split("@")[0],
-        handle: `@${email.split("@")[0]}`,
-        email: email,
-        school: "University of Lagos",
-        level: "100L",
+    if (!email.includes("@")) {
+      toast.error("Enter a valid email address");
+      return;
+    }
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setStep("register");
+    }, 800);
+  };
+
+  const handleOtpChange = (val: string, idx: number) => {
+    if (!/^\d?$/.test(val)) return;
+    const next = [...otp];
+    next[idx] = val;
+    setOtp(next);
+    if (val && idx < 5) {
+      const el = document.getElementById(`otp-${idx + 1}`);
+      el?.focus();
+    }
+  };
+
+  const handleOtpSubmit = () => {
+    const code = otp.join("");
+    if (code.length < 6) {
+      toast.error("Enter all 6 digits");
+      return;
+    }
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      // Any 6-digit code works in demo
+      toast.success("Phone verified!");
+      onLogin(makeUser({ phone }));
+    }, 1000);
+  };
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) { toast.error("Enter your full name"); return; }
+    if (password.length < 6) { toast.error("Password must be at least 6 characters"); return; }
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      toast.success("Account created! Welcome to Grind 🎉");
+      onLogin(makeUser({
+        userName: name,
+        handle: `@${name.toLowerCase().replace(/\s/g, "_")}`,
+        email,
         score: 0,
         tier: "STARTER",
         walletBalance: 0,
         transactions: [],
-        referrals: 0,
         notifications: [
-          { id: 1, title: "Welcome to Grind!", message: "Get started by browsing available gigs.", time: "Just now" }
-        ]
-      };
-      simulateWelcomeEmail(userData);
-      onLogin(userData);
-    }
+          { id: 1, title: "Welcome to Grind!", message: "Start earning by completing campus gigs.", time: "Just now", read: false },
+        ],
+      }));
+    }, 1200);
   };
 
   return (
-    <div className="min-h-screen bg-white px-6 flex flex-col justify-center max-w-[600px] mx-auto">
-      <div className="mb-12 text-center">
-        <div className="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-6 rotate-3 shadow-lg">
-          <span className="text-white text-3xl font-bold">O</span>
-        </div>
-        <h1 className="text-3xl font-bold text-grind-neutral-900 mb-2">Oui Market</h1>
-        <p className="text-grind-neutral-500">The trustless campus gig economy</p>
-      </div>
-
-      {step === "choice" ? (
-        <div className="space-y-4">
-          <Button 
-            onClick={handleGoogleLogin}
-            variant="outline" 
-            className="w-full h-14 font-medium flex items-center justify-center gap-3"
+    <div className="h-full bg-white flex flex-col overflow-y-auto">
+      {/* Header */}
+      {step !== "welcome" && (
+        <div className="flex items-center gap-3 px-5 pt-12 pb-2">
+          <button
+            onClick={() => setStep(step === "otp" ? "phone" : step === "register" ? "email" : "welcome")}
+            className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center"
           >
-            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
-            Continue with Google
-          </Button>
-          
-          <Button 
-            onClick={() => setStep("email")}
-            className="w-full h-14 bg-accent hover:bg-accent/90 text-white font-medium flex items-center justify-center gap-3"
-          >
-            <Mail className="w-5 h-5" />
-            Continue with Email
-          </Button>
-
-          <div className="mt-8 p-4 bg-grind-neutral-50 rounded-xl border border-grind-neutral-100">
-            <div className="flex items-center gap-3 mb-2">
-              <Shield className="w-4 h-4 text-accent" />
-              <span className="text-xs font-bold uppercase tracking-wider text-grind-neutral-500">Security First</span>
-            </div>
-            <p className="text-xs text-grind-neutral-500 leading-relaxed">
-              Every transaction is protected by smart contracts. No human can unilaterally move your funds.
-            </p>
-          </div>
-          
-          <div className="flex items-center justify-center gap-2 text-xs text-grind-neutral-400 mt-6">
-            <Phone className="w-3 h-3" />
-            Support: +2348072027335
-          </div>
-        </div>
-      ) : (
-        <form onSubmit={handleEmailSubmit} className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div>
-            <label className="block text-sm font-medium text-grind-neutral-700 mb-2">
-              School Email Address
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@unilag.edu.ng"
-              className="w-full h-14 px-4 rounded-xl border border-grind-neutral-200 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all"
-              required
-            />
-            <p className="mt-2 text-xs text-grind-neutral-500 flex items-center gap-1.5 font-bold uppercase tracking-tighter">
-              <Shield className="w-3 h-3 text-accent" />
-              Must be a valid .edu.ng address
-            </p>
-          </div>
-
-          <Button type="submit" className="w-full h-14 bg-accent hover:bg-accent/90 text-white font-medium flex items-center justify-center gap-2">
-            Continue
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-
-          <button 
-            type="button"
-            onClick={() => setStep("choice")}
-            className="w-full text-center text-sm text-grind-neutral-500 hover:text-grind-neutral-700 transition-colors"
-          >
-            Back to options
+            <ChevronLeft className="w-5 h-5 text-gray-700" />
           </button>
-        </form>
+        </div>
       )}
+
+      <div className="flex-1 flex flex-col px-6">
+        {/* ── Welcome ─────────────────────────────────────────── */}
+        {step === "welcome" && (
+          <div className="flex flex-col flex-1">
+            {/* Logo area */}
+            <div className="flex flex-col items-center pt-16 pb-10">
+              <div className="w-20 h-20 bg-accent rounded-3xl flex items-center justify-center mb-6 shadow-lg">
+                <svg width="44" height="44" viewBox="0 0 52 52" fill="none">
+                  <path d="M26 4C13.85 4 4 13.85 4 26s9.85 22 22 22 22-9.85 22-22S38.15 4 26 4z" fill="white" />
+                  <path d="M26 12c-7.73 0-14 6.27-14 14s6.27 14 14 14 14-6.27 14-14-6.27-14-14-14z" fill="#00A651" />
+                  <path d="M26 18c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z" fill="white" />
+                </svg>
+              </div>
+              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Welcome to Grind</h1>
+              <p className="text-gray-500 text-sm mt-2 text-center leading-relaxed">
+                The campus gig economy for Nigerian students
+              </p>
+            </div>
+
+            {/* Auth buttons */}
+            <div className="space-y-3 mt-2">
+              {/* Google */}
+              <button
+                onClick={handleGoogleLogin}
+                disabled={loading}
+                className="w-full h-14 bg-white border border-gray-200 rounded-2xl flex items-center justify-center gap-3 font-semibold text-gray-800 hover:bg-gray-50 active:scale-[0.98] transition-all shadow-sm disabled:opacity-60"
+              >
+                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
+                {loading ? "Signing in…" : "Continue with Google"}
+              </button>
+
+              {/* Phone */}
+              <button
+                onClick={() => setStep("phone")}
+                className="w-full h-14 bg-white border border-gray-200 rounded-2xl flex items-center justify-center gap-3 font-semibold text-gray-800 hover:bg-gray-50 active:scale-[0.98] transition-all shadow-sm"
+              >
+                <Phone className="w-5 h-5 text-accent" />
+                Continue with Phone
+              </button>
+
+              {/* Email */}
+              <button
+                onClick={() => setStep("email")}
+                className="w-full h-14 bg-accent rounded-2xl flex items-center justify-center gap-3 font-semibold text-white hover:bg-grind-accent-dark active:scale-[0.98] transition-all shadow-lg shadow-accent/30"
+              >
+                <Mail className="w-5 h-5" />
+                Continue with Email
+              </button>
+            </div>
+
+            {/* Trust badge */}
+            <div className="mt-8 p-4 bg-grind-accent-light rounded-2xl flex items-start gap-3">
+              <Shield className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+              <p className="text-xs text-gray-600 leading-relaxed">
+                <span className="font-semibold text-gray-800">Secured by smart contracts.</span> Your funds are locked in escrow until work is approved. No one can touch them without your consent.
+              </p>
+            </div>
+
+            <p className="text-xs text-gray-400 text-center mt-6 pb-8">
+              By continuing, you agree to Grind's{" "}
+              <span className="text-accent font-medium">Terms of Service</span> &{" "}
+              <span className="text-accent font-medium">Privacy Policy</span>
+            </p>
+          </div>
+        )}
+
+        {/* ── Phone step ────────────────────────────────────── */}
+        {step === "phone" && (
+          <div className="flex flex-col flex-1 pt-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">Enter your number</h2>
+            <p className="text-gray-500 text-sm mb-8">We'll send a 6-digit code to verify</p>
+            <form onSubmit={handlePhoneSubmit} className="space-y-4">
+              <div className="flex gap-2">
+                <div className="w-16 h-14 bg-gray-50 border border-gray-200 rounded-2xl flex items-center justify-center font-semibold text-gray-700">
+                  🇳🇬
+                </div>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="080 0000 0000"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="flex-1 h-14 px-4 bg-gray-50 border border-gray-200 rounded-2xl text-base font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
+                  autoFocus
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-14 bg-accent text-white rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-grind-accent-dark active:scale-[0.98] transition-all shadow-lg shadow-accent/30 disabled:opacity-60"
+              >
+                {loading ? "Sending…" : <>Send Code <ArrowRight className="w-4 h-4" /></>}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* ── OTP step ──────────────────────────────────────── */}
+        {step === "otp" && (
+          <div className="flex flex-col flex-1 pt-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">Verify your number</h2>
+            <p className="text-gray-500 text-sm mb-8">Enter the 6-digit code sent to <span className="font-semibold text-gray-700">{phone}</span></p>
+
+            <div className="flex gap-2 justify-between mb-8">
+              {otp.map((digit, idx) => (
+                <input
+                  key={idx}
+                  id={`otp-${idx}`}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleOtpChange(e.target.value, idx)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Backspace" && !digit && idx > 0) {
+                      document.getElementById(`otp-${idx - 1}`)?.focus();
+                    }
+                  }}
+                  className="w-12 h-14 text-center text-xl font-bold bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
+                  autoFocus={idx === 0}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={handleOtpSubmit}
+              disabled={loading}
+              className="w-full h-14 bg-accent text-white rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-grind-accent-dark active:scale-[0.98] transition-all shadow-lg shadow-accent/30 disabled:opacity-60"
+            >
+              {loading ? "Verifying…" : "Verify & Continue"}
+            </button>
+
+            <button
+              onClick={() => toast.info("Code resent!")}
+              className="mt-4 text-center text-sm text-accent font-medium w-full py-3"
+            >
+              Didn't receive a code? Resend
+            </button>
+          </div>
+        )}
+
+        {/* ── Email step ────────────────────────────────────── */}
+        {step === "email" && (
+          <div className="flex flex-col flex-1 pt-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">Enter your email</h2>
+            <p className="text-gray-500 text-sm mb-8">Use your school email for verified access</p>
+            <form onSubmit={handleEmailSubmit} className="space-y-4">
+              <input
+                type="email"
+                placeholder="yourname@school.edu.ng"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full h-14 px-4 bg-gray-50 border border-gray-200 rounded-2xl text-base font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
+                autoFocus
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-14 bg-accent text-white rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-grind-accent-dark active:scale-[0.98] transition-all shadow-lg shadow-accent/30 disabled:opacity-60"
+              >
+                {loading ? "Checking…" : <>Continue <ArrowRight className="w-4 h-4" /></>}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* ── Register step ─────────────────────────────────── */}
+        {step === "register" && (
+          <div className="flex flex-col flex-1 pt-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">Create your account</h2>
+            <p className="text-gray-500 text-sm mb-8">You're one step away from your first gig</p>
+            <form onSubmit={handleRegister} className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Full Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Goodness Iyamah"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full h-14 px-4 bg-gray-50 border border-gray-200 rounded-2xl text-base font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  readOnly
+                  className="w-full h-14 px-4 bg-gray-100 border border-gray-200 rounded-2xl text-base font-medium text-gray-500 cursor-not-allowed"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Min. 6 characters"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full h-14 px-4 pr-12 bg-gray-50 border border-gray-200 rounded-2xl text-base font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-14 bg-accent text-white rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-grind-accent-dark active:scale-[0.98] transition-all shadow-lg shadow-accent/30 disabled:opacity-60 mt-2"
+              >
+                {loading ? "Creating account…" : "Create Account"}
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

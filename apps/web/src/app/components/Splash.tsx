@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { Shield, Sparkles } from "lucide-react";
 
 interface SplashProps {
   onComplete: () => void;
@@ -7,31 +6,50 @@ interface SplashProps {
 
 export function Splash({ onComplete }: SplashProps) {
   useEffect(() => {
-    const timer = setTimeout(onComplete, 2500);
+    const timer = setTimeout(onComplete, 2200);
     return () => clearTimeout(timer);
   }, [onComplete]);
 
   return (
-    <div className="min-h-screen bg-primary flex flex-col items-center justify-center relative overflow-hidden">
-      <div className="relative z-10 animate-in fade-in zoom-in duration-700">
-        <div className="w-24 h-24 bg-accent rounded-[32px] flex items-center justify-center mb-8 rotate-6 shadow-2xl">
-          <span className="text-white text-5xl font-black">O</span>
-        </div>
-        <h1 className="text-4xl font-black text-white mb-2 tracking-tighter">Oui Market</h1>
-        <div className="flex items-center gap-2 text-accent">
-          <Shield className="w-4 h-4 fill-accent/20" />
-          <p className="text-xs font-bold uppercase tracking-[0.2em]">Trustless Campus Economy</p>
-        </div>
-      </div>
-      
-      <div className="absolute bottom-12 flex items-center gap-2 text-white/40 animate-pulse">
-        <Sparkles className="w-4 h-4" />
-        <span className="text-[10px] font-black uppercase tracking-widest">Built for Unilag</span>
+    <div className="h-full flex flex-col items-center justify-between bg-accent relative overflow-hidden">
+      {/* Background blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-white/10" />
+        <div className="absolute top-1/3 -left-16 w-48 h-48 rounded-full bg-white/5" />
+        <div className="absolute -bottom-16 right-1/4 w-56 h-56 rounded-full bg-white/10" />
       </div>
 
-      <div className="absolute top-0 left-0 w-full h-full">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-accent/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
+      {/* Top spacer */}
+      <div />
+
+      {/* Center logo */}
+      <div className="flex flex-col items-center gap-5 animate-in fade-in zoom-in duration-700">
+        <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center shadow-2xl">
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+            <path d="M26 4C13.85 4 4 13.85 4 26s9.85 22 22 22 22-9.85 22-22S38.15 4 26 4z" fill="#00A651" />
+            <path d="M26 12c-7.73 0-14 6.27-14 14s6.27 14 14 14 14-6.27 14-14-6.27-14-14-14z" fill="white" />
+            <path d="M26 18c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z" fill="#00A651" />
+          </svg>
+        </div>
+        <div className="text-center">
+          <h1 className="text-4xl font-extrabold text-white tracking-tight">Grind</h1>
+          <p className="text-white/80 text-sm font-medium mt-1">Campus Gig Economy</p>
+        </div>
+      </div>
+
+      {/* Bottom */}
+      <div className="pb-12 flex flex-col items-center gap-4">
+        {/* Loading dots */}
+        <div className="flex gap-2">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="w-2 h-2 rounded-full bg-white/60 animate-pulse"
+              style={{ animationDelay: `${i * 200}ms` }}
+            />
+          ))}
+        </div>
+        <p className="text-white/50 text-xs font-medium">Trustless Campus Economy</p>
       </div>
     </div>
   );

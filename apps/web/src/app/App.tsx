@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Toaster, toast } from "sonner";
+import React, { useState, useEffect, useCallback } from "react";
+import { Toaster } from "sonner";
 import { Splash } from "./components/Splash";
 import { Login } from "./components/Login";
 import { Home } from "./components/Home";
@@ -8,155 +8,242 @@ import { TaskDetail } from "./components/TaskDetail";
 import { PostTask } from "./components/PostTask";
 import { Wallet } from "./components/Wallet";
 import { Profile } from "./components/Profile";
+import { Settings } from "./components/Settings";
+import { LiveStream } from "./components/LiveStream";
 import { BottomNav } from "./components/BottomNav";
 
+export type Tab = "home" | "gigs" | "live" | "wallet" | "profile";
+
+export interface UserData {
+  id: string;
+  userName: string;
+  handle: string;
+  email: string;
+  school: string;
+  level: string;
+  score: number;
+  tier: "STARTER" | "BRONZE" | "GOLD" | "DIAMOND";
+  walletBalance: number;
+  isCreator: boolean;
+  transactions: Transaction[];
+  notifications: Notification[];
+  referrals: number;
+  bio?: string;
+  phone?: string;
+}
+
+export interface Transaction {
+  id: string;
+  title: string;
+  amount: number;
+  date: string;
+  status: string;
+  type?: string;
+}
+
+export interface Notification {
+  id: number;
+  title: string;
+  message: string;
+  time: string;
+  read?: boolean;
+}
+
+type Screen =
+  | { name: "splash" }
+  | { name: "login" }
+  | { name: "main"; tab: Tab }
+  | { name: "task-detail"; taskId: number }
+  | { name: "post-task" }
+  | { name: "settings" };
+
 export default function App() {
-  const [showSplash, setShowSplash] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState("home");
-  const [selectedTask, setSelectedTask] = useState<any>(null);
-  const [showPostTask, setShowPostTask] = useState(false);
+  const [screen, setScreen] = useState<Screen>({ name: "splash" });
+  const [user, setUser] = useState<UserData | null>(null);
 
+  // On mount: check saved session
   useEffect(() => {
-    // Handle Referral Tracking
-    const urlParams = new URLSearchParams(window.location.search);
-    const refHandle = urlParams.get('ref');
-    if (refHandle) {
-      console.log(`[REFERRAL] Tracking referral for @${refHandle}`);
-      // In a real app, this would hit an API to increment the referrer's count
-      toast.info(`You were referred by @${refHandle}! Enjoy your bonus.`);
-    }
-
-    const savedUser = localStorage.getItem("oui_user");
+    const savedUser = localStorage.getItem("grind_user");
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch {
+        localStorage.removeItem("grind_user");
+      }
     }
   }, []);
 
-  const handleLogin = (userData: any) => {
-    setUser(userData);
-    localStorage.setItem("oui_user", JSON.stringify(userData));
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem("oui_user");
-    setActiveTab("home");
-  };
-
-  const updateUser = (updates: any) => {
-    const newUser = { ...user, ...updates };
-    setUser(newUser);
-    localStorage.setItem("oui_user", JSON.stringify(newUser));
-  };
-
-  if (showSplash) {
-    return <Splash onComplete={() => setShowSplash(false)} />;
-  }
-
-  if (!user) {
-    return <Login onLogin={handleLogin} />;
-  }
-
-  const handleTabChange = (tab: string) => {
-    if (tab === "post") {
-      setShowPostTask(true);
-    } else {
-      setActiveTab(tab);
-      setSelectedTask(null);
-      setShowPostTask(false);
+  // Handle referral tracking on load
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+    if (ref) {
+      sessionStorage.setItem("referrer", ref);
     }
-  };
+  }, []);
 
-  const handlePostTask = () => {
-    setShowPostTask(true);
-  };
+  const handleSplashComplete = useCallback(() => {
+    const savedUser = localStorage.getItem("grind_user");
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+        setScreen({ name: "main", tab: "home" });
+      } catch {
+        setScreen({ name: "login" });
+      }
+    } else {
+      setScreen({ name: "login" });
+    }
+  }, []);
 
-  const handleTaskClick = (taskId: number) => {
-    // Enhanced task mock for better UX
-    const categories: Record<string, string> = {
-      1: "Writing",
-      2: "Design",
-      3: "Tutoring",
-      4: "Delivery",
-      5: "Coding"
-    };
-    
-    setSelectedTask({
-      id: taskId,
-      category: categories[taskId] || "General",
-      price: taskId === 1 ? 3500 : taskId === 2 ? 5000 : taskId === 3 ? 8500 : 2000,
-      title: taskId === 1 ? "Business Law Essay" : taskId === 2 ? "Faculty Flyer" : "Campus Task " + taskId,
-      description: "Complete professional task requirements for " + (categories[taskId] || "General") + " category. Must follow all campus safety guidelines and smart contract terms.",
-      posterHandle: "@unilag_poster",
-      posterTier: taskId % 2 === 0 ? "GOLD" : "BRONZE",
-      posterScore: taskId % 2 === 0 ? 672 : 420,
-      deadline: "Due in 3 days",
+  const handleLogin = useCallback((userData: UserData) => {
+    setUser(userData);
+    localStorage.setItem("grind_user", JSON.stringify(userData));
+    setScreen({ name: "main", tab: "home" });
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    setUser(null);
+    localStorage.removeItem("grind_user");
+    setScreen({ name: "login" });
+  }, []);
+
+  const updateUser = useCallback((updates: Partial<UserData>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...updates };
+      localStorage.setItem("grind_user", JSON.stringify(next));
+      return next;
     });
-  };
+  }, []);
 
-  const handlePostSuccess = (taskData: any) => {
-    toast.success("Task posted successfully!");
-    // In a real app, we'd add this to a database
-    // For now, we'll just close the modal
-    setShowPostTask(false);
-  };
+  const navigate = useCallback((tab: Tab) => {
+    setScreen({ name: "main", tab });
+  }, []);
 
-  if (showPostTask) {
+  const openPostTask = useCallback(() => {
+    setScreen({ name: "post-task" });
+  }, []);
+
+  const openSettings = useCallback(() => {
+    setScreen({ name: "settings" });
+  }, []);
+
+  const openTaskDetail = useCallback((taskId: number) => {
+    setScreen({ name: "task-detail", taskId });
+  }, []);
+
+  const goBack = useCallback(() => {
+    setScreen({ name: "main", tab: "home" });
+  }, []);
+
+  // ── Splash ──────────────────────────────────────────────────────────────────
+  if (screen.name === "splash") {
+    return <Splash onComplete={handleSplashComplete} />;
+  }
+
+  // ── Login ───────────────────────────────────────────────────────────────────
+  if (screen.name === "login" || !user) {
     return (
-      <div className="min-h-screen bg-grind-neutral-50">
-        <PostTask 
-          onBack={() => setShowPostTask(false)} 
-          onPostSuccess={handlePostSuccess}
+      <>
+        <Toaster position="top-center" richColors />
+        <Login onLogin={handleLogin} />
+      </>
+    );
+  }
+
+  // ── Post Task ───────────────────────────────────────────────────────────────
+  if (screen.name === "post-task") {
+    return (
+      <div className="h-full bg-white overflow-y-auto">
+        <Toaster position="top-center" richColors />
+        <PostTask
+          onBack={() => setScreen({ name: "main", tab: "gigs" })}
+          onPostSuccess={() => setScreen({ name: "main", tab: "gigs" })}
         />
       </div>
     );
   }
 
-  if (selectedTask) {
+  // ── Settings ────────────────────────────────────────────────────────────────
+  if (screen.name === "settings") {
     return (
-      <div className="min-h-screen bg-grind-neutral-50">
-        <TaskDetail task={selectedTask} onBack={() => setSelectedTask(null)} />
-        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-grind-neutral-50">
-      <Toaster position="top-center" />
-      {activeTab === "home" && (
-        <Home 
-          userName={user.userName} 
-          userHandle={user.handle}
-          notifications={user.notifications || []}
-          onNavigate={handleTabChange} 
-          onPostTask={handlePostTask}
-          onTaskClick={handleTaskClick} 
-        />
-      )}
-      {activeTab === "tasks" && <TaskBoard onTaskClick={handleTaskClick} />}
-      {activeTab === "wallet" && (
-        <Wallet 
-          balance={user.walletBalance || 0} 
-          transactions={user.transactions || []} 
-          score={user.score || 0}
-          tier={user.tier || "STARTER"}
-        />
-      )}
-      {activeTab === "profile" && (
-        <Profile
-          userName={user.userName}
-          handle={user.handle}
-          school={user.school}
-          level={user.level}
-          score={user.score}
-          tier={user.tier}
+      <div className="h-full bg-background overflow-y-auto">
+        <Toaster position="top-center" richColors />
+        <Settings
+          user={user}
+          onBack={() => setScreen({ name: "main", tab: "profile" })}
           onLogout={handleLogout}
           onUpdate={updateUser}
         />
-      )}
-      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+      </div>
+    );
+  }
+
+  // ── Task Detail ─────────────────────────────────────────────────────────────
+  if (screen.name === "task-detail") {
+    return (
+      <div className="h-full bg-white overflow-y-auto">
+        <Toaster position="top-center" richColors />
+        <TaskDetail
+          taskId={screen.taskId}
+          user={user}
+          onBack={() => setScreen({ name: "main", tab: "gigs" })}
+        />
+      </div>
+    );
+  }
+
+  // ── Main App (tabbed) ───────────────────────────────────────────────────────
+  const tab = screen.name === "main" ? screen.tab : "home";
+
+  return (
+    <div className="h-full flex flex-col bg-background">
+      <Toaster position="top-center" richColors />
+
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        {tab === "home" && (
+          <Home
+            user={user}
+            onNavigate={navigate}
+            onPostTask={openPostTask}
+            onTaskClick={openTaskDetail}
+            onUpdateUser={updateUser}
+          />
+        )}
+        {tab === "gigs" && (
+          <TaskBoard
+            user={user}
+            onTaskClick={openTaskDetail}
+            onPostTask={openPostTask}
+          />
+        )}
+        {tab === "live" && (
+          <LiveStream user={user} onUpdateUser={updateUser} />
+        )}
+        {tab === "wallet" && (
+          <Wallet
+            user={user}
+            onUpdateUser={updateUser}
+          />
+        )}
+        {tab === "profile" && (
+          <Profile
+            user={user}
+            onLogout={handleLogout}
+            onUpdate={updateUser}
+            onOpenSettings={openSettings}
+          />
+        )}
+      </div>
+
+      {/* Fixed bottom navigation */}
+      <BottomNav
+        activeTab={tab}
+        onTabChange={navigate}
+        onPostTask={openPostTask}
+      />
     </div>
   );
 }

@@ -5,14 +5,14 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "./OuiScore.sol";
-import "./OuiDID.sol";
+import "./GrindScore.sol";
+import "./GrindDID.sol";
 
 /**
- * @title OuiEscrow
+ * @title GrindEscrow
  * @notice Trustless escrow for campus task gigs. Holds cNGN (Naira stablecoin).
  */
-contract OuiEscrow is ReentrancyGuard, Ownable {
+contract GrindEscrow is ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
     enum State { OPEN, LOCKED, SUBMITTED, APPROVED, DISPUTED, RESOLVED, REFUNDED }
@@ -46,8 +46,8 @@ contract OuiEscrow is ReentrancyGuard, Ownable {
     uint256 public constant ADMIN_DELAY = 96 hours;
 
     IERC20 public immutable cNGN;
-    OuiScore public immutable ouiScore;
-    OuiDID public immutable ouiDID;
+    GrindScore public immutable grindScore;
+    GrindDID public immutable grindDID;
     address public treasury;
     uint256 private _taskCounter;
 
@@ -69,8 +69,8 @@ contract OuiEscrow is ReentrancyGuard, Ownable {
 
     constructor(address _cNGN, address _score, address _did, address _treasury) Ownable(msg.sender) {
         cNGN = IERC20(_cNGN);
-        ouiScore = OuiScore(_score);
-        ouiDID = OuiDID(_did);
+        grindScore = GrindScore(_score);
+        grindDID = GrindDID(_did);
         treasury = _treasury;
     }
 
@@ -91,19 +91,19 @@ contract OuiEscrow is ReentrancyGuard, Ownable {
         cNGN.safeTransferFrom(msg.sender, address(this), amount + eFee);
         require(cNGN.balanceOf(address(this)) - balBefore == amount + eFee, "Fee on transfer not supported");
         
-        ouiScore.incrementPayment(msg.sender);
+        grindScore.incrementPayment(msg.sender);
         emit TaskCreated(taskId, msg.sender, amount, _tasks[taskId].deadline);
     }
 
     function acceptTask(uint256 taskId) external nonReentrant {
         Task storage t = _tasks[taskId];
         if (t.state != State.OPEN || msg.sender == t.poster || block.timestamp > t.deadline) revert WrongState();
-        if (t.amount >= 10000e18 && !ouiScore.meetsThreshold(msg.sender, OuiScore.Tier.BRONZE)) revert NotEligible();
-        if (t.amount >= 50000e18 && !ouiScore.meetsThreshold(msg.sender, OuiScore.Tier.GOLD)) revert NotEligible();
+        if (t.amount >= 10000e18 && !grindScore.meetsThreshold(msg.sender, GrindScore.Tier.BRONZE)) revert NotEligible();
+        if (t.amount >= 50000e18 && !grindScore.meetsThreshold(msg.sender, GrindScore.Tier.GOLD)) revert NotEligible();
         
         t.doer = msg.sender;
         t.state = State.LOCKED;
-        ouiScore.incrementAcceptance(msg.sender);
+        grindScore.incrementAcceptance(msg.sender);
         emit TaskAccepted(taskId, msg.sender);
     }
 
@@ -136,7 +136,7 @@ contract OuiEscrow is ReentrancyGuard, Ownable {
         
         t.state = State.REFUNDED;
         cNGN.safeTransfer(t.poster, t.amount + t.escrowFee);
-        if (t.doer != address(0)) ouiScore.penalizeDispute(t.doer);
+        if (t.doer != address(0)) grindScore.penalizeDispute(t.doer);
         emit Refunded(taskId, t.poster, t.amount + t.escrowFee);
     }
 
@@ -152,19 +152,19 @@ contract OuiEscrow is ReentrancyGuard, Ownable {
         cNGN.safeTransferFrom(msg.sender, address(this), DISPUTE_FEE);
         require(cNGN.balanceOf(address(this)) - balBefore == DISPUTE_FEE, "Fee on transfer");
         
-        ouiScore.incrementDisputeTotal(t.poster);
-        ouiScore.incrementDisputeTotal(t.doer);
+        grindScore.incrementDisputeTotal(t.poster);
+        grindScore.incrementDisputeTotal(t.doer);
         emit DisputeRaised(taskId, msg.sender);
     }
 
     function castDisputeVote(uint256 taskId, bool releaseToDoer) external nonReentrant {
         Task storage t = _tasks[taskId];
         if (t.state != State.DISPUTED || _hasVoted[taskId][msg.sender]) revert WrongState();
-        if (msg.sender == t.poster || msg.sender == t.doer || !ouiDID.canArbitrate(msg.sender)) revert NotEligible();
+        if (msg.sender == t.poster || msg.sender == t.doer || !grindDID.canArbitrate(msg.sender)) revert NotEligible();
         
         uint256 elapsed = block.timestamp - t.disputeRaisedAt;
-        if (elapsed < 24 hours && !ouiScore.meetsThreshold(msg.sender, OuiScore.Tier.DIAMOND)) revert NotEligible();
-        if (elapsed >= 24 hours && !ouiScore.meetsThreshold(msg.sender, OuiScore.Tier.GOLD)) revert NotEligible();
+        if (elapsed < 24 hours && !grindScore.meetsThreshold(msg.sender, GrindScore.Tier.DIAMOND)) revert NotEligible();
+        if (elapsed >= 24 hours && !grindScore.meetsThreshold(msg.sender, GrindScore.Tier.GOLD)) revert NotEligible();
 
         _hasVoted[taskId][msg.sender] = true;
         if (releaseToDoer) t.disputeVotesFor++; else t.disputeVotesAgainst++;
@@ -195,17 +195,17 @@ contract OuiEscrow is ReentrancyGuard, Ownable {
             cNGN.safeTransfer(t.poster, half);
             cNGN.safeTransfer(t.doer, half);
             cNGN.safeTransfer(treasury, t.platformFee + t.escrowFee + DISPUTE_FEE);
-            ouiScore.penalizeDispute(t.poster);
-            ouiScore.penalizeDispute(t.doer);
+            grindScore.penalizeDispute(t.poster);
+            grindScore.penalizeDispute(t.doer);
         } else if (doerWins) {
             cNGN.safeTransfer(t.doer, t.amount - t.platformFee + DISPUTE_FEE);
             cNGN.safeTransfer(treasury, t.platformFee + t.escrowFee);
-            ouiScore.incrementCompletion(t.doer);
-            ouiScore.penalizeDispute(t.poster);
+            grindScore.incrementCompletion(t.doer);
+            grindScore.penalizeDispute(t.poster);
         } else {
             cNGN.safeTransfer(t.poster, t.amount + t.escrowFee + DISPUTE_FEE);
             cNGN.safeTransfer(treasury, t.platformFee);
-            ouiScore.penalizeDispute(t.doer);
+            grindScore.penalizeDispute(t.doer);
         }
         emit DisputeResolved(taskId, doerWins, tie);
     }
@@ -216,8 +216,8 @@ contract OuiEscrow is ReentrancyGuard, Ownable {
         if (success) {
             cNGN.safeTransfer(t.doer, t.amount - t.platformFee);
             cNGN.safeTransfer(treasury, t.platformFee + t.escrowFee);
-            ouiScore.incrementCompletion(t.doer);
-            ouiScore.submitRating(t.doer, 4);
+            grindScore.incrementCompletion(t.doer);
+            grindScore.submitRating(t.doer, 4);
         }
     }
 

@@ -4,10 +4,10 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
- * @title OuiScore
+ * @title GrindScore
  * @notice Permanent on-chain reputation for Nigerian university students.
  */
-contract OuiScore is Ownable {
+contract GrindScore is Ownable {
     enum Tier { STARTER, BRONZE, GOLD, DIAMOND }
 
     struct StudentProfile {

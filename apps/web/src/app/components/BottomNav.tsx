@@ -1,58 +1,77 @@
 import React from "react";
-import { Home, Briefcase, Wallet, User, Plus } from "lucide-react";
+import { Home, Briefcase, Tv2, Wallet, User, Plus } from "lucide-react";
 import { cn } from "../../lib/utils";
+import type { Tab } from "../App";
 
 interface BottomNavProps {
-  activeTab: string;
-  onTabChange: (tab: string) => void;
+  activeTab: Tab;
+  onTabChange: (tab: Tab) => void;
+  onPostTask: () => void;
 }
 
-export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
-  const tabs = [
-    { id: "home", icon: Home, label: "Home" },
-    { id: "tasks", icon: Briefcase, label: "Tasks" },
-    { id: "post", icon: Plus, label: "Post", isCenter: true },
-    { id: "wallet", icon: Wallet, label: "Wallet" },
-    { id: "profile", icon: User, label: "Profile" },
-  ];
+const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
+  { id: "home", label: "Home", icon: Home },
+  { id: "gigs", label: "Gigs", icon: Briefcase },
+  { id: "live", label: "Live", icon: Tv2 },
+  { id: "wallet", label: "Wallet", icon: Wallet },
+  { id: "profile", label: "Profile", icon: User },
+];
 
+export function BottomNav({ activeTab, onTabChange, onPostTask }: BottomNavProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-grind-neutral-100 z-50 pb-safe">
-      <div className="max-w-[600px] mx-auto px-4 py-2 flex items-end justify-between relative">
-        {tabs.map((tab) => {
+    <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto bg-white border-t border-gray-100 z-50">
+      {/* Post Gig FAB — floats above the nav */}
+      <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+        <button
+          onClick={onPostTask}
+          className="w-12 h-12 rounded-2xl bg-accent text-white flex items-center justify-center shadow-xl shadow-accent/40 hover:bg-grind-accent-dark active:scale-95 transition-all rotate-3 hover:rotate-0"
+          aria-label="Post a Gig"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
+      </div>
+
+      <div className="flex items-end pb-safe h-16">
+        {TABS.map((tab, i) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
-
-          if (tab.isCenter) {
-            return (
-              <button
-                key={tab.id}
-                onClick={() => onTabChange(tab.id)}
-                className="flex flex-col items-center gap-1 -mt-8 relative z-10"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-accent shadow-[0_8px_20px_rgba(108,99,255,0.3)] flex items-center justify-center rotate-3 hover:rotate-0 transition-all active:scale-95">
-                  <Plus className="w-8 h-8 text-white" />
-                </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-accent mt-1">
-                  {tab.label}
-                </span>
-              </button>
-            );
-          }
+          // Split around the center gap
+          const isLeft = i < 2;
+          const isRight = i >= 3;
+          const isCenter = i === 2; // "Live" sits under the FAB
 
           return (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "flex flex-col items-center gap-1 py-2 px-3 transition-all duration-300 flex-1",
-                isActive ? "text-accent" : "text-grind-neutral-400 hover:text-grind-neutral-600"
+                "flex-1 flex flex-col items-center justify-end gap-0.5 pb-2 pt-1 transition-all",
+                isCenter && "pt-6", // push Live label down under FAB
+                isActive ? "text-accent" : "text-gray-400"
               )}
             >
-              <Icon className={cn("w-6 h-6", isActive ? "fill-accent/5" : "")} />
-              <span className={cn("text-[8px] font-bold uppercase tracking-wider", isActive ? "opacity-100" : "opacity-60")}>
-                {tab.label}
-              </span>
+              {!isCenter && (
+                <>
+                  <div className="relative">
+                    <Icon className={cn("w-6 h-6 transition-all", isActive ? "stroke-[2.5]" : "stroke-[1.5]")} />
+                    {/* Dot indicator */}
+                    {isActive && (
+                      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-accent rounded-full" />
+                    )}
+                  </div>
+                  <span className={cn("text-[10px] font-semibold leading-tight", isActive ? "opacity-100" : "opacity-60")}>
+                    {tab.label}
+                  </span>
+                </>
+              )}
+              {isCenter && (
+                <>
+                  {/* Empty space where FAB sits, just the label */}
+                  <span className={cn("text-[10px] font-semibold leading-tight mt-1", isActive ? "opacity-100 text-accent" : "opacity-60 text-gray-400")}>
+                    {tab.label}
+                  </span>
+                </>
+              )}
             </button>
           );
         })}

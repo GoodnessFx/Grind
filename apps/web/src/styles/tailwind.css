@@ -2,3 +2,24 @@
 @source '../**/*.{js,ts,jsx,tsx}';
 
 @import 'tw-animate-css';
+
+@import './theme.css';
+
+@layer utilities {
+  .h-13 {
+    height: 3.25rem;
+  }
+  .pb-safe {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+  .pt-safe {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

@@ -40,25 +40,25 @@ async function deployAll() {
   // Deploy mock cNGN
   const cNGN = await deployMockCNGN(owner);
 
-  // Deploy OuiScore
-  const OuiScore = await ethers.getContractFactory("OuiScore");
-  const ouiScore = await OuiScore.deploy();
+  // Deploy GrindScore
+  const GrindScore = await ethers.getContractFactory("GrindScore");
+  const grindScore = await GrindScore.deploy();
 
-  // Deploy OuiDID
-  const OuiDID = await ethers.getContractFactory("OuiDID");
-  const ouiDID = await OuiDID.deploy();
+  // Deploy GrindDID
+  const GrindDID = await ethers.getContractFactory("GrindDID");
+  const grindDID = await GrindDID.deploy();
 
-  // Deploy OuiEscrow
-  const OuiEscrow = await ethers.getContractFactory("OuiEscrow");
-  const escrow = await OuiEscrow.deploy(
+  // Deploy GrindEscrow
+  const GrindEscrow = await ethers.getContractFactory("GrindEscrow");
+  const escrow = await GrindEscrow.deploy(
     await cNGN.getAddress(),
-    await ouiScore.getAddress(),
-    await ouiDID.getAddress(),
+    await grindScore.getAddress(),
+    await grindDID.getAddress(),
     treasury.address
   );
 
   // Authorize escrow to write scores
-  await ouiScore.authorizeContract(await escrow.getAddress());
+  await grindScore.authorizeContract(await escrow.getAddress());
 
   // Mint cNGN to test accounts
   const MINT = e18(1_000_000);
@@ -67,119 +67,119 @@ async function deployAll() {
   await cNGN.mint(attacker.address, MINT);
   await cNGN.mint(treasury.address, e18(100_000)); // treasury funds arbiter rewards
 
-  return { cNGN, ouiScore, ouiDID, escrow, owner, treasury, poster, doer, arbiter1, arbiter2, arbiter3, arbiter4, arbiter5, attacker };
+  return { cNGN, grindScore, grindDID, escrow, owner, treasury, poster, doer, arbiter1, arbiter2, arbiter3, arbiter4, arbiter5, attacker };
 }
 
 // Helper: boost an address to Diamond tier by simulating many completions
-async function boostToDiamond(ouiScore, escrow, address) {
+async function boostToDiamond(grindScore, escrow, address) {
   const escrowAddr = await escrow.getAddress();
   // Since only authorized contracts can write — we call via the authorized escrow
-  // In tests we directly call ouiScore as owner after temporarily authorizing a test signer
+  // In tests we directly call grindScore as owner after temporarily authorizing a test signer
   // For simplicity: use owner to directly call (owner is also authorized via test setup)
   // We authorize a direct test call
   const [owner] = await ethers.getSigners();
-  await ouiScore.connect(owner).authorizeContract(owner.address);
+  await grindScore.connect(owner).authorizeContract(owner.address);
 
   // Simulate 10 completions + good ratings to push score above 800
   for (let i = 0; i < 10; i++) {
-    await ouiScore.connect(owner).incrementCompletion(address);
-    await ouiScore.connect(owner).incrementPayment(address);
-    await ouiScore.connect(owner).submitRating(address, 5);
+    await grindScore.connect(owner).incrementCompletion(address);
+    await grindScore.connect(owner).incrementPayment(address);
+    await grindScore.connect(owner).submitRating(address, 5);
   }
 }
 
 // ─────────────────────────────────────────────────────────────
 // TESTS
 // ─────────────────────────────────────────────────────────────
-describe("OuiScore", function () {
+describe("GrindScore", function () {
   describe("Authorization", function () {
     it("only owner can authorize contracts", async function () {
-      const { ouiScore, attacker } = await deployAll();
+      const { grindScore, attacker } = await deployAll();
       await expect(
-        ouiScore.connect(attacker).authorizeContract(attacker.address)
-      ).to.be.revertedWithCustomError(ouiScore, "OwnableUnauthorizedAccount");
+        grindScore.connect(attacker).authorizeContract(attacker.address)
+      ).to.be.revertedWithCustomError(grindScore, "OwnableUnauthorizedAccount");
     });
 
     it("unauthorized address cannot mutate scores", async function () {
-      const { ouiScore, attacker, poster } = await deployAll();
+      const { grindScore, attacker, poster } = await deployAll();
       await expect(
-        ouiScore.connect(attacker).incrementCompletion(poster.address)
-      ).to.be.revertedWith("OuiScore: caller not authorized");
+        grindScore.connect(attacker).incrementCompletion(poster.address)
+      ).to.be.revertedWith("GrindScore: caller not authorized");
     });
 
     it("authorized contract can mutate scores", async function () {
-      const { ouiScore, owner, poster } = await deployAll();
-      await ouiScore.connect(owner).authorizeContract(owner.address);
-      await expect(ouiScore.connect(owner).incrementCompletion(poster.address))
-        .to.emit(ouiScore, "ScoreUpdated");
+      const { grindScore, owner, poster } = await deployAll();
+      await grindScore.connect(owner).authorizeContract(owner.address);
+      await expect(grindScore.connect(owner).incrementCompletion(poster.address))
+        .to.emit(grindScore, "ScoreUpdated");
     });
   });
 
   describe("Score calculation", function () {
     it("new user starts at STARTER tier with score 0", async function () {
-      const { ouiScore, poster } = await deployAll();
-      expect(await ouiScore.getScore(poster.address)).to.equal(0);
-      expect(await ouiScore.getTier(poster.address)).to.equal(0); // STARTER
+      const { grindScore, poster } = await deployAll();
+      expect(await grindScore.getScore(poster.address)).to.equal(0);
+      expect(await grindScore.getTier(poster.address)).to.equal(0); // STARTER
     });
 
     it("completing tasks increases score", async function () {
-      const { ouiScore, owner, poster } = await deployAll();
-      await ouiScore.connect(owner).authorizeContract(owner.address);
+      const { grindScore, owner, poster } = await deployAll();
+      await grindScore.connect(owner).authorizeContract(owner.address);
 
-      await ouiScore.connect(owner).incrementCompletion(poster.address);
-      const score = await ouiScore.getScore(poster.address);
+      await grindScore.connect(owner).incrementCompletion(poster.address);
+      const score = await grindScore.getScore(poster.address);
       expect(score).to.be.gt(0);
     });
 
     it("losing disputes penalizes score", async function () {
-      const { ouiScore, owner, poster } = await deployAll();
-      await ouiScore.connect(owner).authorizeContract(owner.address);
+      const { grindScore, owner, poster } = await deployAll();
+      await grindScore.connect(owner).authorizeContract(owner.address);
 
       // First build score
       for (let i = 0; i < 5; i++) {
-        await ouiScore.connect(owner).incrementCompletion(poster.address);
-        await ouiScore.connect(owner).incrementPayment(poster.address);
-        await ouiScore.connect(owner).submitRating(poster.address, 5);
+        await grindScore.connect(owner).incrementCompletion(poster.address);
+        await grindScore.connect(owner).incrementPayment(poster.address);
+        await grindScore.connect(owner).submitRating(poster.address, 5);
       }
-      const scoreBefore = await ouiScore.getScore(poster.address);
+      const scoreBefore = await grindScore.getScore(poster.address);
 
       // Penalize
-      await ouiScore.connect(owner).incrementDisputeTotal(poster.address);
-      await ouiScore.connect(owner).penalizeDispute(poster.address);
-      const scoreAfter = await ouiScore.getScore(poster.address);
+      await grindScore.connect(owner).incrementDisputeTotal(poster.address);
+      await grindScore.connect(owner).penalizeDispute(poster.address);
+      const scoreAfter = await grindScore.getScore(poster.address);
 
       expect(scoreAfter).to.be.lt(scoreBefore);
-      await expect(ouiScore.connect(owner).penalizeDispute(poster.address))
-        .to.emit(ouiScore, "ScorePenalized");
+      await expect(grindScore.connect(owner).penalizeDispute(poster.address))
+        .to.emit(grindScore, "ScorePenalized");
     });
 
     it("referral cap at 50 prevents farming", async function () {
-      const { ouiScore, owner, poster } = await deployAll();
-      await ouiScore.connect(owner).authorizeContract(owner.address);
+      const { grindScore, owner, poster } = await deployAll();
+      await grindScore.connect(owner).authorizeContract(owner.address);
 
       // Add 60 referrals — should cap at 50
       for (let i = 0; i < 60; i++) {
-        await ouiScore.connect(owner).addReferral(poster.address);
+        await grindScore.connect(owner).addReferral(poster.address);
       }
-      const profile = await ouiScore.getProfile(poster.address);
+      const profile = await grindScore.getProfile(poster.address);
       expect(profile.referrals).to.equal(50);
     });
 
     it("meetsThreshold works for tier gating", async function () {
-      const { ouiScore, owner, poster } = await deployAll();
-      await ouiScore.connect(owner).authorizeContract(owner.address);
+      const { grindScore, owner, poster } = await deployAll();
+      await grindScore.connect(owner).authorizeContract(owner.address);
 
       // STARTER cannot meet BRONZE
-      expect(await ouiScore.meetsThreshold(poster.address, 1)).to.be.false;
+      expect(await grindScore.meetsThreshold(poster.address, 1)).to.be.false;
 
       // Boost to Diamond
-      await boostToDiamond(ouiScore, null, poster.address);
-      expect(await ouiScore.meetsThreshold(poster.address, 3)).to.be.true; // DIAMOND
+      await boostToDiamond(grindScore, null, poster.address);
+      expect(await grindScore.meetsThreshold(poster.address, 3)).to.be.true; // DIAMOND
     });
   });
 });
 
-describe("OuiEscrow", function () {
+describe("GrindEscrow", function () {
   // ── TASK CREATION ──
   describe("createTask", function () {
     it("creates task and locks funds", async function () {
@@ -327,7 +327,7 @@ describe("OuiEscrow", function () {
     });
 
     it("penalizes doer who accepted but ghosted", async function () {
-      const { cNGN, escrow, ouiScore, poster, doer } = await deployAll();
+      const { cNGN, escrow, grindScore, poster, doer } = await deployAll();
       const amount = e18(3500);
       const { totalPull } = calcFees(amount);
 
@@ -339,7 +339,7 @@ describe("OuiEscrow", function () {
       await escrow.connect(poster).claimRefund(1);
 
       // Doer should have disputes lost > 0
-      const profile = await ouiScore.getProfile(doer.address);
+      const profile = await grindScore.getProfile(doer.address);
       expect(profile.disputesLost).to.equal(1);
     });
 
@@ -359,7 +359,7 @@ describe("OuiEscrow", function () {
   // ── DISPUTE FLOW ──
   describe("Dispute flow with 5 arbiter votes", function () {
     async function setupDisputedTask(contracts) {
-      const { cNGN, escrow, ouiScore, poster, doer } = contracts;
+      const { cNGN, escrow, grindScore, poster, doer } = contracts;
       const amount = e18(3500);
       const { totalPull } = calcFees(amount);
 
@@ -377,13 +377,13 @@ describe("OuiEscrow", function () {
 
     it("resolves dispute when 5 arbiters vote — doer wins majority", async function () {
       const contracts = await deployAll();
-      const { cNGN, escrow, ouiScore, doer, arbiter1, arbiter2, arbiter3, arbiter4, arbiter5 } = contracts;
+      const { cNGN, escrow, grindScore, doer, arbiter1, arbiter2, arbiter3, arbiter4, arbiter5 } = contracts;
       await setupDisputedTask(contracts);
 
       const arbiters = [arbiter1, arbiter2, arbiter3, arbiter4, arbiter5];
       // Boost all arbiters to Diamond
       for (const a of arbiters) {
-        await boostToDiamond(ouiScore, escrow, a.address);
+        await boostToDiamond(grindScore, escrow, a.address);
         await cNGN.mint(a.address, e18(1000));
       }
 
@@ -413,9 +413,9 @@ describe("OuiEscrow", function () {
 
     it("reverts if arbiter votes twice", async function () {
       const contracts = await deployAll();
-      const { escrow, ouiScore, arbiter1 } = contracts;
+      const { escrow, grindScore, arbiter1 } = contracts;
       await setupDisputedTask(contracts);
-      await boostToDiamond(ouiScore, escrow, arbiter1.address);
+      await boostToDiamond(grindScore, escrow, arbiter1.address);
 
       await escrow.connect(arbiter1).castDisputeVote(1, true);
       await expect(escrow.connect(arbiter1).castDisputeVote(1, true))
@@ -435,7 +435,7 @@ describe("OuiEscrow", function () {
 
       // Doer is Starter tier (no score)
       await expect(escrow.connect(doer).acceptTask(1))
-        .to.be.revertedWith("OuiEscrow: Bronze tier required for tasks above 10,000 NGN");
+        .to.be.revertedWith("GrindEscrow: Bronze tier required for tasks above 10,000 NGN");
     });
   });
 
@@ -471,18 +471,18 @@ describe("OuiEscrow", function () {
 
   // ── SECURITY — UNAUTHORIZED SCORE ──
   describe("Security: unauthorized score manipulation", function () {
-    it("random user cannot write to OuiScore", async function () {
-      const { ouiScore, attacker, poster } = await deployAll();
+    it("random user cannot write to GrindScore", async function () {
+      const { grindScore, attacker, poster } = await deployAll();
       await expect(
-        ouiScore.connect(attacker).incrementCompletion(poster.address)
-      ).to.be.revertedWith("OuiScore: caller not authorized");
+        grindScore.connect(attacker).incrementCompletion(poster.address)
+      ).to.be.revertedWith("GrindScore: caller not authorized");
     });
 
     it("random user cannot penalize another user", async function () {
-      const { ouiScore, attacker, poster } = await deployAll();
+      const { grindScore, attacker, poster } = await deployAll();
       await expect(
-        ouiScore.connect(attacker).penalizeDispute(poster.address)
-      ).to.be.revertedWith("OuiScore: caller not authorized");
+        grindScore.connect(attacker).penalizeDispute(poster.address)
+      ).to.be.revertedWith("GrindScore: caller not authorized");
     });
   });
 
@@ -524,7 +524,7 @@ describe("OuiEscrow", function () {
       await escrow.connect(poster).createTask(amount, ONE_DAY);
 
       await expect(escrow.connect(poster).acceptTask(1))
-        .to.be.revertedWith("OuiEscrow: poster cannot be doer");
+        .to.be.revertedWith("GrindEscrow: poster cannot be doer");
     });
   });
 });

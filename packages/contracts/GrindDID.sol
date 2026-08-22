@@ -6,10 +6,10 @@ import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
- * @title OuiDID
- * @notice W3C-inspired Decentralised Identifier for Oui Market students.
+ * @title GrindDID
+ * @notice W3C-inspired Decentralised Identifier for Grind Market students.
  */
-contract OuiDID is Ownable, Pausable {
+contract GrindDID is Ownable, Pausable {
     enum PrivacyLevel { ANONYMOUS, PSEUDONYMOUS, PUBLIC }
 
     struct DID {
@@ -38,7 +38,7 @@ contract OuiDID is Ownable, Pausable {
         require(!_dids[msg.sender].exists, "DID exists");
         
         bytes32 id = keccak256(abi.encodePacked(msg.sender, block.timestamp, _nonce++));
-        string memory uri = string(abi.encodePacked("did:oui:", Strings.toHexString(uint256(id))));
+        string memory uri = string(abi.encodePacked("did:grind:", Strings.toHexString(uint256(id))));
         
         _dids[msg.sender] = DID({
             id: id,

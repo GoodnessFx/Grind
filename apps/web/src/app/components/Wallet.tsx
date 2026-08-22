@@ -1,239 +1,321 @@
 import React, { useState } from "react";
-import { Wallet as WalletIcon, Plus, Download, ArrowUpRight, ArrowDownLeft, CreditCard, Landmark, ChevronRight, Trophy, Star } from "lucide-react";
-import { Button } from "./Button";
+import {
+  Plus, Download, ArrowUpRight, ArrowDownLeft,
+  CreditCard, Landmark, ChevronRight, Trophy,
+  Star, Eye, EyeOff, Send, X, CheckCircle2
+} from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "../../lib/utils";
-
-interface Transaction {
-  id: string;
-  title: string;
-  amount: number;
-  date: string;
-  status: string;
-}
+import type { UserData } from "../App";
 
 interface WalletProps {
-  balance: number;
-  transactions: Transaction[];
-  score: number;
-  tier: string;
+  user: UserData;
+  onUpdateUser: (updates: Partial<UserData>) => void;
 }
 
 const mockLeaderboard = [
   { name: "Chidi_Codes", score: 982, tier: "DIAMOND", rank: 1 },
   { name: "Ada_Tech", score: 945, tier: "DIAMOND", rank: 2 },
-  { name: "IG", score: 672, tier: "GOLD", rank: 3, isUser: true },
-  { name: "Emeka_Dev", score: 642, tier: "GOLD", rank: 4 },
+  { name: "Emeka_Dev", score: 701, tier: "GOLD", rank: 3 },
+  { name: "Seun_Maths", score: 642, tier: "GOLD", rank: 4 },
   { name: "Fatimah_Writes", score: 580, tier: "BRONZE", rank: 5 },
 ];
 
-export function Wallet({ balance, transactions, score, tier }: WalletProps) {
-  const [activeView, setActiveView] = useState<"wallet" | "leaderboard">("wallet");
-  const [showFundModal, setShowFundModal] = useState(false);
-  const [fundMethod, setFundMethod] = useState<"card" | "transfer" | null>(null);
+const tierColors: Record<string, string> = {
+  STARTER: "#98A2B3", BRONZE: "#CD7F32", GOLD: "#F79009", DIAMOND: "#0BA5EC",
+};
 
-  const handleDownloadPDF = () => {
-    toast.info("Generating transaction report...");
-    setTimeout(() => {
-      toast.success("Transaction history downloaded successfully!");
-    }, 1500);
+export function Wallet({ user, onUpdateUser }: WalletProps) {
+  const [activeView, setActiveView] = useState<"wallet" | "leaderboard">("wallet");
+  const [balanceHidden, setBalanceHidden] = useState(false);
+  const [showFundModal, setShowFundModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [fundAmount, setFundAmount] = useState("");
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [sendHandle, setSendHandle] = useState("");
+  const [sendAmount, setSendAmount] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleDownload = () => {
+    toast.info("Generating transaction report…");
+    setTimeout(() => toast.success("Statement downloaded!"), 1500);
   };
 
   const handleFund = (method: "card" | "transfer") => {
+    const amount = parseFloat(fundAmount);
+    if (isNaN(amount) || amount < 100) { toast.error("Enter a valid amount (min ₦100)"); return; }
+
     if (method === "transfer") {
+      const ref = `GRD-${Math.floor(Math.random() * 999999).toString().padStart(6, "0")}`;
       toast.custom((t) => (
-        <div className="bg-white border-2 border-accent rounded-[32px] p-6 shadow-2xl max-w-sm animate-in zoom-in duration-300">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center text-accent">
-              <Landmark className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-black text-primary text-sm">Transfer to cNGN Smart Vault</h4>
-              <p className="text-[10px] font-bold text-grind-neutral-400 uppercase tracking-widest">Base Network Bridge</p>
-            </div>
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-2xl p-5 max-w-sm w-full">
+          <p className="font-bold text-gray-900 mb-3">Bank Transfer Details</p>
+          <div className="bg-gray-50 rounded-2xl p-4 space-y-2 mb-4 text-sm">
+            <div><p className="text-[10px] text-gray-400 font-semibold uppercase">Bank</p><p className="font-bold">Grind Trust (VFD)</p></div>
+            <div><p className="text-[10px] text-gray-400 font-semibold uppercase">Account</p><p className="font-extrabold text-xl tracking-widest">0123456789</p></div>
+            <div><p className="text-[10px] text-gray-400 font-semibold uppercase">Reference</p><p className="font-bold text-accent">{ref}</p></div>
+            <div><p className="text-[10px] text-gray-400 font-semibold uppercase">Amount</p><p className="font-bold">₦{amount.toLocaleString()}</p></div>
           </div>
-          <div className="bg-grind-neutral-50 p-4 rounded-2xl mb-4 space-y-3">
-            <div>
-              <p className="text-[10px] font-bold text-grind-neutral-400 uppercase mb-1">Bank Name</p>
-              <p className="text-sm font-black">Oui Market Trust Bank (Wema/VFD)</p>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-grind-neutral-400 uppercase mb-1">Account Number</p>
-              <p className="text-lg font-black tracking-wider">0123456789</p>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-grind-neutral-400 uppercase mb-1">Account Name</p>
-              <p className="text-sm font-black">OUI MARKET - {tier} TIER</p>
-            </div>
-          </div>
-          <p className="text-[10px] text-grind-neutral-500 mb-4 leading-relaxed">
-            Transfer funds here to instantly mint cNGN into your wallet. Funds are protected by the smart contract.
-          </p>
-          <Button onClick={() => toast.dismiss(t)} className="w-full h-10 py-0 text-[10px] font-black">
-            I'VE MADE THE TRANSFER
-          </Button>
+          <button
+            onClick={() => {
+              toast.dismiss(t);
+              setLoading(true);
+              setTimeout(() => {
+                onUpdateUser({
+                  walletBalance: user.walletBalance + amount,
+                  transactions: [
+                    { id: `TX${Date.now()}`, title: "Wallet Funding", amount, date: new Date().toLocaleDateString("en-NG", { month: "short", day: "numeric", year: "numeric" }), status: "Completed", type: "fund" },
+                    ...user.transactions,
+                  ],
+                });
+                setLoading(false);
+                setShowFundModal(false);
+                setFundAmount("");
+                toast.success(`₦${amount.toLocaleString()} added!`);
+              }, 1500);
+            }}
+            className="w-full bg-accent text-white font-bold py-3 rounded-2xl text-sm"
+          >
+            I've Made the Transfer
+          </button>
         </div>
-      ), { duration: 15000 });
-      setShowFundModal(false);
+      ), { duration: 30000 });
       return;
     }
-    
-    setFundMethod(method);
-    toast.loading(`Initializing ${method} payment...`);
+
+    setLoading(true);
     setTimeout(() => {
-      toast.dismiss();
-      toast.success(`₦5,000 added to your wallet via ${method}`);
+      onUpdateUser({
+        walletBalance: user.walletBalance + amount,
+        transactions: [
+          { id: `TX${Date.now()}`, title: "Wallet Funding (Card)", amount, date: new Date().toLocaleDateString("en-NG", { month: "short", day: "numeric", year: "numeric" }), status: "Completed", type: "fund" },
+          ...user.transactions,
+        ],
+      });
+      setLoading(false);
       setShowFundModal(false);
-      setFundMethod(null);
+      setFundAmount("");
+      toast.success(`₦${amount.toLocaleString()} funded!`);
     }, 2000);
   };
 
+  const handleWithdraw = () => {
+    const amount = parseFloat(withdrawAmount);
+    if (isNaN(amount) || amount < 500) { toast.error("Minimum withdrawal is ₦500"); return; }
+    if (amount > user.walletBalance) { toast.error("Insufficient balance"); return; }
+    setLoading(true);
+    setTimeout(() => {
+      onUpdateUser({
+        walletBalance: user.walletBalance - amount,
+        transactions: [
+          { id: `TX${Date.now()}`, title: "Withdrawal to Bank", amount: -amount, date: new Date().toLocaleDateString("en-NG", { month: "short", day: "numeric", year: "numeric" }), status: "Processing", type: "spend" },
+          ...user.transactions,
+        ],
+      });
+      setLoading(false);
+      setShowWithdrawModal(false);
+      setWithdrawAmount("");
+      toast.success("Withdrawal initiated! Arrives in 1-2 hours.");
+    }, 2000);
+  };
+
+  const handleSend = () => {
+    const amount = parseFloat(sendAmount);
+    if (!sendHandle.startsWith("@")) { toast.error("Enter a valid handle (e.g. @username)"); return; }
+    if (isNaN(amount) || amount < 100) { toast.error("Minimum transfer is ₦100"); return; }
+    if (amount > user.walletBalance) { toast.error("Insufficient balance"); return; }
+    setLoading(true);
+    setTimeout(() => {
+      onUpdateUser({
+        walletBalance: user.walletBalance - amount,
+        transactions: [
+          { id: `TX${Date.now()}`, title: `Transfer to ${sendHandle}`, amount: -amount, date: new Date().toLocaleDateString("en-NG", { month: "short", day: "numeric", year: "numeric" }), status: "Completed", type: "spend" },
+          ...user.transactions,
+        ],
+      });
+      setLoading(false);
+      setShowSendModal(false);
+      setSendHandle(""); setSendAmount("");
+      toast.success(`₦${amount.toLocaleString()} sent to ${sendHandle}!`);
+    }, 1800);
+  };
+
+  const userRank = mockLeaderboard.findIndex((u) => u.score <= user.score) + 1;
+  const displayRank = userRank > 0 ? userRank : mockLeaderboard.length + 1;
+
   return (
-    <div className="pb-32 px-4 max-w-[600px] mx-auto">
-      <div className="pt-6 pb-6 flex items-center justify-between sticky top-0 bg-grind-neutral-50 z-20">
-        <div className="flex bg-grind-neutral-100 p-1 rounded-2xl">
-          <button 
-            onClick={() => setActiveView("wallet")}
-            className={cn(
-              "px-6 py-2.5 rounded-xl text-sm font-bold transition-all",
-              activeView === "wallet" ? "bg-white text-primary shadow-sm" : "text-grind-neutral-500 hover:text-grind-neutral-700"
-            )}
-          >
-            Wallet
-          </button>
-          <button 
-            onClick={() => setActiveView("leaderboard")}
-            className={cn(
-              "px-6 py-2.5 rounded-xl text-sm font-bold transition-all",
-              activeView === "leaderboard" ? "bg-white text-primary shadow-sm" : "text-grind-neutral-500 hover:text-grind-neutral-700"
-            )}
-          >
-            Leaderboard
-          </button>
+    <div className="pb-28">
+      {/* ── Tab header ──────────────────────────────────────── */}
+      <div className="bg-white px-5 pt-12 pb-4 flex items-center justify-between">
+        <div className="flex bg-gray-100 p-1 rounded-2xl">
+          {["wallet", "leaderboard"].map((v) => (
+            <button
+              key={v}
+              onClick={() => setActiveView(v as any)}
+              className={cn(
+                "px-5 py-2 rounded-xl text-sm font-semibold capitalize transition-all",
+                activeView === v ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"
+              )}
+            >
+              {v.charAt(0).toUpperCase() + v.slice(1)}
+            </button>
+          ))}
         </div>
         {activeView === "wallet" && (
-          <button onClick={handleDownloadPDF} className="p-2.5 bg-white border border-grind-neutral-100 rounded-xl shadow-sm hover:bg-grind-neutral-50 transition-colors">
-            <Download className="w-5 h-5 text-grind-neutral-700" />
+          <button onClick={handleDownload} className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
+            <Download className="w-4 h-4 text-gray-600" />
           </button>
         )}
       </div>
 
-      {activeView === "wallet" ? (
+      {/* ── Wallet view ─────────────────────────────────────── */}
+      {activeView === "wallet" && (
         <div className="animate-in fade-in slide-in-from-left-4 duration-300">
-          <div className="bg-primary text-white rounded-[40px] p-8 mb-8 relative overflow-hidden shadow-2xl">
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <p className="text-xs opacity-70 uppercase tracking-widest font-bold mb-1">Total Balance</p>
-                  <h3 className="text-4xl font-black flex items-center gap-2">
-                    ₦{balance.toLocaleString()}
-                    <span className="text-sm font-bold bg-white/20 px-2 py-0.5 rounded">cNGN</span>
-                  </h3>
+          {/* Balance card */}
+          <div className="px-4 mb-4">
+            <div className="bg-accent rounded-3xl p-5 relative overflow-hidden shadow-lg">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-16 -mt-10 pointer-events-none" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-white/70 text-xs font-medium">cNGN Balance</p>
+                  <button onClick={() => setBalanceHidden((v) => !v)} className="text-white/70">
+                    {balanceHidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs opacity-70 uppercase tracking-widest font-bold mb-1">GrindScore</p>
-                  <div className="flex items-center gap-2 justify-end">
-                    <Star className="w-4 h-4 text-accent fill-accent" />
-                    <span className="text-2xl font-black">{score}</span>
-                  </div>
+                <h3 className="text-3xl font-extrabold text-white mb-4">
+                  {balanceHidden ? "₦ ••••••" : `₦${user.walletBalance.toLocaleString()}`}
+                </h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: "+ Add", action: () => setShowFundModal(true) },
+                    { label: "↗ Send", action: () => setShowSendModal(true) },
+                    { label: "↙ Cash", action: () => setShowWithdrawModal(true) },
+                  ].map((btn) => (
+                    <button
+                      key={btn.label}
+                      onClick={btn.action}
+                      className="bg-white/20 hover:bg-white/30 active:scale-95 transition-all rounded-2xl py-2.5 text-white text-xs font-bold"
+                    >
+                      {btn.label}
+                    </button>
+                  ))}
                 </div>
-              </div>
-              
-              <div className="flex gap-4">
-                <Button 
-                  onClick={() => setShowFundModal(true)}
-                  className="flex-1 bg-white text-primary hover:bg-white/90 font-black flex items-center justify-center gap-2 h-14"
-                >
-                  <Plus className="w-5 h-5" />
-                  FUND
-                </Button>
-                <Button 
-                  variant="outline"
-                  className="flex-1 border-white/20 text-white hover:bg-white/10 font-black h-14"
-                >
-                  WITHDRAW
-                </Button>
               </div>
             </div>
-            <div className="absolute top-0 right-0 w-48 h-48 bg-accent/20 rounded-full -mr-24 -mt-24 blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-16 -mb-16 blur-2xl" />
           </div>
 
-          <div className="mb-6">
-            <h3 className="font-black text-sm uppercase tracking-widest text-grind-neutral-400 mb-4">Transaction History</h3>
-            <div className="space-y-4">
-              {transactions.map((tx) => (
-                <div key={tx.id} className="bg-white border border-grind-neutral-100 rounded-[24px] p-5 flex items-center gap-4 hover:shadow-md transition-all group">
-                  <div className={cn(
-                    "w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110",
-                    tx.amount > 0 ? 'bg-grind-success/10 text-grind-success' : 'bg-grind-warning/10 text-grind-warning'
-                  )}>
-                    {tx.amount > 0 ? <ArrowDownLeft className="w-6 h-6" /> : <ArrowUpRight className="w-6 h-6" />}
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-grind-neutral-900">{tx.title}</h4>
-                    <p className="text-[10px] font-bold text-grind-neutral-400 uppercase tracking-wider">{tx.date} • {tx.status}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className={cn(
-                      "font-black text-lg",
-                      tx.amount > 0 ? 'text-grind-success' : 'text-grind-neutral-900'
-                    )}>
-                      {tx.amount > 0 ? '+' : ''}₦{Math.abs(tx.amount).toLocaleString()}
-                    </p>
-                    <p className="text-[10px] font-bold text-accent uppercase tracking-widest">cNGN</p>
-                  </div>
+          {/* GrindScore card */}
+          <div className="px-4 mb-4">
+            <div className="bg-white border border-gray-100 rounded-3xl p-4 flex items-center gap-4 shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-yellow-50 flex items-center justify-center">
+                <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-gray-400 font-medium">Your GrindScore</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <p className="text-2xl font-extrabold text-gray-900">{user.score}</p>
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: tierColors[user.tier] ?? "#98A2B3" }} />
+                  <span className="text-xs font-semibold" style={{ color: tierColors[user.tier] }}>{user.tier}</span>
                 </div>
-              ))}
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-gray-400">Campus Rank</p>
+                <p className="text-xl font-extrabold text-gray-900">#{displayRank}</p>
+              </div>
             </div>
+          </div>
+
+          {/* Transactions */}
+          <div className="px-4">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Transaction History</p>
+            {user.transactions.length > 0 ? (
+              <div className="space-y-2">
+                {user.transactions.map((tx) => {
+                  const isIn = tx.amount > 0;
+                  return (
+                    <div key={tx.id} className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+                      <div className={cn(
+                        "w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0",
+                        isIn ? "bg-green-50" : "bg-red-50"
+                      )}>
+                        {isIn ? <ArrowDownLeft className="w-5 h-5 text-green-500" /> : <ArrowUpRight className="w-5 h-5 text-red-500" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 text-sm truncate">{tx.title}</p>
+                        <p className="text-[10px] text-gray-400 font-medium mt-0.5">{tx.date} • {tx.status}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className={cn("font-extrabold text-sm", isIn ? "text-green-500" : "text-gray-700")}>
+                          {isIn ? "+" : ""}₦{Math.abs(tx.amount).toLocaleString()}
+                        </p>
+                        <p className="text-[10px] text-accent font-semibold">cNGN</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
+                <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <ArrowDownLeft className="w-6 h-6 text-gray-300" />
+                </div>
+                <p className="text-gray-400 text-sm font-medium">No transactions yet</p>
+                <button onClick={() => setShowFundModal(true)} className="mt-3 text-accent text-sm font-bold">Fund your wallet →</button>
+              </div>
+            )}
           </div>
         </div>
-      ) : (
+      )}
+
+      {/* ── Leaderboard view ─────────────────────────────────── */}
+      {activeView === "leaderboard" && (
         <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-          <div className="bg-accent text-white rounded-[40px] p-8 mb-8 flex items-center gap-6 relative overflow-hidden">
-            <div className="w-20 h-20 bg-white/20 rounded-[32px] flex items-center justify-center shrink-0">
-              <Trophy className="w-10 h-10 text-white" />
+          <div className="px-4 mb-4">
+            <div className="bg-accent rounded-3xl p-5 flex items-center gap-4 relative overflow-hidden shadow-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 pointer-events-none" />
+              <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
+                <Trophy className="w-8 h-8 text-white" />
+              </div>
+              <div className="relative z-10">
+                <h3 className="text-xl font-extrabold text-white">Campus Leaderboard</h3>
+                <p className="text-white/70 text-xs mt-0.5">You are ranked <span className="font-bold text-white">#{displayRank}</span> on campus</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-2xl font-black mb-1">Unilag Leaderboard</h3>
-              <p className="text-sm opacity-80">You are currently ranked #3 on campus. Keep grinding to reach Diamond!</p>
-            </div>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
           </div>
 
-          <div className="space-y-3">
-            {mockLeaderboard.map((user) => (
-              <div 
-                key={user.name} 
-                className={cn(
-                  "p-5 rounded-[24px] border flex items-center gap-4 transition-all",
-                  user.isUser ? "bg-accent/5 border-accent/20" : "bg-white border-grind-neutral-100"
-                )}
-              >
+          <div className="px-4 space-y-2">
+            {/* User's own rank */}
+            <div className="bg-grind-accent-light border border-accent/20 rounded-2xl p-4 flex items-center gap-3">
+              <div className="w-9 h-9 bg-accent rounded-xl flex items-center justify-center text-white font-bold text-sm">#{displayRank}</div>
+              <div className="flex-1">
+                <p className="font-bold text-gray-900 text-sm flex items-center gap-2">{user.userName} <span className="text-[10px] bg-accent text-white px-2 py-0.5 rounded-full">YOU</span></p>
+                <p className="text-[10px] text-gray-500">{user.tier} TIER</p>
+              </div>
+              <div className="text-right">
+                <p className="font-extrabold text-lg text-gray-900">{user.score}</p>
+                <p className="text-[10px] text-gray-400">GrindScore</p>
+              </div>
+            </div>
+
+            {mockLeaderboard.map((u) => (
+              <div key={u.name} className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
                 <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shadow-sm",
-                  user.rank === 1 ? "bg-grind-tier-gold text-white" : 
-                  user.rank === 2 ? "bg-grind-neutral-200 text-grind-neutral-600" :
-                  "bg-grind-neutral-50 text-grind-neutral-400"
+                  "w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm",
+                  u.rank === 1 ? "bg-yellow-400 text-white" : u.rank === 2 ? "bg-gray-300 text-gray-700" : u.rank === 3 ? "bg-orange-400 text-white" : "bg-gray-100 text-gray-500"
                 )}>
-                  #{user.rank}
+                  #{u.rank}
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-bold text-grind-neutral-900 flex items-center gap-2">
-                    {user.name}
-                    {user.isUser && <span className="text-[10px] bg-accent text-white px-2 py-0.5 rounded-full">YOU</span>}
-                  </h4>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-accent" />
-                    <span className="text-[10px] font-bold text-grind-neutral-400 uppercase tracking-widest">{user.tier} TIER</span>
+                  <p className="font-bold text-gray-900 text-sm">{u.name}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tierColors[u.tier] }} />
+                    <span className="text-[10px] text-gray-400 font-medium">{u.tier}</span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-1.5 justify-end">
-                    <Star className="w-3 h-3 text-accent fill-accent" />
-                    <span className="font-black text-lg">{user.score}</span>
-                  </div>
-                  <p className="text-[10px] font-bold text-grind-neutral-400 uppercase tracking-widest">GrindScore</p>
+                <div className="flex items-center gap-1.5">
+                  <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                  <span className="font-extrabold text-gray-900">{u.score}</span>
                 </div>
               </div>
             ))}
@@ -241,53 +323,110 @@ export function Wallet({ balance, transactions, score, tier }: WalletProps) {
         </div>
       )}
 
+      {/* ── Fund Modal ─────────────────────────────────────── */}
       {showFundModal && (
-        <div className="fixed inset-0 bg-black/60 z-[100] flex items-end justify-center backdrop-blur-sm">
-          <div className="bg-white w-full max-w-[600px] rounded-t-[40px] p-8 animate-in slide-in-from-bottom duration-500">
-            <div className="w-12 h-1.5 bg-grind-neutral-200 rounded-full mx-auto mb-8" />
-            <h3 className="text-3xl font-black mb-2">Fund Wallet</h3>
-            <p className="text-grind-neutral-500 mb-8 font-medium">Choose a professional payment method.</p>
-            
-            <div className="space-y-4">
-              <button 
-                onClick={() => handleFund("card")}
-                className="w-full p-6 border-2 border-grind-neutral-100 rounded-[24px] flex items-center gap-4 hover:border-accent transition-all group"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent transition-transform group-hover:scale-110">
-                  <CreditCard className="w-7 h-7" />
-                </div>
-                <div className="flex-1 text-left">
-                  <h4 className="font-black text-lg">Debit Card</h4>
-                  <p className="text-sm text-grind-neutral-500">Instant funding via Paystack</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-grind-neutral-300 group-hover:text-accent transition-transform group-hover:translate-x-1" />
+        <Modal title="Add Money" onClose={() => setShowFundModal(false)}>
+          <p className="text-sm text-gray-500 mb-4">Enter amount to add to your cNGN wallet</p>
+          <div className="relative mb-4">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-lg">₦</span>
+            <input
+              type="number"
+              inputMode="numeric"
+              placeholder="0"
+              value={fundAmount}
+              onChange={(e) => setFundAmount(e.target.value)}
+              className="w-full pl-9 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-2xl font-extrabold focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
+              autoFocus
+            />
+          </div>
+          {/* Quick amounts */}
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            {[1000, 2500, 5000, 10000].map((amt) => (
+              <button key={amt} onClick={() => setFundAmount(String(amt))} className="py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 hover:border-accent hover:text-accent transition-all">
+                ₦{amt.toLocaleString()}
               </button>
+            ))}
+          </div>
+          <div className="space-y-2">
+            <button disabled={loading} onClick={() => handleFund("card")} className="w-full h-13 bg-accent text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-grind-accent-dark active:scale-95 transition-all disabled:opacity-60 py-3.5">
+              <CreditCard className="w-4 h-4" /> {loading ? "Processing…" : "Pay with Card"}
+            </button>
+            <button disabled={loading} onClick={() => handleFund("transfer")} className="w-full h-13 bg-white border border-gray-200 rounded-2xl font-semibold text-gray-700 text-sm flex items-center justify-center gap-2 hover:border-gray-300 active:scale-95 transition-all py-3.5">
+              <Landmark className="w-4 h-4 text-gray-500" /> Bank Transfer
+            </button>
+          </div>
+        </Modal>
+      )}
 
-              <button 
-                onClick={() => handleFund("transfer")}
-                className="w-full p-6 border-2 border-grind-neutral-100 rounded-[24px] flex items-center gap-4 hover:border-accent transition-all group"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent transition-transform group-hover:scale-110">
-                  <Landmark className="w-7 h-7" />
-                </div>
-                <div className="flex-1 text-left">
-                  <h4 className="font-black text-lg">Bank Transfer</h4>
-                  <p className="text-sm text-grind-neutral-500">Secure smart contract address</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-grind-neutral-300 group-hover:text-accent transition-transform group-hover:translate-x-1" />
-              </button>
+      {/* ── Withdraw Modal ─────────────────────────────────── */}
+      {showWithdrawModal && (
+        <Modal title="Withdraw to Bank" onClose={() => setShowWithdrawModal(false)}>
+          <p className="text-sm text-gray-500 mb-1">Available: <span className="font-bold text-gray-900">₦{user.walletBalance.toLocaleString()}</span></p>
+          <div className="relative mb-4 mt-3">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-lg">₦</span>
+            <input
+              type="number"
+              inputMode="numeric"
+              placeholder="0"
+              value={withdrawAmount}
+              onChange={(e) => setWithdrawAmount(e.target.value)}
+              className="w-full pl-9 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-2xl font-extrabold focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
+              autoFocus
+            />
+          </div>
+          <button disabled={loading} onClick={handleWithdraw} className="w-full h-13 bg-accent text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-grind-accent-dark active:scale-95 transition-all disabled:opacity-60 py-3.5">
+            {loading ? "Processing…" : "Withdraw to Bank"}
+          </button>
+        </Modal>
+      )}
 
-              <Button 
-                variant="ghost" 
-                onClick={() => setShowFundModal(false)}
-                className="w-full mt-4 h-14 font-black text-grind-neutral-400"
-              >
-                CANCEL
-              </Button>
+      {/* ── Send Modal ─────────────────────────────────────── */}
+      {showSendModal && (
+        <Modal title="Send cNGN" onClose={() => setShowSendModal(false)}>
+          <p className="text-sm text-gray-500 mb-4">Send to any Grind user by their handle</p>
+          <div className="space-y-3 mb-4">
+            <input
+              type="text"
+              placeholder="@username"
+              value={sendHandle}
+              onChange={(e) => setSendHandle(e.target.value)}
+              className="w-full h-13 px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
+              autoFocus
+            />
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₦</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                placeholder="Amount"
+                value={sendAmount}
+                onChange={(e) => setSendAmount(e.target.value)}
+                className="w-full pl-9 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-base font-bold focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
+              />
             </div>
           </div>
-        </div>
+          <button disabled={loading} onClick={handleSend} className="w-full h-13 bg-accent text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-grind-accent-dark active:scale-95 transition-all disabled:opacity-60 py-3.5">
+            <Send className="w-4 h-4" /> {loading ? "Sending…" : "Send Now"}
+          </button>
+        </Modal>
       )}
+    </div>
+  );
+}
+
+function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col justify-end">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-t-3xl px-5 pt-5 pb-8 animate-in slide-in-from-bottom duration-300">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+            <X className="w-4 h-4 text-gray-600" />
+          </button>
+        </div>
+        {children}
+      </div>
     </div>
   );
 }

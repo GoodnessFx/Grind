@@ -1,26 +1,29 @@
-import { useState } from "react";
-import { ArrowLeft, ArrowRight, ShieldCheck, CreditCard, Landmark, Check, Edit2, Sparkles, Briefcase, Star, Clock, Shield, Camera, Settings } from "lucide-react";
-import { Button } from "./Button";
-import { cn } from "../../lib/utils";
+import React, { useState } from "react";
+import {
+  ChevronLeft, ArrowRight, Shield, CreditCard, Landmark,
+  CheckCircle2, PenLine, Paintbrush2, Code2, BookOpen,
+  Truck, FlaskConical, Video, MoreHorizontal
+} from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "../../lib/utils";
 
 interface PostTaskProps {
   onBack: () => void;
   onPostSuccess?: (taskData: any) => void;
 }
 
-const categories = [
-  { value: "writing", label: "Writing", icon: <Edit2 className="w-5 h-5" /> },
-  { value: "design", label: "Design", icon: <Sparkles className="w-5 h-5" /> },
-  { value: "coding", label: "Coding", icon: <Briefcase className="w-5 h-5" /> },
-  { value: "tutoring", label: "Tutoring", icon: <Star className="w-5 h-5" /> },
-  { value: "delivery", label: "Delivery", icon: <Clock className="w-5 h-5" /> },
-  { value: "research", label: "Research", icon: <Shield className="w-5 h-5" /> },
-  { value: "video", label: "Video", icon: <Camera className="w-5 h-5" /> },
-  { value: "other", label: "Other", icon: <Settings className="w-5 h-5" /> },
+const CATEGORIES = [
+  { value: "Writing", label: "Writing", icon: PenLine, color: "bg-blue-50 text-blue-600" },
+  { value: "Design", label: "Design", icon: Paintbrush2, color: "bg-pink-50 text-pink-600" },
+  { value: "Coding", label: "Coding", icon: Code2, color: "bg-purple-50 text-purple-600" },
+  { value: "Tutoring", label: "Tutoring", icon: BookOpen, color: "bg-green-50 text-green-600" },
+  { value: "Delivery", label: "Delivery", icon: Truck, color: "bg-orange-50 text-orange-600" },
+  { value: "Research", label: "Research", icon: FlaskConical, color: "bg-yellow-50 text-yellow-600" },
+  { value: "Video", label: "Video", icon: Video, color: "bg-red-50 text-red-600" },
+  { value: "Other", label: "Other", icon: MoreHorizontal, color: "bg-gray-100 text-gray-600" },
 ];
 
-const durations = ["1 day", "3 days", "7 days", "14 days", "30 days"];
+const DURATIONS = ["1 day", "3 days", "7 days", "14 days", "30 days"];
 
 export function PostTask({ onBack, onPostSuccess }: PostTaskProps) {
   const [step, setStep] = useState(1);
@@ -29,332 +32,316 @@ export function PostTask({ onBack, onPostSuccess }: PostTaskProps) {
   const [description, setDescription] = useState("");
   const [budget, setBudget] = useState("");
   const [duration, setDuration] = useState("3 days");
-  const [showPayment, setShowPayment] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
 
-  const platformFee = budget ? Math.round(parseFloat(budget) * 0.08) : 0;
-  const escrowFee = budget ? Math.round(parseFloat(budget) * 0.015) : 0;
-  const totalToPay = budget ? parseFloat(budget) + escrowFee : 0;
-  const doerEarns = budget ? parseFloat(budget) - platformFee : 0;
+  const budgetNum = parseFloat(budget) || 0;
+  const platformFee = Math.round(budgetNum * 0.08);
+  const escrowFee = Math.round(budgetNum * 0.015);
+  const totalToPay = budgetNum + escrowFee;
+  const doerEarns = budgetNum - platformFee;
 
-  const handlePost = (method: "card" | "transfer" | "wallet") => {
+  const canNext1 = title.trim().length >= 5 && category && description.trim().length >= 20;
+  const canNext2 = budgetNum >= 500;
+
+  const handlePay = (method: "wallet" | "card" | "transfer") => {
     if (method === "transfer") {
+      const ref = `GRD-${Math.floor(Math.random() * 999999).toString().padStart(6, "0")}`;
       toast.custom((t) => (
-        <div className="bg-white border-2 border-accent rounded-[32px] p-6 shadow-2xl max-w-sm animate-in zoom-in duration-300">
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-2xl p-5 max-w-sm w-full mx-auto">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center text-accent">
-              <Landmark className="w-6 h-6" />
+            <div className="w-10 h-10 bg-grind-accent-light rounded-2xl flex items-center justify-center">
+              <Landmark className="w-5 h-5 text-accent" />
             </div>
             <div>
-              <h4 className="font-black text-primary text-sm">Escrow Funding Account</h4>
-              <p className="text-[10px] font-bold text-grind-neutral-400 uppercase tracking-widest">Base Smart Contract Bridge</p>
+              <p className="font-bold text-gray-900 text-sm">Escrow Funding Account</p>
+              <p className="text-[10px] text-gray-400">Smart Contract Bridge</p>
             </div>
           </div>
-          <div className="bg-grind-neutral-50 p-4 rounded-2xl mb-4 space-y-3">
-            <div>
-              <p className="text-[10px] font-bold text-grind-neutral-400 uppercase mb-1">Bank Name</p>
-              <p className="text-sm font-black">Oui Market Trust Bank (Wema/VFD)</p>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-grind-neutral-400 uppercase mb-1">Account Number</p>
-              <p className="text-lg font-black tracking-wider">0123456789</p>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-grind-neutral-400 uppercase mb-1">Payment Reference</p>
-              <p className="text-sm font-black text-accent uppercase tracking-wider">OUI-{Math.floor(Math.random() * 999999)}</p>
-            </div>
+          <div className="bg-gray-50 rounded-2xl p-4 space-y-3 mb-4">
+            <div><p className="text-[10px] text-gray-400 uppercase font-semibold mb-0.5">Bank Name</p><p className="font-bold text-sm text-gray-800">Grind Market Trust (VFD)</p></div>
+            <div><p className="text-[10px] text-gray-400 uppercase font-semibold mb-0.5">Account Number</p><p className="font-extrabold text-xl tracking-widest text-gray-900">0123456789</p></div>
+            <div><p className="text-[10px] text-gray-400 uppercase font-semibold mb-0.5">Reference</p><p className="font-bold text-accent text-sm">{ref}</p></div>
+            <div><p className="text-[10px] text-gray-400 uppercase font-semibold mb-0.5">Amount</p><p className="font-bold text-sm text-gray-800">₦{totalToPay.toLocaleString()}</p></div>
           </div>
-          <p className="text-[10px] text-grind-neutral-500 mb-4 leading-relaxed">
-            Funds will be instantly locked in the OuiEscrow contract (0x8a9B...F2e4) once received.
-          </p>
-          <Button onClick={() => {
-            toast.dismiss(t);
-            setIsSuccess(true);
-          }} className="w-full h-10 py-0 text-[10px] font-black">
-            I'VE MADE THE TRANSFER
-          </Button>
+          <button
+            onClick={() => { toast.dismiss(t); setLoading(true); setTimeout(() => { setLoading(false); setDone(true); }, 1500); }}
+            className="w-full bg-accent text-white font-bold py-3 rounded-2xl text-sm hover:bg-grind-accent-dark active:scale-95 transition-all"
+          >
+            I've Made the Transfer
+          </button>
         </div>
-      ), { duration: 20000 });
+      ), { duration: 30000 });
       return;
     }
-    
-    toast.loading(`Processing ₦${totalToPay.toLocaleString()} via ${method}...`);
+
+    setLoading(true);
     setTimeout(() => {
-      toast.dismiss();
-      setIsSuccess(true);
-      toast.success("Task posted and funded successfully!");
-      if (onPostSuccess) {
-        onPostSuccess({
-          title,
-          category,
-          description,
-          price: parseFloat(budget),
-          deadline: duration,
-        });
-      }
-    }, 3000);
+      setLoading(false);
+      setDone(true);
+      onPostSuccess?.({ title, category, description, price: budgetNum, deadline: duration });
+    }, 2000);
   };
 
-  if (isSuccess) {
+  // ── Success ──────────────────────────────────────────────
+  if (done) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-20 h-20 bg-grind-success/10 rounded-full flex items-center justify-center mb-6 animate-bounce">
-          <Check className="w-10 h-10 text-grind-success" />
+      <div className="h-full flex flex-col items-center justify-center bg-white px-6 text-center">
+        <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
+          <CheckCircle2 className="w-10 h-10 text-green-500" />
         </div>
-        <h2 className="text-3xl font-black mb-2">Task is Live!</h2>
-        <p className="text-grind-neutral-500 mb-8 max-w-[300px]">
-          Your task has been funded and is now visible to all students at Unilag.
-        </p>
-        <Button onClick={onBack} className="w-full h-14">
-          Back to Dashboard
-        </Button>
+        <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Gig is Live!</h2>
+        <p className="text-gray-500 text-sm mb-8 max-w-xs">Your gig is now visible to all students. Expect applications within minutes.</p>
+        <button
+          onClick={onBack}
+          className="w-full h-14 bg-accent text-white rounded-2xl font-bold hover:bg-grind-accent-dark active:scale-95 transition-all shadow-lg shadow-accent/30"
+        >
+          Back to Gigs
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white pb-24">
-      <div className="sticky top-0 bg-white border-b border-grind-neutral-200 z-10">
-        <div className="max-w-[600px] mx-auto px-4 py-4">
-          <div className="flex items-center gap-4 mb-4">
-            <button onClick={onBack} className="p-2 -ml-2 hover:bg-grind-neutral-50 rounded-full">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <h2 className="font-bold flex-1">Post a New Gig</h2>
+    <div className="h-full flex flex-col bg-white">
+      {/* ── Header ─────────────────────────────────────────── */}
+      <div className="px-5 pt-12 pb-4 border-b border-gray-100">
+        <div className="flex items-center gap-3 mb-4">
+          <button onClick={step === 1 ? onBack : () => setStep((s) => s - 1)} className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
+            <ChevronLeft className="w-5 h-5 text-gray-700" />
+          </button>
+          <div>
+            <h2 className="font-bold text-gray-900">Post a Gig</h2>
+            <p className="text-xs text-gray-400">Step {step} of 3</p>
           </div>
-          <div className="flex gap-2">
-            {[1, 2, 3].map((s) => (
-              <div
-                key={s}
-                className={cn(
-                  "h-1.5 flex-1 rounded-full transition-all duration-500",
-                  s <= step ? "bg-accent" : "bg-grind-neutral-100"
-                )}
-              />
-            ))}
-          </div>
+        </div>
+        {/* Progress bar */}
+        <div className="flex gap-1.5">
+          {[1, 2, 3].map((s) => (
+            <div key={s} className={cn("h-1.5 flex-1 rounded-full transition-all duration-500", s <= step ? "bg-accent" : "bg-gray-100")} />
+          ))}
         </div>
       </div>
 
-      <div className="max-w-[600px] mx-auto px-4 py-8">
+      {/* ── Step Content ─────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto px-5 py-6">
+        {/* ─── Step 1: Details ──────────────────────────────── */}
         {step === 1 && (
-          <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-            <h2 className="text-2xl font-black mb-2">What do you need?</h2>
-            <p className="text-sm text-grind-neutral-500 mb-8 font-medium">
-              Be specific to attract the best doers on campus.
-            </p>
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div>
+              <h3 className="text-xl font-extrabold text-gray-900 mb-1">What do you need done?</h3>
+              <p className="text-sm text-gray-500">Be specific to attract the best talent on campus.</p>
+            </div>
 
-            <div className="space-y-6">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-grind-neutral-400 mb-2">Task title</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Help me with Calculus homework"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-4 bg-grind-neutral-50 border border-grind-neutral-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent font-medium"
-                />
-              </div>
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">Gig Title *</label>
+              <input
+                type="text"
+                placeholder="e.g. Write my BUS 301 assignment (1500 words)"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={100}
+                className="w-full h-13 px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
+              />
+              <p className="text-[10px] text-gray-400 text-right mt-1">{title.length}/100</p>
+            </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-grind-neutral-400 mb-2">Category</label>
-                <div className="grid grid-cols-4 gap-3">
-                  {categories.map((cat) => (
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3 block">Category *</label>
+              <div className="grid grid-cols-4 gap-2">
+                {CATEGORIES.map((cat) => {
+                  const Icon = cat.icon;
+                  const active = category === cat.value;
+                  return (
                     <button
                       key={cat.value}
                       onClick={() => setCategory(cat.value)}
                       className={cn(
-                        "p-4 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-2",
-                        category === cat.value
-                          ? "border-accent bg-accent/5 scale-105"
-                          : "border-grind-neutral-100 hover:border-grind-neutral-200"
+                        "flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all active:scale-95",
+                        active ? "border-accent bg-grind-accent-light" : "border-transparent bg-gray-50"
                       )}
                     >
-                      <div className={cn(
-                        "transition-colors",
-                        category === cat.value ? "text-accent" : "text-grind-neutral-400"
-                      )}>
-                        {cat.icon}
+                      <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center", active ? "bg-accent text-white" : cat.color)}>
+                        <Icon className="w-4 h-4" />
                       </div>
-                      <div className="text-[10px] font-bold uppercase">{cat.label}</div>
+                      <span className={cn("text-[10px] font-semibold text-center", active ? "text-accent" : "text-gray-600")}>{cat.label}</span>
                     </button>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-grind-neutral-400 mb-2">Description</label>
-                <textarea
-                  placeholder="Tell us exactly what needs to be done..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={4}
-                  maxLength={500}
-                  className="w-full px-4 py-4 bg-grind-neutral-50 border border-grind-neutral-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none font-medium"
-                />
-                <div className="text-[10px] font-bold text-grind-neutral-400 text-right mt-2">
-                  {description.length} / 500 CHARACTERS
-                </div>
-              </div>
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">Description *</label>
+              <textarea
+                placeholder="Describe exactly what needs to be done, format, and any requirements..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={5}
+                maxLength={500}
+                className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
+              />
+              <p className="text-[10px] text-gray-400 text-right mt-1">{description.length}/500</p>
             </div>
           </div>
         )}
 
+        {/* ─── Step 2: Budget & Timeline ────────────────────── */}
         {step === 2 && (
-          <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-            <h2 className="text-2xl font-black mb-2">Budget & Timeline</h2>
-            <p className="text-sm text-grind-neutral-500 mb-8 font-medium">
-              Set a professional price and a realistic deadline.
-            </p>
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div>
+              <h3 className="text-xl font-extrabold text-gray-900 mb-1">Budget & Timeline</h3>
+              <p className="text-sm text-gray-500">Set a fair price and realistic deadline.</p>
+            </div>
 
-            <div className="space-y-8">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-grind-neutral-400 mb-2">How much will you pay?</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-grind-neutral-400 font-black text-xl">
-                    ₦
-                  </span>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={budget}
-                    onChange={(e) => setBudget(e.target.value)}
-                    className="w-full pl-10 pr-4 py-6 bg-grind-neutral-50 border border-grind-neutral-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-3xl font-black"
-                  />
-                </div>
-                <div className="mt-4 p-4 bg-grind-neutral-50 rounded-2xl border border-grind-neutral-100 space-y-2">
-                  <div className="flex justify-between text-xs font-medium text-grind-neutral-500">
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">How much will you pay? *</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-lg">₦</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={budget}
+                  onChange={(e) => setBudget(e.target.value)}
+                  min={500}
+                  className="w-full pl-9 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-2xl font-extrabold focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
+                />
+              </div>
+              {budgetNum > 0 && (
+                <div className="mt-3 bg-gray-50 rounded-2xl p-4 space-y-2 border border-gray-100">
+                  <div className="flex justify-between text-sm text-gray-500">
                     <span>Platform Fee (8%)</span>
                     <span>₦{platformFee.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-xs font-medium text-grind-neutral-500">
-                    <span>Escrow Service Fee (1.5%)</span>
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>Escrow Fee (1.5%)</span>
                     <span>₦{escrowFee.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between pt-2 border-t border-grind-neutral-200">
-                    <span className="text-sm font-bold">The Doer Earns</span>
-                    <span className="text-sm font-black text-grind-success">₦{doerEarns.toLocaleString()}</span>
+                  <div className="border-t border-gray-200 pt-2 space-y-1.5">
+                    <div className="flex justify-between text-sm font-bold text-gray-700">
+                      <span>Doer Earns</span>
+                      <span className="text-accent">₦{doerEarns.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm font-bold text-gray-900">
+                      <span>You Pay</span>
+                      <span>₦{totalToPay.toLocaleString()}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+              {budgetNum > 0 && budgetNum < 500 && (
+                <p className="text-xs text-red-500 font-medium mt-2">Minimum budget is ₦500</p>
+              )}
+            </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-grind-neutral-400 mb-2">
-                  Duration
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {durations.map((d) => (
-                    <button
-                      key={d}
-                      onClick={() => setDuration(d)}
-                      className={cn(
-                        "px-4 py-3 rounded-xl text-xs font-bold transition-all",
-                        duration === d
-                          ? "bg-accent text-white shadow-lg"
-                          : "bg-grind-neutral-50 text-grind-neutral-700 hover:bg-grind-neutral-100"
-                      )}
-                    >
-                      {d.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3 block">Deadline</label>
+              <div className="grid grid-cols-3 gap-2">
+                {DURATIONS.map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setDuration(d)}
+                    className={cn(
+                      "py-3 rounded-2xl text-sm font-semibold border-2 transition-all active:scale-95",
+                      duration === d ? "bg-accent text-white border-accent shadow-sm" : "bg-gray-50 text-gray-700 border-transparent"
+                    )}
+                  >
+                    {d}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         )}
 
+        {/* ─── Step 3: Payment ──────────────────────────────── */}
         {step === 3 && (
           <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-            <h2 className="text-2xl font-black mb-2">Secure Payment</h2>
-            <p className="text-sm text-grind-neutral-500 mb-8 font-medium">
-              Funds are held trustlessly until you approve the work.
-            </p>
-
-            <div className="bg-primary text-white rounded-[32px] p-6 mb-8 relative overflow-hidden shadow-xl">
-              <div className="relative z-10">
-                <p className="text-xs opacity-70 mb-1 uppercase tracking-widest font-bold">Total to Pay</p>
-                <h3 className="text-4xl font-black mb-1 flex items-center gap-2">
-                  ₦{totalToPay.toLocaleString()}
-                  <span className="text-sm font-bold bg-white/20 px-2 py-0.5 rounded">cNGN</span>
-                </h3>
-                <p className="text-[10px] opacity-60">Includes all service and escrow fees</p>
-              </div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-accent/20 rounded-full -mr-16 -mt-16 blur-2xl" />
+            <div className="mb-6">
+              <h3 className="text-xl font-extrabold text-gray-900 mb-1">Secure Payment</h3>
+              <p className="text-sm text-gray-500">Funds are held in escrow until you approve the work.</p>
             </div>
 
-            <div className="space-y-4">
-              <button 
-                onClick={() => handlePost("wallet")}
-                className="w-full p-6 border-2 border-accent bg-accent/5 rounded-3xl flex items-center gap-4 hover:bg-accent/10 transition-all group"
+            {/* Summary card */}
+            <div className="bg-accent rounded-3xl p-5 mb-6 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 pointer-events-none" />
+              <p className="text-white/70 text-xs font-semibold uppercase tracking-wide mb-1">Total to Pay</p>
+              <h4 className="text-3xl font-extrabold text-white mb-1">₦{totalToPay.toLocaleString()}</h4>
+              <p className="text-white/60 text-xs">Includes escrow & service fees • {duration}</p>
+            </div>
+
+            <div className="space-y-3">
+              {/* Wallet */}
+              <button
+                onClick={() => handlePay("wallet")}
+                disabled={loading}
+                className="w-full border-2 border-accent bg-grind-accent-light rounded-2xl p-4 flex items-center gap-4 active:scale-[0.99] transition-all disabled:opacity-60"
               >
-                <div className="w-12 h-12 rounded-2xl bg-accent flex items-center justify-center text-white">
-                  <ShieldCheck className="w-6 h-6" />
-                </div>
+                <div className="w-12 h-12 bg-accent rounded-2xl flex items-center justify-center text-white"><Shield className="w-6 h-6" /></div>
                 <div className="flex-1 text-left">
-                  <h4 className="font-bold">Pay from Wallet</h4>
-                  <p className="text-xs text-grind-neutral-500">Fastest & most secure</p>
+                  <p className="font-bold text-gray-900">Pay from Wallet</p>
+                  <p className="text-xs text-gray-500">Instant • Most secure</p>
+                </div>
+                {loading && <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />}
+              </button>
+
+              {/* Card */}
+              <button
+                onClick={() => handlePay("card")}
+                disabled={loading}
+                className="w-full border-2 border-gray-100 rounded-2xl p-4 flex items-center gap-4 active:scale-[0.99] transition-all hover:border-gray-200 disabled:opacity-60"
+              >
+                <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center"><CreditCard className="w-6 h-6 text-gray-600" /></div>
+                <div className="flex-1 text-left">
+                  <p className="font-bold text-gray-900">Debit Card</p>
+                  <p className="text-xs text-gray-500">Instant via Paystack</p>
                 </div>
               </button>
 
-              <button 
-                onClick={() => handlePost("card")}
-                className="w-full p-6 border-2 border-grind-neutral-100 rounded-3xl flex items-center gap-4 hover:border-accent transition-all group"
+              {/* Bank Transfer */}
+              <button
+                onClick={() => handlePay("transfer")}
+                disabled={loading}
+                className="w-full border-2 border-gray-100 rounded-2xl p-4 flex items-center gap-4 active:scale-[0.99] transition-all hover:border-gray-200 disabled:opacity-60"
               >
-                <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
-                  <CreditCard className="w-6 h-6" />
-                </div>
+                <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center"><Landmark className="w-6 h-6 text-gray-600" /></div>
                 <div className="flex-1 text-left">
-                  <h4 className="font-bold text-grind-neutral-900">Pay with Debit Card</h4>
-                  <p className="text-xs text-grind-neutral-500">Instant funding via Paystack</p>
-                </div>
-              </button>
-
-              <button 
-                onClick={() => handlePost("transfer")}
-                className="w-full p-6 border-2 border-grind-neutral-100 rounded-3xl flex items-center gap-4 hover:border-accent transition-all group"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
-                  <Landmark className="w-6 h-6" />
-                </div>
-                <div className="flex-1 text-left">
-                  <h4 className="font-bold text-grind-neutral-900">Bank Transfer</h4>
-                  <p className="text-xs text-grind-neutral-500">Secure smart contract address</p>
+                  <p className="font-bold text-gray-900">Bank Transfer</p>
+                  <p className="text-xs text-gray-500">Smart contract address</p>
                 </div>
               </button>
             </div>
 
-            <div className="mt-8 p-4 bg-grind-accent-light rounded-2xl border border-accent/20 flex gap-3">
-              <ShieldCheck className="w-5 h-5 text-accent shrink-0" />
-              <p className="text-[10px] text-accent font-bold uppercase leading-relaxed tracking-wider">
-                Every transaction is protected by the OuiEscrow smart contract.
-              </p>
+            <div className="mt-5 flex items-start gap-2.5 bg-grind-accent-light rounded-2xl p-3.5">
+              <Shield className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+              <p className="text-xs text-gray-600">Every payment is protected by the GrindEscrow smart contract. You get a full refund if the doer misses the deadline.</p>
             </div>
           </div>
         )}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-grind-neutral-100 p-6 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <div className="max-w-[600px] mx-auto flex gap-4">
-          {step > 1 && (
-            <Button variant="ghost" onClick={() => setStep(step - 1)} className="flex-1 h-14">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              BACK
-            </Button>
-          )}
-          {step < 3 && (
-            <Button
-              onClick={() => setStep(step + 1)}
-              disabled={
-                (step === 1 && (!title || !category || !description)) ||
-                (step === 2 && (!budget || parseFloat(budget) < 500))
-              }
-              className="flex-[2] h-14 font-black"
+      {/* ── Footer CTA ──────────────────────────────────────── */}
+      <div className="px-5 py-4 pb-safe border-t border-gray-100 bg-white">
+        {step < 3 ? (
+          <div className="flex gap-3">
+            {step > 1 && (
+              <button
+                onClick={() => setStep((s) => s - 1)}
+                className="flex-1 h-13 bg-gray-50 text-gray-700 rounded-2xl font-bold py-3.5 hover:bg-gray-100 active:scale-95 transition-all"
+              >
+                Back
+              </button>
+            )}
+            <button
+              onClick={() => setStep((s) => s + 1)}
+              disabled={step === 1 ? !canNext1 : !canNext2}
+              className="flex-[2] h-13 bg-accent text-white rounded-2xl font-bold py-3.5 flex items-center justify-center gap-2 hover:bg-grind-accent-dark active:scale-95 transition-all shadow-lg shadow-accent/30 disabled:opacity-40 disabled:shadow-none"
             >
-              CONTINUE
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          )}
-        </div>
+              Continue <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );
