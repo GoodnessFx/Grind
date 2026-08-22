@@ -24,8 +24,8 @@ app.use('/api/gifts', giftsRouter);
 import path from 'path';
 import fs from 'fs';
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+app.get(['/health', '/healthcheck', '/ping'], (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Serve frontend in production if built
@@ -42,6 +42,9 @@ const server = http.createServer(app);
 // Initialize Socket.io for real‑time chat
 initChat(server);
 
-server.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+const PORT = Number(process.env.PORT) || 3001;
+const HOST = '0.0.0.0';
+
+server.listen(PORT, HOST, () => {
+  console.log(`[Grind Server] Running on http://${HOST}:${PORT}`);
 });
