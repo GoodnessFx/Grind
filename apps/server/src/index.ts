@@ -21,9 +21,22 @@ app.use('/api/streams', streamsRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/gifts', giftsRouter);
 
+import path from 'path';
+import fs from 'fs';
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
+
+// Serve frontend in production if built
+const webDistPath = path.resolve(__dirname, '../../web/dist');
+if (fs.existsSync(webDistPath)) {
+  app.use(express.static(webDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(webDistPath, 'index.html'));
+  });
+}
 
 const server = http.createServer(app);
 // Initialize Socket.io for real‑time chat

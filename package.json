@@ -1,10 +1,15 @@
 {
   "name": "grind-monorepo",
+  "version": "1.0.0",
   "private": true,
+  "main": "server.js",
   "scripts": {
     "dev": "pnpm dev:web & pnpm dev:server",
     "dev:web": "pnpm --filter web dev",
     "dev:server": "pnpm --filter server dev",
-    "build:web": "pnpm --filter web build"
+    "build": "pnpm --filter web build && pnpm --filter server build",
+    "build:web": "pnpm --filter web build",
+    "build:server": "pnpm --filter server build",
+    "start": "node server.js"
   }
 }
