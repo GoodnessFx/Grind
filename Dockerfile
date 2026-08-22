@@ -24,7 +24,8 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/server/dist ./apps/server/dist
 COPY --from=builder /app/apps/web/dist ./apps/web/dist
 # Expose the port (platform will set PORT env)
-EXPOSE $PORT
+EXPOSE 8080
+ENV PORT=8080
 # Set environment to production
 ENV NODE_ENV=production
 # Start the server
