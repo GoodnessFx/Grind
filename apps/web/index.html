@@ -1,23 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Grind — Trustless Campus Gigs</title>
+    <meta name="description" content="Grind is a trustless gig economy for Nigerian university students, powered by cNGN and smart contracts." />
+    <meta name="theme-color" content="#00A651" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-      
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Grind — Trustless Campus Gigs</title>
-      <meta name="description" content="Grind is a trustless gig economy for Nigerian university students, powered by cNGN and smart contracts." />
-      <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-      <meta name="robots" content="noindex, nofollow" />
-      <style>html, body { height: 100%; margin: 0; } #root { height: 100%; }</style>
-      
-    </head>
+    <!-- Open Graph -->
+    <meta property="og:title" content="Grind — Campus Gig Economy" />
+    <meta property="og:description" content="Post and earn campus gigs secured by smart contracts." />
+    <meta property="og:type" content="website" />
 
-    <body>
-      
-      <div id="root"></div>
-      <script type="module" src="/src/main.tsx"></script>
-      
-    </body>
-  </html>
-  
+    <!-- Preconnect for fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <style>
+      html, body { height: 100%; margin: 0; padding: 0; background: #F4F6F8; }
+      #root { height: 100%; }
+      /* Prevent flash of unstyled content */
+      #root:empty::before {
+        content: '';
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: #00A651;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>
+      <div style="font-family:sans-serif;text-align:center;padding:48px 24px;background:#F4F6F8;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <strong style="font-size:20px;color:#0A2540">Grind requires JavaScript</strong>
+        <p style="color:#667085;margin-top:8px">Please enable JavaScript to use this app.</p>
+      </div>
+    </noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

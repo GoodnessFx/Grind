@@ -132,7 +132,8 @@
     max-width: 480px;
     margin: 0 auto;
     position: relative;
-    overflow: hidden;
+    overflow: clip; /* clip prevents scroll escape but doesn't break fixed children */
+    isolation: isolate;
   }
 
   h1, h2, h3, h4 {
