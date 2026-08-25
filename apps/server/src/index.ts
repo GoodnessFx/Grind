@@ -15,6 +15,8 @@ import giftsRouter from './routes/gifts';
 dotenv.config();
 
 const app = express();
+// Trust reverse proxy (Vercel / Heroku / proxies) so `req.ip` reflects X-Forwarded-For
+app.set('trust proxy', true);
 const PORT = Number(process.env.PORT) || 8080;
 const HOST = '0.0.0.0';
 
@@ -60,6 +62,12 @@ const globalLimiter = rateLimit({
   max: 200,
   standardHeaders: true,
   legacyHeaders: false,
+  // Use the first value in X-Forwarded-For when behind a proxy, falling back to req.ip
+  keyGenerator: (req) => {
+    const xf = (req.headers['x-forwarded-for'] as string) || '';
+    if (xf) return xf.split(',')[0].trim();
+    return String(req.ip ?? '');
+  },
   message: { error: 'Too many requests, please try again later.' },
 });
 app.use(globalLimiter);
@@ -70,6 +78,11 @@ const strictLimiter = rateLimit({
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => {
+    const xf = (req.headers['x-forwarded-for'] as string) || '';
+    if (xf) return xf.split(',')[0].trim();
+    return String(req.ip ?? '');
+  },
   message: { error: 'Too many requests, please slow down.' },
 });
 
