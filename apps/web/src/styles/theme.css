@@ -3,11 +3,11 @@
 :root {
   --font-size: 16px;
 
-  /* Grind Brand Colors — OPay-inspired green */
+  /* Grind Brand Colors — Opay-inspired green (refined) */
   --grind-primary: #0A2540;
-  --grind-accent: #00A651;
-  --grind-accent-dark: #007A3D;
-  --grind-accent-light: #E6F7EE;
+  --grind-accent: #00C48C;
+  --grind-accent-dark: #009E70;
+  --grind-accent-light: #E9FFF4;
   --grind-success: #00A651;
   --grind-warning: #F79009;
   --grind-danger: #F04438;

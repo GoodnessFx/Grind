@@ -21,10 +21,10 @@ export function BottomNav({ activeTab, onTabChange, onPostTask }: BottomNavProps
   return (
     <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto bg-white border-t border-gray-100 z-50">
       {/* Post Gig FAB — floats above the nav */}
-      <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+      <div className="absolute -top-8 left-1/2 -translate-x-1/2">
         <button
           onClick={onPostTask}
-          className="w-12 h-12 rounded-2xl bg-accent text-white flex items-center justify-center shadow-xl shadow-accent/40 hover:bg-grind-accent-dark active:scale-95 transition-all rotate-3 hover:rotate-0"
+          className="w-14 h-14 rounded-full bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/30 hover:bg-accent-dark active:scale-95 transition-all z-50"
           aria-label="Post a Gig"
         >
           <Plus className="w-6 h-6" />
@@ -37,7 +37,7 @@ export function BottomNav({ activeTab, onTabChange, onPostTask }: BottomNavProps
           const isActive = activeTab === tab.id;
           const isCenter = i === 2; // "Discovery" sits under the FAB
 
-          return (
+            return (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
@@ -48,7 +48,7 @@ export function BottomNav({ activeTab, onTabChange, onPostTask }: BottomNavProps
               )}
             >
               <div className={cn("relative", isCenter && "mt-1")}>
-                <Icon className={cn(isCenter ? "w-5 h-5" : "w-6 h-6", "transition-all", isActive ? "stroke-[2.5]" : "stroke-[1.5]")} />
+                <Icon className={cn(isCenter ? "w-5 h-5" : "w-6 h-6", "transition-all", isActive ? "stroke-[2.5] text-accent" : "stroke-[1.5] text-gray-400")} />
                 {isActive && (
                   <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-accent rounded-full" />
                 )}
