@@ -229,8 +229,8 @@ export function Login({ onLogin, context, initialStep, layout = "full" }: LoginP
 
             <p className="text-xs text-gray-400 text-center mt-6 pb-8">
               By continuing, you agree to Grind's{" "}
-              <span className="text-accent font-medium">Terms of Service</span> &{" "}
-              <span className="text-accent font-medium">Privacy Policy</span>
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-accent font-medium hover:underline">Terms of Service</a> &{" "}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-accent font-medium hover:underline">Privacy Policy</a>
             </p>
           </div>
         )}

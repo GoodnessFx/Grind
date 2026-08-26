@@ -13,6 +13,7 @@ import { DiscoveryFeed } from "./components/DiscoveryFeed";
 import { LiveStream } from "./components/LiveStream";
 import { BottomNav } from "./components/BottomNav";
 import { PublicGigEntry, PublicReferralEntry } from "./components/PublicEntry";
+import { NotFound } from "./components/NotFound";
 
 export type Tab = "home" | "gigs" | "discovery" | "wallet" | "profile";
 
@@ -73,6 +74,61 @@ type Screen =
 export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: "splash" });
   const [user, setUser] = useState<UserData | null>(null);
+
+  // Update document title based on current screen
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      splash: "Grind — Campus Gig Economy",
+      login: "Sign In — Grind",
+      "public-gig": "Post Details — Grind",
+      "public-referral": "Join Grind",
+      main: "Grind — Trustless Campus Gigs",
+      "task-detail": "Post Details — Grind",
+      "post-task": "Post a Gig — Grind",
+      settings: "Settings — Grind",
+      live: "Live Stream — Grind",
+    };
+
+    const tabTitles: Record<Tab, string> = {
+      home: "Home — Grind",
+      gigs: "Browse Gigs — Grind",
+      discovery: "Discover — Grind",
+      wallet: "Wallet — Grind",
+      profile: "Profile — Grind",
+    };
+
+    const screenName = screen.name === "main" ? `main-${(screen as any).tab}` : screen.name;
+    const title = screen.name === "main" ? tabTitles[(screen as any).tab] : titles[screen.name];
+    document.title = title || "Grind";
+  }, [screen]);
+
+  // Update meta descriptions based on current screen
+  useEffect(() => {
+    const descriptions: Record<string, string> = {
+      splash: "Grind is a trustless gig economy for Nigerian university students, powered by cNGN and smart contracts.",
+      login: "Sign in to your Grind account to start posting and earning gigs.",
+      "public-gig": "View this gig on Grind, the trustless campus gig economy platform.",
+      "public-referral": "Join Grind and start earning campus gigs. Refer friends and earn bonuses.",
+      "task-detail": "View the details of this gig and apply or manage it on Grind.",
+      "post-task": "Post a new gig on Grind and start earning from campus community.",
+      settings: "Manage your Grind account settings, profile, and preferences.",
+      live: "Go live and broadcast to the Grind community.",
+    };
+
+    const tabDescriptions: Record<Tab, string> = {
+      home: "Welcome to Grind. Browse recommended gigs, manage your wallet, and track your reputation.",
+      gigs: "Browse available gigs on Grind and apply to earn. Secured by smart contracts.",
+      discovery: "Discover trending gigs and opportunities on Grind.",
+      wallet: "Manage your Grind wallet, check balances, and withdraw earnings.",
+      profile: "View and manage your Grind profile, reputation, and portfolio.",
+    };
+
+    const desc = screen.name === "main" ? tabDescriptions[(screen as any).tab] : descriptions[screen.name];
+    const metaTag = document.querySelector('meta[name="description"]');
+    if (metaTag) {
+      metaTag.setAttribute("content", desc || "Grind is a trustless gig economy platform for university students.");
+    }
+  }, [screen]);
 
   // On mount: check saved session
   useEffect(() => {

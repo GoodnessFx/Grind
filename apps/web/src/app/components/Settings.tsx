@@ -105,8 +105,14 @@ export function Settings({ user, onBack, onLogout, onUpdate }: SettingsProps) {
 
   const SUPPORT_ROWS: SettingsRow[] = [
     { icon: MessageSquare, label: "Feedback & Suggestions", desc: "Help us improve Grind", action: () => setSub("feedback") },
-    { icon: HelpCircle, label: "Help Center", desc: "FAQs & contact support", action: () => toast.info("Opening Help Center…") },
-    { icon: FileText, label: "Terms & Privacy Policy", desc: "Read our policies", action: () => toast.info("Opening legal docs…") },
+    { icon: HelpCircle, label: "Help Center", desc: "FAQs & contact support", action: () => window.open("mailto:support@grind.market", "_blank") },
+    { icon: FileText, label: "Terms & Privacy Policy", desc: "Read our policies", action: () => {
+      const links = [
+        window.open("/terms", "_blank"),
+        window.open("/privacy", "_blank"),
+      ];
+      toast.success("Opening legal documents in new tabs…");
+    } },
   ];
 
   const DANGER_ROWS: SettingsRow[] = [
