@@ -80,29 +80,34 @@ export const Login = () => {
   return (
     <div className="min-h-screen flex font-[Inter,sans-serif] bg-white">
       {/* Left — Branding panel */}
-      <div className="hidden lg:flex lg:w-[45%] bg-[#1f1d3d] flex-col p-16 justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <LogoMark size={32} tone="dark" framed />
-          <span className="text-white font-bold text-xl">Grind</span>
-        </Link>
+      <div className="hidden lg:flex lg:w-[45%] bg-[#041e42] flex-col p-16 justify-between relative overflow-hidden">
+        
+        {/* Background Subtle Gradient */}
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#ff6b00]/10 rounded-full blur-[100px]" />
+        
+        <div className="relative z-10">
+          <Link to="/" className="flex items-center gap-2 mb-16">
+            <LogoMark size={32} tone="light" />
+            <span className="text-white font-bold text-2xl tracking-tight">Grind</span>
+          </Link>
 
-        <div>
-          <h1 className="text-5xl font-black text-white leading-tight mb-6 tracking-tight">
-            Your hustle,<br />
-            your platform.
-          </h1>
-          <p className="text-[#98A2B3] text-lg leading-relaxed max-w-md">
-            Join Nigeria's leading campus marketplace. Post services, find gigs, sell products — all protected by escrow.
-          </p>
+          <div>
+            <h1 className="text-5xl font-bold text-white leading-tight mb-6 tracking-tight">
+              Sign in to your<br />Workspace.
+            </h1>
+            <p className="text-white/70 text-lg leading-relaxed max-w-md font-medium">
+              Join Nigeria's leading campus marketplace. Post services, find gigs, sell products — all protected by escrow.
+            </p>
+          </div>
         </div>
 
-        <blockquote className="border-t border-white/10 pt-8">
+        <blockquote className="relative z-10 border-t border-white/10 pt-8 mt-12">
           <p className="text-white text-lg font-medium mb-4">"I made ₦180,000 in my first month on Grind just doing logo design from my dorm room."</p>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#dceeb1] flex items-center justify-center text-[#1f1d3d] font-bold">AS</div>
+            <div className="w-10 h-10 rounded-full bg-[#ff6b00] flex items-center justify-center text-white font-bold">AS</div>
             <div>
               <div className="text-white text-sm font-semibold">Amara S.</div>
-              <div className="text-[#98A2B3] text-sm">UI Designer · UNILAG</div>
+              <div className="text-white/60 text-sm">UI Designer · UNILAG</div>
             </div>
           </div>
         </blockquote>
@@ -165,15 +170,15 @@ export const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-black hover:bg-gray-900 text-white font-medium py-3.5 rounded-[50px] transition-colors flex items-center justify-center gap-2 mt-4 text-lg"
+              className="w-full bg-[#ff6b00] hover:bg-[#e66000] text-white font-bold py-3.5 rounded-[50px] transition-colors flex items-center justify-center gap-2 mt-4 text-lg shadow-lg shadow-[#ff6b00]/20"
             >
               Log in <ArrowRight size={18} />
             </button>
           </form>
 
-          <p className="text-center text-base text-[#666666] mt-8">
+          <p className="text-center text-base text-gray-500 mt-8 font-medium">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-black font-semibold hover:underline">Sign up</Link>
+            <Link to="/signup" className="text-[#041e42] font-bold hover:underline">Sign up</Link>
           </p>
         </div>
       </div>

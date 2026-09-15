@@ -13,6 +13,7 @@ import { GrindFlex } from '../pages/GrindFlex';
 import { Explorer } from '../pages/Explorer';
 import { Leaderboard } from '../pages/Leaderboard';
 import { SupportChat } from '../components/common/SupportChat';
+import { CartProvider } from '../context/CartContext';
 
 export const GOOGLE_CLIENT_ID = "24300395823-trbfqd7mjiho0tgl9jpaek4qtemuf5cd.apps.googleusercontent.com";
 
@@ -31,6 +32,7 @@ const GoogleWrapper = React.lazy(() =>
 
 function AppRoutes() {
   return (
+    <CartProvider>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -48,6 +50,7 @@ function AppRoutes() {
       </Routes>
       <SupportChat />
     </BrowserRouter>
+    </CartProvider>
   );
 }
 

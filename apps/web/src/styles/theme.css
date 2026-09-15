@@ -3,63 +3,55 @@
 :root {
   --font-size: 16px;
 
-  /* Figma Design System Tokens */
-  --grind-primary: #000000;
-  --grind-canvas: #ffffff;
-  --grind-inverse-canvas: #000000;
-  --grind-inverse-ink: #ffffff;
-  --grind-surface-soft: #f7f7f5;
-  --grind-hairline: #e6e6e6;
-  
-  /* Pastel Blocks */
-  --block-lime: #dceeb1;
-  --block-lilac: #c5b0f4;
-  --block-cream: #f4ecd6;
-  --block-pink: #efd4d4;
-  --block-mint: #c8e6cd;
-  --block-coral: #f3c9b6;
-  --block-navy: #1f1d3d;
+  /* Mitao/Flippa Inspired Theme */
+  --grind-primary: #041e42; /* Deep Navy Blue */
+  --grind-accent: #ff6b00; /* Vibrant Orange */
+  --grind-canvas: #f8fafc; /* Light Gray Background */
+  --grind-inverse-canvas: #ffffff;
+  --grind-inverse-ink: #041e42;
+  --grind-surface-soft: #f1f5f9;
+  --grind-hairline: #e2e8f0;
   
   /* Semantic */
-  --accent-magenta: #ff3d8b;
-  --semantic-success: #1ea64a;
+  --accent-magenta: #e11d48;
+  --semantic-success: #16a34a;
 
   /* Theme mappings */
   --background: var(--grind-canvas);
   --foreground: var(--grind-primary);
-  --card: var(--grind-canvas);
+  --card: #ffffff;
   --card-foreground: var(--grind-primary);
-  --popover: var(--grind-canvas);
+  --popover: #ffffff;
   --popover-foreground: var(--grind-primary);
   --primary: var(--grind-primary);
-  --primary-foreground: var(--grind-canvas);
+  --primary-foreground: #ffffff;
   --secondary: var(--grind-surface-soft);
   --secondary-foreground: var(--grind-primary);
   --muted: var(--grind-surface-soft);
-  --muted-foreground: #666666;
-  --accent: var(--grind-surface-soft);
-  --accent-foreground: var(--grind-primary);
+  --muted-foreground: #64748b;
+  --accent: var(--grind-accent);
+  --accent-foreground: #ffffff;
   --destructive: var(--accent-magenta);
-  --destructive-foreground: var(--grind-canvas);
+  --destructive-foreground: #ffffff;
   --border: var(--grind-hairline);
   --input: transparent;
-  --input-background: var(--grind-canvas);
-  --ring: var(--grind-primary);
+  --input-background: #ffffff;
+  --ring: var(--grind-accent);
 
   /* Font Weights */
   --font-weight-bold: 700;
-  --font-weight-medium: 540;
-  --font-weight-normal: 320;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
 
   /* Border radius */
-  --radius-xs: 2px;
+  --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 8px;
-  --radius-lg: 24px;
-  --radius-xl: 32px;
-  --radius-pill: 50px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 9999px;
   --radius-full: 9999px;
-  --radius: 8px; /* Default components radius to md */
+  --radius: 8px;
 }
 
 @theme inline {
@@ -86,15 +78,9 @@
   --color-ring: var(--ring);
 
   --color-grind-primary: var(--grind-primary);
+  --color-grind-accent: var(--grind-accent);
   --color-grind-canvas: var(--grind-canvas);
   --color-grind-inverse-canvas: var(--grind-inverse-canvas);
-  --color-block-lime: var(--block-lime);
-  --color-block-lilac: var(--block-lilac);
-  --color-block-cream: var(--block-cream);
-  --color-block-pink: var(--block-pink);
-  --color-block-mint: var(--block-mint);
-  --color-block-coral: var(--block-coral);
-  --color-block-navy: var(--block-navy);
 }
 
 @layer base {
