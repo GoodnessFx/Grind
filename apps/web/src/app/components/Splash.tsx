@@ -12,7 +12,7 @@ export function Splash({ onComplete }: SplashProps) {
   }, [onComplete]);
 
   return (
-    <div className="h-full flex flex-col items-center justify-between bg-accent relative overflow-hidden">
+    <div className="h-full flex flex-col items-center justify-between bg-black relative overflow-hidden min-h-screen">
       {/* Background blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-white/10" />

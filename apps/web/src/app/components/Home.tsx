@@ -29,10 +29,10 @@ const REAL_WORLD_OPPS = [
 ];
 
 const QUICK_ACTIONS = [
-  { id: "gigs", label: "Browse Gigs", icon: Briefcase, color: "bg-accent/10 text-accent", desc: "Find work now" },
-  { id: "live", label: "Go Live", icon: Tv2, color: "bg-red-50 text-red-500", desc: "Start streaming" },
-  { id: "refer", label: "Refer Friend", icon: Users, color: "bg-blue-50 text-blue-500", desc: "Earn bonuses" },
-  { id: "wallet", label: "Top Up", icon: TrendingUp, color: "bg-orange-50 text-orange-500", desc: "Add money" },
+  { id: "gigs", label: "Browse Gigs", icon: Briefcase, color: "uniform" , desc: "Find work now" },
+  { id: "live", label: "Go Live", icon: Tv2, color: "uniform" , desc: "Start streaming" },
+  { id: "refer", label: "Refer Friend", icon: Users, color: "uniform" , desc: "Earn bonuses" },
+  { id: "wallet", label: "Top Up", icon: TrendingUp, color: "uniform" , desc: "Add money" },
 ];
 
 const tierColors: Record<string, string> = {
@@ -167,9 +167,9 @@ export function Home({ user, onNavigate, onPostTask, onTaskClick, onUpdateUser, 
                   onClick={() => handleQuickAction(action.id)}
                   className="flex flex-col items-center gap-2 active:scale-95 transition-transform"
                 >
-                  <div className={`w-12 h-12 rounded-2xl ${action.color} flex items-center justify-center`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
+                  <div className={`w-12 h-12 rounded-2xl bg-accent/10 text-accent flex items-center justify-center`}>
+                          <Icon className="w-5 h-5" />
+                        </div>
                   <span className="text-[10px] font-semibold text-gray-600 text-center leading-tight">{action.label}</span>
                 </button>
               );
@@ -189,9 +189,9 @@ export function Home({ user, onNavigate, onPostTask, onTaskClick, onUpdateUser, 
           </div>
 
           <div className="relative z-10 flex flex-col items-start gap-5">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-3.5 py-1.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
-              <Sparkles className="w-4 h-4 text-[#E6F7EE]" />
-              <span className="text-[11px] font-extrabold text-[#E6F7EE] tracking-widest uppercase">Smart Pick</span>
+            <div className="inline-flex items-center gap-2 rounded-full bg-grind-accent-light px-3.5 py-1">
+              <Sparkles className="w-4 h-4 text-accent" />
+              <span className="text-[11px] font-extrabold text-accent tracking-wide uppercase">Smart Pick</span>
             </div>
             
             <div className="pr-12">

@@ -267,15 +267,15 @@ export function Profile({ user, onLogout, onUpdate, onOpenSettings }: ProfilePro
           </div>
           <div className="space-y-3">
             {portfolio.map((item, idx) => (
-              <a key={idx} href={item.url} className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-100">
+              <div key={idx} onClick={() => item.url !== "#" ? window.open(item.url) : toast.info("Portfolio link not yet set")} className={cn("flex items-center justify-between p-3 rounded-2xl border border-gray-100", item.url === "#" ? "bg-gray-50 opacity-60 cursor-not-allowed" : "bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer")}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center border border-gray-100">
                     <Link2 className="w-4 h-4 text-gray-400" />
                   </div>
                   <p className="text-sm font-bold text-gray-700">{item.title}</p>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-300" />
-              </a>
+                <ChevronRight className={cn("w-4 h-4", item.url === "#" ? "text-gray-200" : "text-gray-300")} />
+              </div>
             ))}
           </div>
         </div>

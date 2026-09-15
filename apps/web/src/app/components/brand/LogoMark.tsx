@@ -39,7 +39,7 @@ export function LogoMark({
       <defs>
         <linearGradient id="g_fill" x1="10" y1="8" x2="44" y2="46" gradientUnits="userSpaceOnUse">
           <stop stopColor={foreground} stopOpacity="1" />
-          <stop offset="1" stopColor="#00A651" stopOpacity={tone === "dark" ? "0.18" : "0.28"} />
+          <stop offset="1" stopColor="#00a8a8" stopOpacity={tone === "dark" ? "0.18" : "0.28"} />
         </linearGradient>
       </defs>
       <path
