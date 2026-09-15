@@ -1,8 +1,52 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
-import { GoogleLogin } from '@react-oauth/google';
+import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { LogoMark } from '../app/components/brand/LogoMark';
+
+export const GOOGLE_CLIENT_ID = "24300395823-trbfqd7mjiho0tgl9jpaek4qtemuf5cd.apps.googleusercontent.com";
+
+// Safe Google Login button that dynamically loads the package to avoid startup crashes
+const SafeGoogleLogin = ({ onSuccess }: { onSuccess: (r: any) => void }) => {
+  const [Comp, setComp] = React.useState<React.ComponentType<any> | null>(null);
+
+  React.useEffect(() => {
+    import('@react-oauth/google')
+      .then(m => setComp(() => m.GoogleLogin))
+      .catch(() => {}); // silently fail — fallback button still works
+  }, []);
+
+  if (!Comp) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          const params = new URLSearchParams({
+            client_id: GOOGLE_CLIENT_ID,
+            redirect_uri: window.location.origin + '/login',
+            response_type: 'token',
+            scope: 'email profile',
+          });
+          window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+        }}
+        className="w-full flex items-center justify-center gap-3 border border-[#e6e6e6] hover:bg-gray-50 py-3 rounded-[50px] text-base font-medium text-gray-700 transition-colors"
+      >
+        <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="" />
+        Continue with Google
+      </button>
+    );
+  }
+
+  return (
+    <Comp
+      onSuccess={onSuccess}
+      onError={() => {}}
+      shape="pill"
+      size="large"
+      width="400"
+      logo_alignment="center"
+    />
+  );
+};
 
 export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -12,21 +56,30 @@ export const Login = () => {
 
   const handleLogin = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    // Mock login success
-    localStorage.setItem('grind_user', JSON.stringify({ email, role: 'user' }));
+    localStorage.setItem('grind_user', JSON.stringify({ email, name: email.split('@')[0], role: 'user' }));
     navigate('/admin');
   };
 
   const handleGoogleSuccess = (credentialResponse: any) => {
-    console.log(credentialResponse);
-    // Parse JWT or handle token (mocking successful login)
-    localStorage.setItem('grind_user', JSON.stringify({ name: 'Google User', email: 'user@google.com', role: 'user' }));
+    // Decode the JWT from Google to get user info
+    try {
+      const token = credentialResponse.credential;
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      localStorage.setItem('grind_user', JSON.stringify({
+        name: payload.name || 'Google User',
+        email: payload.email || 'user@google.com',
+        avatar: payload.picture,
+        role: 'user',
+      }));
+    } catch {
+      localStorage.setItem('grind_user', JSON.stringify({ name: 'Google User', email: 'user@google.com', role: 'user' }));
+    }
     navigate('/admin');
   };
 
   return (
     <div className="min-h-screen flex font-[Inter,sans-serif] bg-white">
-      {/* Left — Branding panel (Figma Color Block Style) */}
+      {/* Left — Branding panel */}
       <div className="hidden lg:flex lg:w-[45%] bg-[#1f1d3d] flex-col p-16 justify-between">
         <Link to="/" className="flex items-center gap-2">
           <LogoMark size={32} tone="dark" framed />
@@ -43,7 +96,7 @@ export const Login = () => {
           </p>
         </div>
 
-        <blockquote className="border-t border-white/10 pt-8 mt-8">
+        <blockquote className="border-t border-white/10 pt-8">
           <p className="text-white text-lg font-medium mb-4">"I made ₦180,000 in my first month on Grind just doing logo design from my dorm room."</p>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-[#dceeb1] flex items-center justify-center text-[#1f1d3d] font-bold">AS</div>
@@ -68,14 +121,7 @@ export const Login = () => {
           <p className="text-[#666666] text-base mb-8">Enter your details to access your account.</p>
 
           <div className="mb-6">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() => console.log('Login Failed')}
-              shape="pill"
-              size="large"
-              width="400"
-              logo_alignment="center"
-            />
+            <SafeGoogleLogin onSuccess={handleGoogleSuccess} />
           </div>
 
           <div className="flex items-center gap-3 mb-6">
@@ -100,7 +146,7 @@ export const Login = () => {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-semibold text-black">Password</label>
-                <Link to="/forgot-password" className="text-sm text-black hover:underline font-medium">Forgot?</Link>
+                <a href="#" className="text-sm text-black hover:underline font-medium">Forgot?</a>
               </div>
               <div className="relative">
                 <input

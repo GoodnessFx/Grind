@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Shield, ArrowRight, ArrowLeftLeft, ArrowRightRight, History, Banknote } from 'lucide-react';
+import { Search, Shield, ArrowRight, ArrowLeft, History, Banknote } from 'lucide-react';
 import { LogoMark } from '../app/components/brand/LogoMark';
 import { getAllPlans, FlexPlan, FlexTransaction } from './GrindFlex';
 
@@ -96,8 +96,8 @@ export const Explorer = () => {
                             tx.type === 'fee' ? 'bg-red-100 text-red-700' : 
                             'bg-amber-100 text-amber-700'}`}
                         >
-                          {tx.type === 'deposit' && <ArrowRightRight size={12} />}
-                          {tx.type === 'refund' && <ArrowLeftLeft size={12} />}
+                          {tx.type === 'deposit' && <ArrowRight size={12} />}
+                          {tx.type === 'refund' && <ArrowLeft size={12} />}
                           {tx.type === 'fee' && <Banknote size={12} />}
                           {tx.type === 'release' && <Shield size={12} />}
                           {tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}

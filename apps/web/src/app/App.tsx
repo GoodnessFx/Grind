@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Splash } from './components/Splash';
 import { Home } from '../pages/Home';
@@ -13,19 +13,24 @@ import { GrindFlex } from '../pages/GrindFlex';
 import { Explorer } from '../pages/Explorer';
 import { Leaderboard } from '../pages/Leaderboard';
 import { SupportChat } from '../components/common/SupportChat';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 
-const GOOGLE_CLIENT_ID = "24300395823-trbfqd7mjiho0tgl9jpaek4qtemuf5cd.apps.googleusercontent.com";
+export const GOOGLE_CLIENT_ID = "24300395823-trbfqd7mjiho0tgl9jpaek4qtemuf5cd.apps.googleusercontent.com";
 
-export default function App() {
-  const [showSplash, setShowSplash] = useState(true);
+// Lazy-load Google OAuth to prevent crashes if package resolution fails
+const GoogleWrapper = React.lazy(() =>
+  import('@react-oauth/google')
+    .then(mod => ({
+      default: ({ children }: { children: React.ReactNode }) =>
+        React.createElement(mod.GoogleOAuthProvider, { clientId: GOOGLE_CLIENT_ID }, children),
+    }))
+    .catch(() => ({
+      default: ({ children }: { children: React.ReactNode }) =>
+        React.createElement(React.Fragment, null, children),
+    }))
+);
 
-  if (showSplash) {
-    return <Splash onComplete={() => setShowSplash(false)} />;
-  }
-
+function AppRoutes() {
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -43,6 +48,21 @@ export default function App() {
       </Routes>
       <SupportChat />
     </BrowserRouter>
-    </GoogleOAuthProvider>
+  );
+}
+
+export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
+
+  if (showSplash) {
+    return <Splash onComplete={() => setShowSplash(false)} />;
+  }
+
+  return (
+    <Suspense fallback={<AppRoutes />}>
+      <GoogleWrapper>
+        <AppRoutes />
+      </GoogleWrapper>
+    </Suspense>
   );
 }

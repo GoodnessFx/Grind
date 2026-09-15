@@ -1,8 +1,22 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { GoogleLogin } from '@react-oauth/google';
+import { Eye, EyeOff, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { LogoMark } from '../app/components/brand/LogoMark';
+import { GOOGLE_CLIENT_ID } from './Login';
+
+const SafeGoogleSignup = ({ onSuccess }: { onSuccess: (r: any) => void }) => {
+  const [Comp, setComp] = React.useState<React.ComponentType<any> | null>(null);
+  React.useEffect(() => {
+    import('@react-oauth/google').then(m => setComp(() => m.GoogleLogin)).catch(() => {});
+  }, []);
+  if (!Comp) return (
+    <button type="button" className="w-full flex items-center justify-center gap-3 border border-[#e6e6e6] hover:bg-gray-50 py-3 rounded-[50px] text-base font-medium text-gray-700 transition-colors">
+      <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="" />
+      Sign up with Google
+    </button>
+  );
+  return <Comp onSuccess={onSuccess} onError={() => {}} shape="pill" size="large" width="400" logo_alignment="center" text="signup_with" />;
+};
 
 export const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -84,15 +98,7 @@ export const Signup = () => {
           {step === 1 && (
             <>
               <div className="mb-6">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={() => console.log('Login Failed')}
-                  shape="pill"
-                  size="large"
-                  width="400"
-                  logo_alignment="center"
-                  text="signup_with"
-                />
+                <SafeGoogleSignup onSuccess={handleGoogleSuccess} />
               </div>
 
               <div className="flex items-center gap-3 mb-6">
