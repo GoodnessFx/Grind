@@ -49,6 +49,7 @@ const SafeGoogleLogin = ({ onSuccess }: { onSuccess: (r: any) => void }) => {
 };
 
 export const Login = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const storedUser = JSON.parse(localStorage.getItem('grind_user') || '{}');
   const [email, setEmail] = useState(storedUser.email || '');
