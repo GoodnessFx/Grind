@@ -120,7 +120,25 @@ export const Home = () => {
   const [search, setSearch] = useState('');
   const [showCookie, setShowCookie] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
+  const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const stored = localStorage.getItem('grind_user');
+    if (stored) {
+      try {
+        setUser(JSON.parse(stored));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('grind_user');
+    setUser(null);
+    navigate('/login');
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,13 +177,36 @@ export const Home = () => {
             <Link to="/admin" className="text-white/90 hover:text-white font-medium transition-colors">Dashboard</Link>
           </nav>
           <div className="flex items-center gap-4">
-            <Link to="/login" className="text-white/90 hover:text-white font-medium transition-colors">Log in</Link>
-            <Link
-              to="/signup"
-              className="bg-black hover:bg-[#006400] text-white font-bold px-6 py-2.5 rounded-full transition-colors shadow-lg shadow-[var(--grind-nigeria)]/30"
-            >
-              Sign up free
-            </Link>
+            {user ? (
+              <>
+                <Link to="/profile" className="flex items-center gap-2 text-white/90 hover:text-white font-medium transition-colors">
+                  {user.avatar ? (
+                    <img src={user.avatar} alt="Avatar" className="w-8 h-8 rounded-full border border-white/20" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-[var(--grind-primary)] text-white flex items-center justify-center font-bold text-sm">
+                      {user.name?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                  )}
+                  <span>{user.name || 'User'}</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="bg-black hover:bg-red-700 text-white font-bold px-6 py-2.5 rounded-full transition-colors shadow-lg"
+                >
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="text-white/90 hover:text-white font-medium transition-colors">Log in</Link>
+                <Link
+                  to="/signup"
+                  className="bg-black hover:bg-[#006400] text-white font-bold px-6 py-2.5 rounded-full transition-colors shadow-lg shadow-[var(--grind-nigeria)]/30"
+                >
+                  Sign up free
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -332,26 +373,26 @@ export const Home = () => {
               <Link
                 key={seller.name}
                 to="/marketplace"
-                className="bg-white/5 border border-white/10 hover:border-[#006400]/50 hover:bg-white/10 rounded-2xl p-6 transition-all group"
+                className="bg-gray-50 border border-gray-100 hover:border-[#006400]/50 hover:bg-gray-100 rounded-2xl p-6 transition-all group"
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-[#006400] text-white flex items-center justify-center font-bold text-xl">
+                  <div className="w-12 h-12 rounded-full bg-[var(--grind-primary)] text-white flex items-center justify-center font-bold text-xl">
                     {seller.avatar}
                   </div>
                   <div>
-                    <h4 className="text-white font-bold">{seller.name}</h4>
-                    <p className="text-white/50 text-sm">{seller.uni}</p>
+                    <h4 className="text-black font-bold">{seller.name}</h4>
+                    <p className="text-gray-500 text-sm">{seller.uni}</p>
                   </div>
                 </div>
-                <p className="text-white/80 font-medium mb-4">{seller.skill}</p>
+                <p className="text-gray-700 font-medium mb-4">{seller.skill}</p>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-yellow-400">
+                  <div className="flex items-center gap-1 text-yellow-500">
                     <Star size={14} fill="currentColor" />
-                    <span className="text-white/70 text-sm font-medium">{seller.rating} ({seller.reviews})</span>
+                    <span className="text-gray-600 text-sm font-medium">{seller.rating} ({seller.reviews})</span>
                   </div>
-                  <span className="text-[#60a5fa] text-xs font-bold bg-[#006400]/20 px-2 py-1 rounded-full">{seller.badge}</span>
+                  <span className="text-[#006400] text-xs font-bold bg-[#006400]/10 px-2 py-1 rounded-full">{seller.badge}</span>
                 </div>
-                <div className="mt-4 pt-4 border-t border-white/10 text-white font-bold text-sm">{seller.price}</div>
+                <div className="mt-4 pt-4 border-t border-gray-200 text-black font-bold text-sm">{seller.price}</div>
               </Link>
             ))}
           </div>
