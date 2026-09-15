@@ -83,7 +83,7 @@ export const Login = () => {
       <div className="hidden lg:flex lg:w-[45%] bg-[#041e42] flex-col p-16 justify-between relative overflow-hidden">
         
         {/* Background Subtle Gradient */}
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#ff6b00]/10 rounded-full blur-[100px]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#2563eb]/10 rounded-full blur-[100px]" />
         
         <div className="relative z-10">
           <Link to="/" className="flex items-center gap-2 mb-16">
@@ -104,7 +104,7 @@ export const Login = () => {
         <blockquote className="relative z-10 border-t border-white/10 pt-8 mt-12">
           <p className="text-white text-lg font-medium mb-4">"I made ₦180,000 in my first month on Grind just doing logo design from my dorm room."</p>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#ff6b00] flex items-center justify-center text-white font-bold">AS</div>
+            <div className="w-10 h-10 rounded-full bg-[#2563eb] flex items-center justify-center text-white font-bold">AS</div>
             <div>
               <div className="text-white text-sm font-semibold">Amara S.</div>
               <div className="text-white/60 text-sm">UI Designer · UNILAG</div>
@@ -170,7 +170,7 @@ export const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-[#ff6b00] hover:bg-[#e66000] text-white font-bold py-3.5 rounded-[50px] transition-colors flex items-center justify-center gap-2 mt-4 text-lg shadow-lg shadow-[#ff6b00]/20"
+              className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold py-3.5 rounded-[50px] transition-colors flex items-center justify-center gap-2 mt-4 text-lg shadow-lg shadow-[#2563eb]/20"
             >
               Log in <ArrowRight size={18} />
             </button>

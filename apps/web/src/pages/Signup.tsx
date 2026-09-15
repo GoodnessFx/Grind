@@ -53,7 +53,7 @@ export const Signup = () => {
       <div className="hidden lg:flex lg:w-[45%] bg-[#041e42] flex-col p-16 justify-between relative overflow-hidden">
         
         {/* Background Subtle Gradient */}
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#ff6b00]/10 rounded-full blur-[100px]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#2563eb]/10 rounded-full blur-[100px]" />
         
         <div className="relative z-10">
           <Link to="/" className="flex items-center gap-2 mb-16">
@@ -81,7 +81,7 @@ export const Signup = () => {
 
         <blockquote className="relative z-10 border-t border-white/10 pt-8 mt-12">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#ff6b00] flex items-center justify-center text-white font-bold">AS</div>
+            <div className="w-10 h-10 rounded-full bg-[#2563eb] flex items-center justify-center text-white font-bold">AS</div>
             <div>
               <div className="text-white text-sm font-semibold">Amara S.</div>
               <div className="text-white/60 text-sm">UI Designer · UNILAG</div>
@@ -127,7 +127,7 @@ export const Signup = () => {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="name@university.edu.ng"
-                  className="w-full px-4 py-3 text-base border border-[#e6e6e6] rounded-md outline-none focus:border-[#ff6b00] transition-colors"
+                  className="w-full px-4 py-3 text-base border border-[#e6e6e6] rounded-md outline-none focus:border-[#2563eb] transition-colors"
                   required
                 />
               </div>
@@ -140,7 +140,7 @@ export const Signup = () => {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="Create a strong password"
-                    className="w-full px-4 py-3 pr-12 text-base border border-[#e6e6e6] rounded-md outline-none focus:border-[#ff6b00] transition-colors"
+                    className="w-full px-4 py-3 pr-12 text-base border border-[#e6e6e6] rounded-md outline-none focus:border-[#2563eb] transition-colors"
                     required
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#041e42]">
@@ -152,7 +152,7 @@ export const Signup = () => {
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="w-full bg-[#ff6b00] hover:bg-[#e66000] text-white font-bold py-3.5 rounded-[50px] transition-colors flex items-center justify-center gap-2 mt-4 text-lg shadow-lg shadow-[#ff6b00]/20"
+                className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold py-3.5 rounded-[50px] transition-colors flex items-center justify-center gap-2 mt-4 text-lg shadow-lg shadow-[#2563eb]/20"
               >
                 Continue <ArrowRight size={18} />
               </button>
@@ -164,17 +164,17 @@ export const Signup = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-[#041e42] mb-2">First Name</label>
-                  <input type="text" className="w-full px-4 py-3 text-base border border-[#e6e6e6] rounded-md outline-none focus:border-[#ff6b00] transition-colors" required />
+                  <input type="text" className="w-full px-4 py-3 text-base border border-[#e6e6e6] rounded-md outline-none focus:border-[#2563eb] transition-colors" required />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-[#041e42] mb-2">Last Name</label>
-                  <input type="text" className="w-full px-4 py-3 text-base border border-[#e6e6e6] rounded-md outline-none focus:border-[#ff6b00] transition-colors" required />
+                  <input type="text" className="w-full px-4 py-3 text-base border border-[#e6e6e6] rounded-md outline-none focus:border-[#2563eb] transition-colors" required />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-bold text-[#041e42] mb-2">University</label>
-                <select className="w-full px-4 py-3 text-base border border-[#e6e6e6] rounded-md outline-none focus:border-[#ff6b00] bg-white transition-colors">
+                <select className="w-full px-4 py-3 text-base border border-[#e6e6e6] rounded-md outline-none focus:border-[#2563eb] bg-white transition-colors">
                   <option value="">Select your institution</option>
                   <option value="unilag">University of Lagos</option>
                   <option value="oau">Obafemi Awolowo University</option>
@@ -187,7 +187,7 @@ export const Signup = () => {
 
               <div>
                 <label className="block text-sm font-bold text-[#041e42] mb-2">Phone Number</label>
-                <input type="tel" placeholder="+234" className="w-full px-4 py-3 text-base border border-[#e6e6e6] rounded-md outline-none focus:border-[#ff6b00] transition-colors" required />
+                <input type="tel" placeholder="+234" className="w-full px-4 py-3 text-base border border-[#e6e6e6] rounded-md outline-none focus:border-[#2563eb] transition-colors" required />
               </div>
 
               <div className="flex gap-4 mt-8">
@@ -200,7 +200,7 @@ export const Signup = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-[2] bg-[#ff6b00] hover:bg-[#e66000] text-white font-bold py-3.5 rounded-[50px] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#ff6b00]/20"
+                  className="flex-[2] bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold py-3.5 rounded-[50px] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#2563eb]/20"
                 >
                   Create Account <CheckCircle2 size={18} />
                 </button>
