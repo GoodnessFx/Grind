@@ -3,62 +3,63 @@
 :root {
   --font-size: 16px;
 
-  /* Grind Brand Colors — Opay-inspired green (refined) */
-  --grind-primary: #0A2540;
-  --grind-accent: #00C48C;
-  --grind-accent-dark: #009E70;
-  --grind-accent-light: #E9FFF4;
-  --grind-success: #00A651;
-  --grind-warning: #F79009;
-  --grind-danger: #F04438;
-  --grind-neutral-900: #101828;
-  --grind-neutral-700: #344054;
-  --grind-neutral-600: #475467;
-  --grind-neutral-500: #667085;
-  --grind-neutral-400: #98A2B3;
-  --grind-neutral-200: #EAECF0;
-  --grind-neutral-100: #F2F4F7;
-  --grind-neutral-50: #F9FAFB;
-
-  /* Tier Colors */
-  --grind-tier-starter: #98A2B3;
-  --grind-tier-bronze: #CD7F32;
-  --grind-tier-gold: #F79009;
-  --grind-tier-diamond: #0BA5EC;
+  /* Figma Design System Tokens */
+  --grind-primary: #000000;
+  --grind-canvas: #ffffff;
+  --grind-inverse-canvas: #000000;
+  --grind-inverse-ink: #ffffff;
+  --grind-surface-soft: #f7f7f5;
+  --grind-hairline: #e6e6e6;
+  
+  /* Pastel Blocks */
+  --block-lime: #dceeb1;
+  --block-lilac: #c5b0f4;
+  --block-cream: #f4ecd6;
+  --block-pink: #efd4d4;
+  --block-mint: #c8e6cd;
+  --block-coral: #f3c9b6;
+  --block-navy: #1f1d3d;
+  
+  /* Semantic */
+  --accent-magenta: #ff3d8b;
+  --semantic-success: #1ea64a;
 
   /* Theme mappings */
-  --background: #F4F6F8;
-  --foreground: var(--grind-neutral-900);
-  --card: #ffffff;
-  --card-foreground: var(--grind-neutral-900);
-  --popover: #ffffff;
-  --popover-foreground: var(--grind-neutral-900);
+  --background: var(--grind-canvas);
+  --foreground: var(--grind-primary);
+  --card: var(--grind-canvas);
+  --card-foreground: var(--grind-primary);
+  --popover: var(--grind-canvas);
+  --popover-foreground: var(--grind-primary);
   --primary: var(--grind-primary);
-  --primary-foreground: #ffffff;
-  --secondary: var(--grind-neutral-50);
-  --secondary-foreground: var(--grind-neutral-900);
-  --muted: var(--grind-neutral-100);
-  --muted-foreground: var(--grind-neutral-500);
-  --accent: var(--grind-accent);
-  --accent-foreground: #ffffff;
-  --destructive: var(--grind-danger);
-  --destructive-foreground: #ffffff;
-  --border: var(--grind-neutral-200);
+  --primary-foreground: var(--grind-canvas);
+  --secondary: var(--grind-surface-soft);
+  --secondary-foreground: var(--grind-primary);
+  --muted: var(--grind-surface-soft);
+  --muted-foreground: #666666;
+  --accent: var(--grind-surface-soft);
+  --accent-foreground: var(--grind-primary);
+  --destructive: var(--accent-magenta);
+  --destructive-foreground: var(--grind-canvas);
+  --border: var(--grind-hairline);
   --input: transparent;
-  --input-background: var(--grind-neutral-50);
-  --switch-background: var(--grind-neutral-200);
-  --font-weight-semibold: 600;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: var(--grind-accent);
+  --input-background: var(--grind-canvas);
+  --ring: var(--grind-primary);
+
+  /* Font Weights */
+  --font-weight-bold: 700;
+  --font-weight-medium: 540;
+  --font-weight-normal: 320;
 
   /* Border radius */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-pill: 999px;
-  --radius: 12px;
+  --radius-xs: 2px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-pill: 50px;
+  --radius-full: 9999px;
+  --radius: 8px; /* Default components radius to md */
 }
 
 @theme inline {
@@ -85,24 +86,15 @@
   --color-ring: var(--ring);
 
   --color-grind-primary: var(--grind-primary);
-  --color-grind-accent: var(--grind-accent);
-  --color-grind-accent-dark: var(--grind-accent-dark);
-  --color-grind-accent-light: var(--grind-accent-light);
-  --color-grind-success: var(--grind-success);
-  --color-grind-warning: var(--grind-warning);
-  --color-grind-danger: var(--grind-danger);
-  --color-grind-neutral-900: var(--grind-neutral-900);
-  --color-grind-neutral-700: var(--grind-neutral-700);
-  --color-grind-neutral-600: var(--grind-neutral-600);
-  --color-grind-neutral-500: var(--grind-neutral-500);
-  --color-grind-neutral-400: var(--grind-neutral-400);
-  --color-grind-neutral-200: var(--grind-neutral-200);
-  --color-grind-neutral-100: var(--grind-neutral-100);
-  --color-grind-neutral-50: var(--grind-neutral-50);
-  --color-grind-tier-starter: var(--grind-tier-starter);
-  --color-grind-tier-bronze: var(--grind-tier-bronze);
-  --color-grind-tier-gold: var(--grind-tier-gold);
-  --color-grind-tier-diamond: var(--grind-tier-diamond);
+  --color-grind-canvas: var(--grind-canvas);
+  --color-grind-inverse-canvas: var(--grind-inverse-canvas);
+  --color-block-lime: var(--block-lime);
+  --color-block-lilac: var(--block-lilac);
+  --color-block-cream: var(--block-cream);
+  --color-block-pink: var(--block-pink);
+  --color-block-mint: var(--block-mint);
+  --color-block-coral: var(--block-coral);
+  --color-block-navy: var(--block-navy);
 }
 
 @layer base {
@@ -114,25 +106,20 @@
 
   html {
     font-size: var(--font-size);
-    height: 100%;
-    overscroll-behavior: none;
+    min-height: 100%;
   }
 
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    height: 100%;
-    overscroll-behavior: none;
+    min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   #root {
     height: 100%;
-    max-width: 480px;
-    margin: 0 auto;
     position: relative;
-    overflow: clip; /* clip prevents scroll escape but doesn't break fixed children */
     isolation: isolate;
   }
 
