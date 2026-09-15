@@ -11,5 +11,12 @@
     "build:web": "pnpm --filter web build",
     "build:server": "pnpm --filter server build",
     "start": "node server.js"
+  },
+  "dependencies": {
+    "glob": "^13.0.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4"
   }
 }

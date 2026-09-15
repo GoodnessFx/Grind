@@ -47,14 +47,14 @@ export const CampusConnect = () => {
   return (
     <div className="max-w-2xl mx-auto">
       <header className="mb-8">
-        <h1 className="text-3xl font-black text-[#041e42] tracking-tight">Campus Connect</h1>
+        <h1 className="text-3xl font-black text-[var(--grind-primary)] tracking-tight">Campus Connect</h1>
         <p className="text-gray-500">Network, vibe, and link up with other hustlers.</p>
       </header>
 
       {/* Post Composer */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
         <div className="flex gap-4">
-          <div className="w-12 h-12 rounded-full bg-[#2563eb] text-white flex items-center justify-center font-bold text-lg shrink-0">
+          <div className="w-12 h-12 rounded-full bg-[var(--grind-nigeria)] text-white flex items-center justify-center font-bold text-lg shrink-0">
             Y
           </div>
           <div className="flex-1">
@@ -65,12 +65,12 @@ export const CampusConnect = () => {
               className="w-full h-24 bg-transparent outline-none text-lg resize-none placeholder:text-gray-400"
             />
             <div className="flex justify-between items-center pt-4 border-t border-gray-100 mt-2">
-              <div className="flex gap-4 text-[#2563eb]">
+              <div className="flex gap-4 text-[var(--grind-nigeria)]">
                 <button className="hover:bg-blue-50 p-2 rounded-full transition-colors"><ImageIcon size={20} /></button>
                 <button className="hover:bg-blue-50 p-2 rounded-full transition-colors"><MapPin size={20} /></button>
                 <button className="hover:bg-blue-50 p-2 rounded-full transition-colors"><Smile size={20} /></button>
               </div>
-              <Button onClick={handlePost} className="bg-[#2563eb] hover:bg-blue-700 text-white !rounded-full px-6 flex items-center gap-2">
+              <Button onClick={handlePost} className="bg-[var(--grind-nigeria)] hover:bg-blue-700 text-white !rounded-full px-6 flex items-center gap-2">
                 Post <Send size={16} />
               </Button>
             </div>
@@ -88,14 +88,14 @@ export const CampusConnect = () => {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-[#041e42]">{item.name}</span>
+                  <span className="font-bold text-[var(--grind-primary)]">{item.name}</span>
                   <span className="text-gray-500 text-sm">{item.handle}</span>
                   <span className="text-gray-300 text-sm">•</span>
                   <span className="text-gray-500 text-sm">{item.time}</span>
                 </div>
                 <p className="text-gray-800 text-lg mb-4">{item.content}</p>
                 <div className="flex gap-8 text-gray-500 text-sm font-medium">
-                  <button className="flex items-center gap-2 hover:text-[#2563eb] transition-colors"><MessageSquareIcon /> {item.replies}</button>
+                  <button className="flex items-center gap-2 hover:text-[var(--grind-nigeria)] transition-colors"><MessageSquareIcon /> {item.replies}</button>
                   <button className="flex items-center gap-2 hover:text-red-500 transition-colors"><HeartIcon /> {item.likes}</button>
                 </div>
               </div>

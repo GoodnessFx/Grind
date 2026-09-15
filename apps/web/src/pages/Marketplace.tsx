@@ -29,11 +29,11 @@ export const Marketplace = () => {
       {/* Floating Cart Button */}
       <button 
         onClick={() => setIsCartOpen(true)}
-        className="fixed bottom-24 right-6 z-40 w-14 h-14 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-full shadow-2xl flex items-center justify-center transition-all"
+        className="fixed bottom-24 right-6 z-40 w-14 h-14 bg-[var(--grind-nigeria)] hover:bg-[#006400] text-white rounded-full shadow-2xl flex items-center justify-center transition-all"
       >
         <ShoppingCart size={24} />
         {cartCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-[#041e42] text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+          <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
             {cartCount}
           </span>
         )}
@@ -44,7 +44,7 @@ export const Marketplace = () => {
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-black/50" onClick={() => setIsCartOpen(false)} />
           <div className="w-full max-w-sm bg-white h-full relative z-10 flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
-            <div className="p-4 bg-[#041e42] text-white flex justify-between items-center">
+            <div className="p-4 bg-black text-white flex justify-between items-center">
               <h2 className="font-bold flex items-center gap-2"><ShoppingCart size={20} /> Your Cart</h2>
               <button onClick={() => setIsCartOpen(false)} className="hover:text-gray-300"><X size={20} /></button>
             </div>
@@ -56,11 +56,11 @@ export const Marketplace = () => {
                 items.map(item => (
                   <div key={item.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
                     <div>
-                      <h4 className="font-bold text-sm text-[#041e42]">{item.title}</h4>
+                      <h4 className="font-bold text-sm text-black">{item.title}</h4>
                       <p className="text-xs text-gray-500">{item.sellerName} (Qty: {item.quantity})</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-[#2563eb]">₦{item.price.toLocaleString()}</p>
+                      <p className="font-bold text-[#006400]">₦{item.price.toLocaleString()}</p>
                       <button onClick={() => removeFromCart(item.id)} className="text-xs text-red-500 hover:underline mt-1">Remove</button>
                     </div>
                   </div>
@@ -69,11 +69,11 @@ export const Marketplace = () => {
             </div>
 
             <div className="p-4 bg-gray-50 border-t border-gray-200">
-              <div className="flex justify-between font-bold text-lg text-[#041e42] mb-4">
+              <div className="flex justify-between font-bold text-lg text-black mb-4">
                 <span>Total:</span>
                 <span>₦{cartTotal.toLocaleString()}</span>
               </div>
-              <Link to="/checkout" className="block w-full text-center bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold py-3 rounded-full transition-colors disabled:opacity-50">
+              <Link to="/checkout" className="block w-full text-center bg-[var(--grind-nigeria)] hover:bg-[#1d4ed8] text-white font-bold py-3 rounded-full transition-colors disabled:opacity-50">
                 Proceed to Secure Escrow
               </Link>
             </div>
@@ -100,16 +100,16 @@ export const Marketplace = () => {
           <div className="bg-white p-5 rounded-lg border border-[var(--color-border)] shadow-sm sticky top-24">
             <h3 className="font-bold text-lg mb-4 flex items-center justify-between">
               Filters
-              <button className="text-sm font-normal text-[#2563eb] hover:underline">Clear all</button>
+              <button className="text-sm font-normal text-[var(--grind-nigeria)] hover:underline">Clear all</button>
             </h3>
             
             <div className="space-y-6">
               <div>
-                <h4 className="font-semibold mb-3 text-sm text-[#041e42] uppercase tracking-wider">Category</h4>
+                <h4 className="font-semibold mb-3 text-sm text-[var(--grind-primary)] uppercase tracking-wider">Category</h4>
                 <div className="space-y-2">
                   {['All Categories', 'Tutoring', 'Design & Creative', 'Programming', 'Writing', 'Digital Marketing'].map(cat => (
                     <label key={cat} className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="category" className="text-[#2563eb] focus:ring-[#2563eb]" defaultChecked={cat === 'All Categories'} />
+                      <input type="radio" name="category" className="text-[#006400] focus:ring-[#006400]" defaultChecked={cat === 'All Categories'} />
                       <span className="text-sm text-gray-700">{cat}</span>
                     </label>
                   ))}
@@ -117,15 +117,15 @@ export const Marketplace = () => {
               </div>
 
               <div>
-                <h4 className="font-semibold mb-3 text-sm text-[#041e42] uppercase tracking-wider">Price Range (₦)</h4>
+                <h4 className="font-semibold mb-3 text-sm text-[var(--grind-primary)] uppercase tracking-wider">Price Range (₦)</h4>
                 <div className="flex items-center gap-2">
-                  <input type="number" placeholder="Min" className="w-full p-2 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2563eb]" />
+                  <input type="number" placeholder="Min" className="w-full p-2 border border-gray-300 rounded-md text-sm outline-none focus:border-[var(--grind-nigeria)]" />
                   <span className="text-gray-500">-</span>
-                  <input type="number" placeholder="Max" className="w-full p-2 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2563eb]" />
+                  <input type="number" placeholder="Max" className="w-full p-2 border border-gray-300 rounded-md text-sm outline-none focus:border-[#006400]" />
                 </div>
               </div>
 
-              <Button className="w-full bg-[#041e42] hover:bg-[#03142d] text-white">Apply Filters</Button>
+              <Button className="w-full bg-black hover:bg-[#03142d] text-white">Apply Filters</Button>
             </div>
           </div>
         </aside>
@@ -133,10 +133,10 @@ export const Marketplace = () => {
         {/* Results Grid */}
         <main className="flex-1">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-[#041e42]">Explore Marketplace</h1>
+            <h1 className="text-2xl font-bold text-black">Explore Marketplace</h1>
             <div className="flex items-center gap-2 text-sm">
               <span className="text-gray-500">Sort by:</span>
-              <select className="border border-gray-300 rounded-md py-1 px-2 bg-white outline-none focus:border-[#2563eb]">
+              <select className="border border-gray-300 rounded-md py-1 px-2 bg-white outline-none focus:border-[var(--grind-nigeria)]">
                 <option>Relevance</option>
                 <option>Newest</option>
                 <option>Price: Low to High</option>
@@ -168,7 +168,7 @@ export const Marketplace = () => {
                     });
                     setIsCartOpen(true);
                   }}
-                  className="absolute bottom-4 right-4 bg-[#2563eb] hover:bg-[#1d4ed8] text-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute bottom-4 right-4 bg-[var(--grind-nigeria)] hover:bg-[#1d4ed8] text-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <ShoppingCart size={18} />
                 </button>
@@ -177,7 +177,7 @@ export const Marketplace = () => {
           </div>
 
           <div className="mt-12 flex justify-center">
-            <Button variant="secondary" size="lg" className="w-full sm:w-auto bg-white border border-gray-300 text-[#041e42] hover:bg-gray-50">
+            <Button variant="secondary" size="lg" className="w-full sm:w-auto bg-white border border-gray-300 text-black hover:bg-gray-50">
               Load More Results
             </Button>
           </div>

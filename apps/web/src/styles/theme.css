@@ -4,11 +4,12 @@
   --font-size: 16px;
 
   /* Mitao/Flippa Inspired Theme */
-  --grind-primary: #041e42; /* Deep Navy Blue */
-  --grind-accent: #2563eb; /* Premium Royal Blue */
-  --grind-canvas: #f8fafc; /* Light Gray Background */
-  --grind-inverse-canvas: #ffffff;
-  --grind-inverse-ink: #041e42;
+  --grind-primary: #111111; /* Dark black */
+  --grind-accent: #b8860b; /* Gold accent */
+  --grind-canvas: #ffffff; /* White background */
+  --grind-nigeria: #006400; /* Deep green Nigerian vibe */
+  --grind-inverse-canvas: #111111;
+  --grind-inverse-ink: #ffffff;
   --grind-surface-soft: #f1f5f9;
   --grind-hairline: #e2e8f0;
   
@@ -33,6 +34,7 @@
   --accent-foreground: #ffffff;
   --destructive: var(--accent-magenta);
   --destructive-foreground: #ffffff;
+  --nigeria: var(--grind-nigeria);
   --border: var(--grind-hairline);
   --input: transparent;
   --input-background: #ffffff;

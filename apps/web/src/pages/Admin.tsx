@@ -38,7 +38,7 @@ const Overview = () => {
   return (
     <div className="max-w-6xl mx-auto space-y-8">
       <header>
-        <h1 className="text-3xl font-black text-[#041e42] tracking-tight">Overview Dashboard</h1>
+        <h1 className="text-3xl font-black text-[var(--grind-primary)] tracking-tight">Overview Dashboard</h1>
       </header>
 
       {/* Stats Row */}
@@ -46,14 +46,14 @@ const Overview = () => {
         <Card className="!shadow-sm !rounded-[24px] border border-gray-200">
           <Card.Body className="p-6">
             <h3 className="text-gray-500 text-sm font-semibold uppercase tracking-widest mb-2">Total Users</h3>
-            <p className="text-4xl font-black text-[#041e42]">1,234</p>
+            <p className="text-4xl font-black text-[var(--grind-primary)]">1,234</p>
             <p className="text-sm text-green-600 font-medium mt-2">↑ 12% this month</p>
           </Card.Body>
         </Card>
         <Card className="!shadow-sm !rounded-[24px] border border-gray-200">
           <Card.Body className="p-6">
             <h3 className="text-gray-500 text-sm font-semibold uppercase tracking-widest mb-2">Active Sellers</h3>
-            <p className="text-4xl font-black text-[#041e42]">567</p>
+            <p className="text-4xl font-black text-[var(--grind-primary)]">567</p>
           </Card.Body>
         </Card>
         <Card className="!shadow-sm !rounded-[24px] border border-transparent bg-green-50">
@@ -75,14 +75,14 @@ const Overview = () => {
         {/* Verification Queue */}
         <Card className="!rounded-[24px] border border-gray-200 overflow-hidden">
           <Card.Header className="bg-white border-b border-gray-100 p-6">
-            <h2 className="font-bold text-xl text-[#041e42]">Pending Verifications (8)</h2>
+            <h2 className="font-bold text-xl text-[var(--grind-primary)]">Pending Verifications (8)</h2>
           </Card.Header>
           <Card.Body className="p-0 bg-white">
             <div className="divide-y divide-gray-100">
               {[1, 2].map(i => (
                 <div key={i} className="p-6 flex justify-between items-center hover:bg-gray-50 transition-colors">
                   <div>
-                    <p className="font-bold text-base text-[#041e42]">John D. - Tutor</p>
+                    <p className="font-bold text-base text-[var(--grind-primary)]">John D. - Tutor</p>
                     <p className="text-sm text-gray-500">Submitted 2 hours ago</p>
                   </div>
                   <div className="flex gap-2">
@@ -98,7 +98,7 @@ const Overview = () => {
         {/* Support Chat Queue */}
         <Card className="!rounded-[24px] border border-gray-200 overflow-hidden">
           <Card.Header className="bg-white border-b border-gray-100 p-6">
-            <h2 className="font-bold text-xl text-[#041e42]">Live Support Chats ({sessions.filter(s => s.status === 'open').length})</h2>
+            <h2 className="font-bold text-xl text-[var(--grind-primary)]">Live Support Chats ({sessions.filter(s => s.status === 'open').length})</h2>
           </Card.Header>
           <Card.Body className="p-0 flex h-[400px]">
             {/* Session List */}
@@ -106,8 +106,8 @@ const Overview = () => {
               {sessions.map(s => (
                 <div key={s.id} onClick={() => setActiveSession(s)} className={`p-4 cursor-pointer hover:bg-blue-50 transition-colors ${activeSession?.id === s.id ? 'bg-blue-50' : ''}`}>
                   <div className="flex justify-between items-center mb-1">
-                    <p className="font-bold text-sm text-[#041e42]">{s.userAlias}</p>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${s.status === 'open' ? 'bg-[#2563eb] text-white' : 'bg-gray-100 text-gray-500'}`}>{s.status}</span>
+                    <p className="font-bold text-sm text-[var(--grind-primary)]">{s.userAlias}</p>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${s.status === 'open' ? 'bg-[var(--grind-nigeria)] text-white' : 'bg-gray-100 text-gray-500'}`}>{s.status}</span>
                   </div>
                   <p className="text-xs text-gray-500 truncate">{s.messages[s.messages.length - 1]?.text}</p>
                 </div>
@@ -119,7 +119,7 @@ const Overview = () => {
               {activeSession ? (
                 <>
                   <div className="p-4 border-b border-gray-100 bg-white flex justify-between items-center">
-                    <span className="font-bold text-sm text-[#041e42]">{activeSession.userAlias}</span>
+                    <span className="font-bold text-sm text-[var(--grind-primary)]">{activeSession.userAlias}</span>
                     {activeSession.status === 'open' && (
                       <Button size="sm" className="bg-gray-800 text-white hover:bg-black !rounded-full" onClick={() => handleResolve(activeSession.id)}>Resolve</Button>
                     )}
@@ -127,7 +127,7 @@ const Overview = () => {
                   <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     {activeSession.messages.map(msg => (
                       <div key={msg.id} className={`flex ${msg.from === 'admin' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] rounded-[16px] px-4 py-2.5 text-sm font-medium ${msg.from === 'admin' ? 'bg-[#2563eb] text-white rounded-tr-sm shadow-sm' : 'bg-white border border-gray-200 text-[#041e42] rounded-tl-sm shadow-sm'}`}>
+                        <div className={`max-w-[85%] rounded-[16px] px-4 py-2.5 text-sm font-medium ${msg.from === 'admin' ? 'bg-[var(--grind-nigeria)] text-white rounded-tr-sm shadow-sm' : 'bg-white border border-gray-200 text-[var(--grind-primary)] rounded-tl-sm shadow-sm'}`}>
                           {msg.text}
                         </div>
                       </div>
@@ -135,8 +135,8 @@ const Overview = () => {
                   </div>
                   {activeSession.status === 'open' && (
                     <div className="p-4 bg-white border-t border-gray-100 flex gap-2">
-                      <input value={replyText} onChange={e => setReplyText(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleReply()} placeholder="Type reply..." className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-full outline-none focus:border-[#2563eb] transition-colors" />
-                      <Button size="sm" className="bg-[#2563eb] text-white !rounded-full px-5 hover:bg-blue-700" onClick={handleReply}>Send</Button>
+                      <input value={replyText} onChange={e => setReplyText(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleReply()} placeholder="Type reply..." className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-full outline-none focus:border-[var(--grind-nigeria)] transition-colors" />
+                      <Button size="sm" className="bg-[var(--grind-nigeria)] text-white !rounded-full px-5 hover:bg-blue-700" onClick={handleReply}>Send</Button>
                     </div>
                   )}
                 </>
@@ -164,11 +164,11 @@ export const Admin = () => {
         {/* Topbar */}
         <header className="bg-white border-b border-gray-200 px-8 py-4 flex justify-end sticky top-0 z-10 shadow-sm">
           <div className="flex items-center gap-4 bg-gray-50 border border-gray-200 rounded-full px-4 py-1.5 cursor-pointer hover:bg-gray-100 transition-colors">
-            <div className="w-8 h-8 bg-[#2563eb] rounded-full flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-8 h-8 bg-[var(--grind-nigeria)] rounded-full flex items-center justify-center text-white font-bold text-sm">
               {user.name ? user.name.charAt(0) : 'A'}
             </div>
             <div className="hidden sm:block">
-              <div className="text-sm font-bold text-[#041e42] leading-tight">{user.name || 'Admin User'}</div>
+              <div className="text-sm font-bold text-[var(--grind-primary)] leading-tight">{user.name || 'Admin User'}</div>
               <div className="text-xs text-gray-500">{user.email}</div>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Users, AlertTriangle, Briefcase, MessageSquare, Settings, Activity } from 'lucide-react';
-import { LogoMark } from '../app/components/brand/LogoMark';
+import { LogoMark } from '../../app/components/brand/LogoMark';
 
 export const Sidebar = () => {
   const navItems = [
@@ -15,7 +15,7 @@ export const Sidebar = () => {
   ];
 
   return (
-    <aside className="w-64 bg-[#041e42] text-slate-300 min-h-screen hidden lg:block sticky top-0 border-r border-[#2563eb]/20 shadow-xl">
+    <aside className="w-64 bg-[#111111] text-white min-h-screen hidden lg:block sticky top-0 border-r border-[#b8860b]/20 shadow-xl">
       <div className="p-6">
         <div className="flex items-center gap-2 mb-8">
           <LogoMark size={24} tone="light" />
@@ -31,7 +31,7 @@ export const Sidebar = () => {
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-medium ${
                 isActive 
-                  ? 'bg-[#2563eb] text-white shadow-md shadow-[#2563eb]/20' 
+                  ? 'bg-[#b8860b] text-black shadow-md shadow-[#b8860b]/20' 
                   : 'hover:bg-white/10 hover:text-white'
               }`
             }
