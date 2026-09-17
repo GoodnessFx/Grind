@@ -96,3 +96,63 @@ CREATE POLICY "Active listings are viewable by everyone." ON listings FOR SELECT
 
 -- Enable realtime for messages
 ALTER PUBLICATION supabase_realtime ADD TABLE messages;
+
+-- Installments & Group Buy Schema Additions
+
+CREATE TYPE bundle_status AS ENUM ('open', 'filled', 'expired', 'fulfilled', 'cancelled');
+CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'defaulted', 'refunded');
+
+-- Installment Plans
+CREATE TABLE installment_plans (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  listing_id UUID REFERENCES listings(id) NOT NULL,
+  num_installments INTEGER NOT NULL CHECK (num_installments > 1),
+  min_first_payment DECIMAL(10, 2) NOT NULL,
+  grace_period_days INTEGER DEFAULT 3,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Installment Payments Tracker
+CREATE TABLE installment_payments (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  order_id UUID REFERENCES orders(id) NOT NULL,
+  installment_number INTEGER NOT NULL,
+  amount DECIMAL(10, 2) NOT NULL,
+  status payment_status DEFAULT 'pending',
+  due_date TIMESTAMP WITH TIME ZONE NOT NULL,
+  paid_at TIMESTAMP WITH TIME ZONE,
+  payment_reference TEXT
+);
+
+-- Bundle Listings (Group Buys)
+CREATE TABLE bundle_listings (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  seller_id UUID REFERENCES profiles(id) NOT NULL,
+  listing_id UUID REFERENCES listings(id) NOT NULL,
+  total_slots INTEGER NOT NULL CHECK (total_slots > 1),
+  filled_slots INTEGER DEFAULT 0,
+  deadline TIMESTAMP WITH TIME ZONE NOT NULL,
+  status bundle_status DEFAULT 'open',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Bundle Commitments
+CREATE TABLE bundle_commitments (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  bundle_id UUID REFERENCES bundle_listings(id) NOT NULL,
+  buyer_id UUID REFERENCES profiles(id) NOT NULL,
+  amount DECIMAL(10, 2) NOT NULL,
+  status payment_status DEFAULT 'paid',
+  payment_reference TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- RLS Policies for New Tables
+ALTER TABLE installment_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE installment_payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bundle_listings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bundle_commitments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public installment plans are viewable by everyone." ON installment_plans FOR SELECT USING (true);
+CREATE POLICY "Public bundle listings are viewable by everyone." ON bundle_listings FOR SELECT USING (true);

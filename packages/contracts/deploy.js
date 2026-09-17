@@ -41,9 +41,19 @@ async function main() {
   console.log(`   ✅ GrindEscrow deployed: ${escrowAddress}`);
 
   // ────────────────────────────────────────────────────
-  // STEP 3: Authorize GrindEscrow to write to GrindScore
+  // STEP 3: Deploy GrindInstallmentEscrow
   // ────────────────────────────────────────────────────
-  console.log("\n3️⃣  Authorizing GrindEscrow on GrindScore...");
+  console.log("\n3️⃣  Deploying GrindInstallmentEscrow...");
+  const GrindInstallmentEscrow = await ethers.getContractFactory("GrindInstallmentEscrow");
+  const installmentEscrow = await GrindInstallmentEscrow.deploy();
+  await installmentEscrow.waitForDeployment();
+  const installmentEscrowAddress = await installmentEscrow.getAddress();
+  console.log(`   ✅ GrindInstallmentEscrow deployed: ${installmentEscrowAddress}`);
+
+  // ────────────────────────────────────────────────────
+  // STEP 4: Authorize GrindEscrow to write to GrindScore
+  // ────────────────────────────────────────────────────
+  console.log("\n4️⃣  Authorizing GrindEscrow on GrindScore...");
   const tx = await grindScore.authorizeContract(escrowAddress);
   await tx.wait();
   console.log(`   ✅ GrindEscrow authorized to write scores`);
@@ -56,6 +66,7 @@ async function main() {
   console.log("═══════════════════════════════════════");
   console.log(`GrindScore:   ${grindScoreAddress}`);
   console.log(`GrindEscrow:  ${escrowAddress}`);
+  console.log(`Installment:  ${installmentEscrowAddress}`);
   console.log(`cNGN token: ${CNGN_ADDRESS}`);
   console.log(`Treasury:   ${TREASURY}`);
   console.log("═══════════════════════════════════════\n");
@@ -70,6 +81,7 @@ async function main() {
     contracts: {
       GrindScore:  grindScoreAddress,
       GrindEscrow: escrowAddress,
+      GrindInstallmentEscrow: installmentEscrowAddress,
       cNGN:      CNGN_ADDRESS,
       treasury:  TREASURY,
     }
