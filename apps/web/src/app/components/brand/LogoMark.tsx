@@ -14,8 +14,8 @@ interface LogoMarkProps {
 }
 
 /**
- * Grind brand mark: a clean single-letter “G”.
- * Intentionally minimal so it doesn't read as generic AI/placeholder iconography.
+ * Grind brand mark: the clean lowercase "g." glyph, rendered as crisp SVG
+ * so it stays sharp at any size (favicon, splash, headers, footers).
  */
 export function LogoMark({
   size = 52,
@@ -23,29 +23,26 @@ export function LogoMark({
   className,
   framed = false,
 }: LogoMarkProps) {
-  const foreground = tone === "dark" ? "#0A2540" : "#ffffff";
+  const foreground = tone === "dark" ? "#000000" : "#ffffff";
 
   const glyph = (
     <svg
       width={size}
-      height={size}
-      viewBox="0 0 52 52"
+      height={size * 0.8}
+      viewBox="0 0 125 80"
       fill="none"
       aria-label="Grind"
       role="img"
       className={className}
     >
-      {/* Subtle inner gradient for a premium look while staying inside the brand palette */}
-      <defs>
-        <linearGradient id="g_fill" x1="10" y1="8" x2="44" y2="46" gradientUnits="userSpaceOnUse">
-          <stop stopColor={foreground} stopOpacity="1" />
-          <stop offset="1" stopColor="#00a8a8" stopOpacity={tone === "dark" ? "0.18" : "0.28"} />
-        </linearGradient>
-      </defs>
+      {/* lowercase "g": flat top, round-bottom bowl with open counter, plus the dot */}
       <path
-        d="M26 6.5c-10.8 0-19.5 8.7-19.5 19.5S15.2 45.5 26 45.5c8.35 0 15.47-5.2 18.35-12.55.35-.9-.13-1.95-1.07-2.2l-2.7-.7c-.74-.2-1.52.2-1.8.93-2.2 5.6-7.66 9.57-12.78 9.57-8.2 0-14.85-6.65-14.85-14.85S17.8 11.85 26 11.85c6.82 0 12.6 4.65 14.25 11h-9.3c-1.1 0-2 .9-2 2v3.2c0 1.1.9 2 2 2h13.95c1.1 0 2-.9 2-2V26c0-10.8-8.7-19.5-19.5-19.5Z"
-        fill="url(#g_fill)"
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M0 0 H100 V20 A50 50 0 0 1 0 20 Z M30 0 H70 V20 A20 20 0 0 1 30 20 Z"
+        fill={foreground}
       />
+      <circle cx="109" cy="58" r="11" fill={foreground} />
     </svg>
   );
 

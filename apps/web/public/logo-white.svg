@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="340" viewBox="0 0 125 80">
+  <!-- Grind "g." brand mark — white version for dark backgrounds -->
+  <path fill-rule="evenodd" d="M0 0 H100 V20 A50 50 0 0 1 0 20 Z M30 0 H70 V20 A20 20 0 0 1 30 20 Z" fill="#FFFFFF"/>
+  <circle cx="109" cy="58" r="11" fill="#FFFFFF"/>
+</svg>

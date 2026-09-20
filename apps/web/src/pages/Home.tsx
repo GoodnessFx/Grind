@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, ArrowRight, Shield, Zap, Download, X, SearchCheck,
@@ -120,6 +120,10 @@ export const Home = () => {
   const [search, setSearch] = useState('');
   const [showCookie, setShowCookie] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
+  // Hero background video playlist — both videos play back-to-back on loop
+  const HERO_VIDEOS = ['/herobgvideo.MP4', '/herobgvideo2.MP4'];
+  const [heroVideoIndex, setHeroVideoIndex] = useState(0);
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
 
@@ -214,10 +218,17 @@ export const Home = () => {
       {/* ── Hero Section ── */}
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1531545514256-b1400bc00f31?q=80&w=2874&auto=format&fit=crop"
-            className="w-full h-full object-cover object-top"
-            alt="Students working together"
+          <video
+            key={heroVideoIndex}
+            ref={heroVideoRef}
+            className="w-full h-full object-cover"
+            src={HERO_VIDEOS[heroVideoIndex]}
+            poster="https://images.unsplash.com/photo-1531545514256-b1400bc00f31?q=80&w=2874&auto=format&fit=crop"
+            autoPlay
+            muted
+            playsInline
+            aria-hidden="true"
+            onEnded={() => setHeroVideoIndex((i) => (i + 1) % HERO_VIDEOS.length)}
           />
           <div className="absolute inset-0 bg-gradient-to-br from-black/95 via-black/80 to-[#006400]/70" />
         </div>

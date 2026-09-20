@@ -1,4 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" rx="20" fill="#00A651" />
-  <text x="50" y="70" font-family="Arial, sans-serif" font-weight="bold" font-size="64" fill="white" text-anchor="middle">G</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="28" fill="#000000"/>
+  <g transform="translate(18 30) scale(0.74)">
+    <path fill-rule="evenodd" d="M0 0 H100 V20 A50 50 0 0 1 0 20 Z M30 0 H70 V20 A20 20 0 0 1 30 20 Z" fill="#FFFFFF"/>
+    <circle cx="109" cy="58" r="11" fill="#FFFFFF"/>
+  </g>
 </svg>
