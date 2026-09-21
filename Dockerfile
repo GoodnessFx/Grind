@@ -42,13 +42,14 @@ COPY --from=builder /app/apps/server/dist ./apps/server/dist
 COPY --from=builder /app/apps/web/dist    ./apps/web/dist
 COPY --from=builder /app/server.js        ./server.js
 
-# Hardcode port 8080 as fallback; Railway injects $PORT at runtime
-EXPOSE 8080
+# Expose both common ports; the app binds PORT env or 3000 by default
+EXPOSE 3000 8080
 
 ENV NODE_ENV=production
+ENV PORT=3000
 
 # Health check so Railway knows when the container is ready
 HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=3 \
-  CMD wget -qO- http://localhost:${PORT:-8080}/health || exit 1
+  CMD wget -qO- http://localhost:${PORT:-3000}/health || exit 1
 
 CMD ["node", "server.js"]

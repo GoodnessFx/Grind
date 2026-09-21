@@ -6,15 +6,23 @@ import { Filter, ChevronDown, ShoppingCart, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
 
+const REAL_LISTING_IMAGES = [
+  'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&q=80',
+  'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=80',
+  'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80',
+  'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=800&q=80',
+  'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&q=80',
+  'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80',
+];
 const mockListings = Array(12).fill(null).map((_, i) => ({
   id: `list-${i}`,
-  title: i % 2 === 0 ? `Premium Logo Design` : `Web Development (React/Node)`,
+  title: ['Premium Logo Design', 'Web Development (React/Node)', 'Video Editing & Motion', 'Mobile Photography', 'Social Media Management', 'Data Analysis & Excel'][i % 6],
   price: (Math.floor(Math.random() * 50) + 5) * 1000,
   sellerName: `Seller ${i + 1}`,
   sellerBadge: ['gold', 'silver', 'bronze', 'platinum'][Math.floor(Math.random() * 4)] as any,
   rating: 4 + Math.random(),
   reviewCount: Math.floor(Math.random() * 200),
-  imageUrl: `https://picsum.photos/seed/grind-listing-${i}/800/600`
+  imageUrl: REAL_LISTING_IMAGES[i % REAL_LISTING_IMAGES.length]
 }));
 
 export const Marketplace = () => {

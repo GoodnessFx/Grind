@@ -18,7 +18,9 @@ dotenv.config();
 const app = express();
 // Trust reverse proxy (Vercel / Heroku / proxies) so `req.ip` reflects X-Forwarded-For
 app.set('trust proxy', true);
-const PORT = Number(process.env.PORT) || 8080;
+// Default to 3000 so platforms that proxy a fixed port (Pxxl etc.) always connect;
+// platforms that inject $PORT (Railway, Heroku, Render) override it automatically.
+const PORT = Number(process.env.PORT) || 3000;
 const HOST = '0.0.0.0';
 
 // ── Security headers (PASS #18) ─────────────────────────────────────────────
@@ -30,6 +32,7 @@ app.use(
         scriptSrc: ["'self'", "'unsafe-inline'"],  // needed for Vite SPA
         styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", 'data:', 'https:'],
+        mediaSrc: ["'self'", 'blob:', 'https:'],
         connectSrc: ["'self'", 'wss:', 'https:'],
         frameSrc: ["'none'"],
       },

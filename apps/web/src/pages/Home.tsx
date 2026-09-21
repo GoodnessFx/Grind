@@ -155,7 +155,7 @@ export const Home = () => {
   const [showCookie, setShowCookie] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
   // Hero background video playlist — both videos play back-to-back on loop
-  const HERO_VIDEOS = ['/herobgvideo.MP4', '/herobgvideo2.MP4'];
+  const HERO_VIDEOS = ['/herobgvideo.mp4', '/herobgvideo2.mp4'];
   const [heroVideoIndex, setHeroVideoIndex] = useState(0);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
   const [user, setUser] = useState<any>(null);
@@ -259,29 +259,31 @@ export const Home = () => {
             src={HERO_VIDEOS[heroVideoIndex]}
             autoPlay
             muted
+            preload="auto"
             playsInline
             aria-hidden="true"
             onEnded={() => setHeroVideoIndex((i) => (i + 1) % HERO_VIDEOS.length)}
+            onError={() => setHeroVideoIndex((i) => (i + 1) % HERO_VIDEOS.length)}
           />
           <div className="absolute inset-0 bg-gradient-to-br from-black/95 via-black/80 to-[#006400]/70" />
         </div>
 
-        <div className="relative z-10 w-full max-w-[900px] mx-auto px-6 text-center mt-20">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/90 text-sm font-medium px-4 py-2 rounded-full mb-8 backdrop-blur-sm">
+        <div className="relative z-10 w-full max-w-[900px] mx-auto px-6 text-center mt-16">
+          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/90 text-sm font-medium px-4 py-2 rounded-full mb-6 backdrop-blur-sm">
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
             Nigeria's #1 Campus Gig Economy
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.05] tracking-tight mb-6">
+          <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.05] tracking-tight mb-5">
             Built for Campus<br />
             <span className="text-[#60a5fa]">Grinders.</span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-white/80 font-medium mb-12 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-white/75 font-medium mb-8 max-w-2xl mx-auto leading-relaxed">
             LinkedIn meets X for Nigerian students who grind. Sell your skills, buy from trusted coursemates, and start that business you keep dreaming about. Every kobo stays locked in escrow until the job is done right.
           </p>
 
-          <form onSubmit={handleSearch} className="flex bg-white rounded-full p-1.5 max-w-3xl mx-auto shadow-2xl mb-6">
+          <form onSubmit={handleSearch} className="flex bg-white rounded-full p-1.5 max-w-2xl mx-auto shadow-2xl mb-5">
             <div className="flex-1 flex items-center px-5">
               <Search className="text-gray-400 mr-3 shrink-0" size={22} />
               <input
