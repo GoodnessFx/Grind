@@ -13,7 +13,10 @@ import { GrindFlex } from '../pages/GrindFlex';
 import { Explorer } from '../pages/Explorer';
 import { Leaderboard } from '../pages/Leaderboard';
 import { SupportChat } from '../components/common/SupportChat';
+import { ChatWidget } from '../components/common/ChatWidget';
+import AdminConsole from '../pages/AdminConsole';
 import { CartProvider } from '../context/CartContext';
+import { wakePing } from '../lib/adminApi';
 
 export const GOOGLE_CLIENT_ID = "24300395823-trbfqd7mjiho0tgl9jpaek4qtemuf5cd.apps.googleusercontent.com";
 
@@ -46,9 +49,11 @@ function AppRoutes() {
         <Route path="/grindflex" element={<GrindFlex />} />
         <Route path="/explorer" element={<Explorer />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/xk9-admin-console-7f3a" element={<AdminConsole />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <SupportChat />
+      {/* Legacy localStorage chat for guests; DB-backed widget for logged-in users */}
+      {localStorage.getItem('grind_user') ? <ChatWidget /> : <SupportChat />}
     </BrowserRouter>
     </CartProvider>
   );
@@ -56,6 +61,11 @@ function AppRoutes() {
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
+
+  // Wake ping — warm the server on app mount
+  React.useEffect(() => {
+    wakePing();
+  }, []);
 
   if (showSplash) {
     return <Splash onComplete={() => setShowSplash(false)} />;

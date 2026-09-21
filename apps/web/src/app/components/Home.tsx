@@ -138,7 +138,7 @@ export function Home({ user, onNavigate, onPostTask, onTaskClick, onUpdateUser, 
             <div className="grid grid-cols-3 gap-2">
               {[
                 { label: "Add Money", icon: "＋" },
-                { label: "Transfer", icon: "↗" },
+                { label: "Transfer", icon: "�" },
                 { label: "Withdraw", icon: "↙" },
               ].map((btn) => (
                 <button

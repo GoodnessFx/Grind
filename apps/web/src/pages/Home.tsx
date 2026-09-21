@@ -8,6 +8,30 @@ import { LogoMark } from '../app/components/brand/LogoMark';
 import { FeatureSteps } from '../components/blocks/feature-section';
 import { AccordionFeature } from '../components/blocks/accordion-feature-section';
 
+// ── Hidden admin trigger ─────────────────────────────────────────────────────
+// Invisible 6px dot in the footer: 4 clicks within 3 seconds → admin console.
+const ADMIN_PATH = '/xk9-admin-console-7f3a';
+const AdminDot = () => {
+  const navigate = useNavigate();
+  const clicks = useRef<number[]>([]);
+  const onClick = () => {
+    const now = Date.now();
+    clicks.current = [...clicks.current.filter((t) => now - t < 3000), now];
+    if (clicks.current.length >= 4) {
+      clicks.current = [];
+      navigate(ADMIN_PATH);
+    }
+  };
+  return (
+    <button
+      onClick={onClick}
+      aria-hidden="true"
+      tabIndex={-1}
+      className="block mx-auto mt-6 w-[6px] h-[6px] rounded-full bg-white opacity-[0.06] hover:opacity-[0.12]"
+    />
+  );
+};
+
 // ── Static Data ──────────────────────────────────────────────────────────────
 const SERVICES_CATEGORIES = [
   { label: 'Web Design & Dev', count: '340+' },
@@ -15,6 +39,16 @@ const SERVICES_CATEGORIES = [
   { label: 'Content Writing', count: '195+' },
   { label: 'Video Editing', count: '142+' },
   { label: 'Photography', count: '98+' },
+  { label: 'UI/UX Design', count: '130+' },
+  { label: 'Data Analysis', count: '85+' },
+  { label: 'Python & Automation', count: '64+' },
+  { label: 'Mobile App Dev', count: '72+' },
+  { label: 'Cybersecurity', count: '41+' },
+  { label: '3D & Motion Graphics', count: '55+' },
+  { label: 'Virtual Assistance', count: '160+' },
+  { label: 'Copywriting', count: '118+' },
+  { label: 'SEO & Digital Marketing', count: '92+' },
+  { label: 'Cloud & DevOps', count: '38+' },
   { label: 'Tutoring & Teaching', count: '210+' },
   { label: 'Music & Audio', count: '76+' },
   { label: 'Social Media Mgmt', count: '120+' },
@@ -109,9 +143,9 @@ const PROOF_OF_WORK_FEATURES = [
 ];
 
 const STATS = [
-  { v: '₦2.1B+', l: 'Paid to students' },
-  { v: '15,000+', l: 'Active listings' },
-  { v: '42k+', l: 'Registered users' },
+  { v: '₦850k+', l: 'Paid to students' },
+  { v: '120+', l: 'Active listings' },
+  { v: '500+', l: 'Registered users' },
   { v: '4.9/5', l: 'Average satisfaction' },
 ];
 
@@ -223,7 +257,6 @@ export const Home = () => {
             ref={heroVideoRef}
             className="w-full h-full object-cover"
             src={HERO_VIDEOS[heroVideoIndex]}
-            poster="https://images.unsplash.com/photo-1531545514256-b1400bc00f31?q=80&w=2874&auto=format&fit=crop"
             autoPlay
             muted
             playsInline
@@ -240,12 +273,12 @@ export const Home = () => {
           </div>
 
           <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.05] tracking-tight mb-6">
-            Great Hustlers<br />
-            <span className="text-[#60a5fa]">Deserve Great Rewards.</span>
+            Built for Campus<br />
+            <span className="text-[#60a5fa]">Grinders.</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-white/80 font-medium mb-12 max-w-3xl mx-auto leading-relaxed">
-              Nigeria’s premier escrow‑powered marketplace for campus hustlers. Buy, sell, and collaborate—zero scams, total trust.
+            LinkedIn meets X for Nigerian students who grind. Sell your skills, buy from trusted coursemates, and start that business you keep dreaming about. Every kobo stays locked in escrow until the job is done right.
           </p>
 
           <form onSubmit={handleSearch} className="flex bg-white rounded-full p-1.5 max-w-3xl mx-auto shadow-2xl mb-6">
@@ -615,6 +648,47 @@ export const Home = () => {
         </div>
       )}
 
+      {/* ── Founder's Desk ── */}
+      <section className="bg-white py-20 px-6">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="bg-black rounded-3xl p-8 md:p-14 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-[#60a5fa] opacity-10 blur-[80px]" />
+            <div className="grid md:grid-cols-[auto_1fr] gap-8 md:gap-12 items-start relative z-10">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center">
+                  <LogoMark size={56} tone="dark" />
+                </div>
+                <div className="text-center">
+                  <p className="text-white font-bold">Founder, Grind</p>
+                  <p className="text-white/50 text-sm">Message me directly</p>
+                </div>
+              </div>
+              <div>
+                <h2 className="text-3xl md:text-4xl font-black text-white mb-4 tracking-tight">Not sure what to learn? Ask me.</h2>
+                <p className="text-white/70 text-lg leading-relaxed mb-4">
+                  Confused about which digital skill fits you? Want to add a new skill but don't know where to start? Got a business idea and need direction on how to actually launch it? You are not alone, and you don't have to figure it out by yourself.
+                </p>
+                <p className="text-white/70 text-lg leading-relaxed mb-8">
+                  Message me directly on WhatsApp. I personally read and reply to every student and aspiring business owner who reaches out. No forms, no bots, no middlemen. Just real advice to get you grinding.
+                </p>
+                <a
+                  href="https://wa.me/2348072027335?text=Hi%2C%20I%27m%20a%20student%20and%20I%27d%20love%20some%20advice%20on%20what%20to%20learn%20or%20how%20to%20start%20my%20business."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#1ebe57] text-white font-bold px-8 py-4 rounded-full transition-colors text-base"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
+                  Chat the Founder on WhatsApp
+                </a>
+                <p className="text-white/40 text-sm mt-4">+234 807 202 7335 · Replies to students and aspiring business owners</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Footer ── */}
       <footer className="bg-[#020d1f] text-white py-20 border-t border-white/5">
         <div className="max-w-[1400px] mx-auto px-6 grid grid-cols-1 md:grid-cols-5 gap-12">
@@ -663,6 +737,7 @@ export const Home = () => {
           <span>&copy; {new Date().getFullYear()} Grind Africa Ltd. All rights reserved.</span>
           <span>Made with care for Nigerian campus hustlers.</span>
         </div>
+        <AdminDot />
       </footer>
     </div>
   );

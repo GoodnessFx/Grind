@@ -76,7 +76,7 @@ export const Checkout = () => {
                   
                   <div className="border-t border-b border-[var(--color-border)] py-4 space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span>₦5,000 × 1 hour</span>
+                      <span>₦5,000 � 1 hour</span>
                       <span>₦5,000</span>
                     </div>
                     <div className="flex justify-between">

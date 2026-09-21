@@ -102,7 +102,7 @@ export const ListingDetail = () => {
                   <div className="border-t border-[var(--color-border)] pt-4 mt-4">
                     <h4 className="font-semibold mb-2">Order Summary</h4>
                     <div className="flex justify-between text-sm mb-1">
-                      <span>₦5,000 × 1 hour</span>
+                      <span>₦5,000 � 1 hour</span>
                       <span>₦5,000</span>
                     </div>
                     <div className="flex justify-between text-sm mb-3">

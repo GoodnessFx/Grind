@@ -189,7 +189,7 @@ export function Wallet({ user, onUpdateUser }: WalletProps) {
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { label: "+ Add", action: () => setShowFundModal(true) },
-                    { label: "↗ Send", action: () => setShowSendModal(true) },
+                    { label: "� Send", action: () => setShowSendModal(true) },
                     { label: "↙ Cash", action: () => setShowWithdrawModal(true) },
                   ].map((btn) => (
                     <button

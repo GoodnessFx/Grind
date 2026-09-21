@@ -14,7 +14,7 @@ const mockListings = Array(12).fill(null).map((_, i) => ({
   sellerBadge: ['gold', 'silver', 'bronze', 'platinum'][Math.floor(Math.random() * 4)] as any,
   rating: 4 + Math.random(),
   reviewCount: Math.floor(Math.random() * 200),
-  imageUrl: `https://images.unsplash.com/photo-155${i}15522-835626a574f1?w=800&q=80`
+  imageUrl: `https://picsum.photos/seed/grind-listing-${i}/800/600`
 }));
 
 export const Marketplace = () => {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { LogoMark } from '../app/components/brand/LogoMark';
+import { chatApi } from '../lib/adminApi';
 
 export const GOOGLE_CLIENT_ID = "24300395823-trbfqd7mjiho0tgl9jpaek4qtemuf5cd.apps.googleusercontent.com";
 
@@ -66,22 +67,27 @@ export const Login = () => {
   const handleLogin = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     localStorage.setItem('grind_user', JSON.stringify({ email, name: email.split('@')[0], role: 'user' }));
+    // Fire-and-forget login tracking (server records login_events)
+    chatApi.logLogin(email);
     navigate('/profile');
   };
 
   const handleGoogleSuccess = (credentialResponse: any) => {
+    let userEmail = 'user@google.com';
     try {
       const token = credentialResponse.credential;
       const payload = JSON.parse(atob(token.split('.')[1]));
+      userEmail = payload.email || 'user@google.com';
       localStorage.setItem('grind_user', JSON.stringify({
         name: payload.name || 'Google User',
-        email: payload.email || 'user@google.com',
+        email: userEmail,
         avatar: payload.picture,
         role: 'user',
       }));
     } catch {
       localStorage.setItem('grind_user', JSON.stringify({ name: 'Google User', email: 'user@google.com', role: 'user' }));
     }
+    chatApi.logLogin(userEmail);
     navigate('/profile');
   };
 

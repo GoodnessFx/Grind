@@ -232,7 +232,7 @@ export function TaskDetail({ taskId, user, onBack }: TaskDetailProps) {
               </div>
               <div className="flex-1">
                 <p className="font-bold text-sm text-gray-900">{task.posterHandle}</p>
-                <p className="text-[10px] text-green-500 font-medium">‚óè Online</p>
+                <p className="text-[10px] text-green-500 font-medium">‚è Online</p>
               </div>
               <button onClick={() => setShowChat(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
                 <X className="w-4 h-4 text-gray-600" />

@@ -12,25 +12,29 @@ export function Splash({ onComplete }: SplashProps) {
   }, [onComplete]);
 
   return (
-    <div
-      className="h-full min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
-      style={{ background: "#0D1B2E" }}
-    >
-      {/* Center app tile + wordmark (Mitao-style) */}
-      <div className="flex flex-col items-center gap-7 animate-in fade-in zoom-in duration-700">
-        <div
-          className="relative flex items-center justify-center rounded-[26px] shadow-2xl"
-          style={{
-            width: 116,
-            height: 116,
-            background: "#000000",
-            border: "1px solid rgba(255,255,255,0.14)",
-            boxShadow: "0 18px 50px rgba(0,0,0,0.45)",
-          }}
-        >
-          <LogoMark size={72} tone="light" />
-        </div>
-        <h1 className="text-white text-4xl font-extrabold tracking-tight">Grind</h1>
+    <div className="h-full min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-black">
+      <style>{`
+        @keyframes grindBounce {
+          0%, 100% { transform: translateY(0) scale(1); }
+          30% { transform: translateY(-18px) scale(1.03); }
+          55% { transform: translateY(0) scale(0.99); }
+          70% { transform: translateY(-6px) scale(1.01); }
+        }
+        @keyframes grindFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
+
+      {/* Center logo, bouncing like the Mitao splash */}
+      <div
+        className="flex flex-col items-center gap-7"
+        style={{
+          animation: "grindBounce 2s cubic-bezier(0.45, 0, 0.55, 1) infinite, grindFadeIn 0.7s ease-out",
+        }}
+      >
+        <LogoMark size={150} tone="light" />
+        <h1 className="text-white text-5xl font-extrabold tracking-tight">Grind</h1>
       </div>
 
       {/* Bottom loader dots */}

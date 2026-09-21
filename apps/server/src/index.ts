@@ -11,6 +11,7 @@ import applyRouter from './routes/apply';
 import streamsRouter from './routes/streams';
 import chatRouter, { initChat } from './routes/chat';
 import giftsRouter from './routes/gifts';
+import adminRouter from './routes/admin';
 
 dotenv.config();
 
@@ -87,7 +88,7 @@ const strictLimiter = rateLimit({
 });
 
 // ── Health check (before API routes so it is always fast) ────────────────────
-app.get(['/health', '/healthcheck', '/ping'], (_req, res) => {
+app.get(['/health', '/healthcheck', '/ping', '/api/health'], (_req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
@@ -96,6 +97,8 @@ app.use('/api', strictLimiter, applyRouter);
 app.use('/api/streams', streamsRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/gifts', giftsRouter);
+// Hidden admin system — obscure prefix, own rate limits per route
+app.use('/api/xk9-admin-console-7f3a', adminRouter);
 
 // ── Serve web SPA (if dist exists) ───────────────────────────────────────────
 const webDistPath = path.resolve(__dirname, '../../web/dist');
