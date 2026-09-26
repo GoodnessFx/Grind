@@ -155,7 +155,7 @@ export const Home = () => {
   const [showCookie, setShowCookie] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
   // Hero background video playlist — both videos play back-to-back on loop
-  const HERO_VIDEOS = ['/herobgvideo.mp4', '/herobgvideo2.mp4'];
+  const HERO_VIDEOS = ['/bgvid.mp4', '/bgvid2.mp4'];
   const [heroVideoIndex, setHeroVideoIndex] = useState(0);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
   const [user, setUser] = useState<any>(null);
@@ -252,6 +252,13 @@ export const Home = () => {
       {/* ── Hero Section ── */}
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
+          {/* Fallback backdrop — shows instantly while the video buffers, and if the video can't play */}
+          <img
+            src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1920&auto=format&fit=crop"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
           <video
             key={heroVideoIndex}
             ref={heroVideoRef}
@@ -259,13 +266,16 @@ export const Home = () => {
             src={HERO_VIDEOS[heroVideoIndex]}
             autoPlay
             muted
-            preload="auto"
+            loop
+            preload={heroVideoIndex === 0 ? 'auto' : 'none'}
             playsInline
+            disablePictureInPicture
+            disableRemotePlayback
             aria-hidden="true"
             onEnded={() => setHeroVideoIndex((i) => (i + 1) % HERO_VIDEOS.length)}
             onError={() => setHeroVideoIndex((i) => (i + 1) % HERO_VIDEOS.length)}
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-black/95 via-black/80 to-[#006400]/70" />
+          <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/45 to-[#006400]/40" />
         </div>
 
         <div className="relative z-10 w-full max-w-[900px] mx-auto px-6 text-center mt-16">
@@ -684,7 +694,7 @@ export const Home = () => {
                   </svg>
                   Chat the Founder on WhatsApp
                 </a>
-                <p className="text-white/40 text-sm mt-4">+234 807 202 7335 · Replies to students and aspiring business owners</p>
+
               </div>
             </div>
           </div>

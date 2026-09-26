@@ -29,7 +29,7 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],  // needed for Vite SPA
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://static.cloudflareinsights.com"],  // needed for Vite SPA + Cloudflare Insights
         styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", 'data:', 'https:'],
         mediaSrc: ["'self'", 'blob:', 'https:'],
