@@ -23,36 +23,30 @@ app.set('trust proxy', true);
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = '0.0.0.0';
 
-// ── Security headers (PASS #18) ─────────────────────────────────────────────
+// ── Security headers ─────────────────────────────────────────────────────────
 app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "https://static.cloudflareinsights.com"],  // needed for Vite SPA + Cloudflare Insights
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", 'data:', 'https:'],
-        mediaSrc: ["'self'", 'blob:', 'https:'],
-        connectSrc: ["'self'", 'wss:', 'https:'],
-        frameSrc: ["'none'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "http:"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https:', 'http:'],
+        mediaSrc: ["'self'", 'blob:', 'data:', 'https:', 'http:'],
+        connectSrc: ["'self'", 'wss:', 'ws:', 'https:', 'http:'],
+        fontSrc: ["'self'", 'data:', 'https:', 'http:'],
+        frameSrc: ["'self'", 'https:', 'http:'],
       },
     },
-    crossOriginEmbedderPolicy: false, // allow LiveKit iframe
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
   })
 );
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.CLIENT_ORIGIN ?? 'http://localhost:5173')
-  .split(',')
-  .map((o) => o.trim());
-
 app.use(
   cors({
-    origin: (origin, cb) => {
-      // Allow requests with no origin (mobile apps, curl, health checks)
-      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-      cb(new Error(`CORS: ${origin} not allowed`));
-    },
+    origin: true,
     credentials: true,
   })
 );
@@ -104,14 +98,24 @@ app.use('/api/gifts', giftsRouter);
 app.use('/api/xk9-admin-console-7f3a', adminRouter);
 
 // ── Serve web SPA (if dist exists) ───────────────────────────────────────────
-const webDistPath = path.resolve(__dirname, '../../web/dist');
-if (fs.existsSync(webDistPath)) {
-  app.use(express.static(webDistPath, { maxAge: '7d' }));
+const candidateDistPaths = [
+  path.resolve(__dirname, '../../web/dist'),
+  path.resolve(process.cwd(), 'apps/web/dist'),
+  path.resolve(process.cwd(), 'dist'),
+  path.resolve(__dirname, '../../../apps/web/dist'),
+  path.resolve(__dirname, '../web/dist'),
+];
+const webDistPath = candidateDistPaths.find((p) => fs.existsSync(p));
+
+if (webDistPath) {
+  console.log(`[Grind Server] Serving static web SPA from: ${webDistPath}`);
+  app.use(express.static(webDistPath, { maxAge: '1h' }));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
     res.sendFile(path.join(webDistPath, 'index.html'));
   });
 } else {
+  console.log('[Grind Server] web/dist not found, candidate paths checked:', candidateDistPaths);
   app.get('/', (_req, res) => {
     res.status(200).json({ status: 'ok', message: 'Grind API is running.' });
   });

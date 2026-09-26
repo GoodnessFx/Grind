@@ -6,20 +6,25 @@
 
 1. [Introduction](#introduction)
 2. [Platform Architecture](#platform-architecture)
-3. [Tech Stack](#tech-stack)
-4. [Screens Overview](#screens-overview)
-5. [Feature Details](#feature-details)
-6. [Design System](#design-system)
-7. [How to Use](#how-to-use)
-8. [API Reference](#api-reference)
-9. [Smart Contracts](#smart-contracts)
-10. [Added Features](#added-features)
+3. [Blockchain Explorer Transparency](#blockchain-explorer-transparency)
+4. [Underlying Technology Stack](#underlying-technology-stack)
+5. [Tech Stack](#tech-stack)
+6. [Screens Overview](#screens-overview)
+7. [Feature Details](#feature-details)
+8. [Comprehensive Ecosystem Capabilities](#comprehensive-ecosystem-capabilities)
+9. [Design System](#design-system)
+10. [How to Use](#how-to-use)
+11. [API Reference](#api-reference)
+12. [Smart Contracts](#smart-contracts)
+13. [Added Features](#added-features)
 
 ## Introduction
 
 Grind redefines how university students build their professional footprint. While traditional job platforms focus on post graduation experience, Grind captures the hustle, the micro jobs, and the raw talent developed during school years. Whether it is tutoring a peer, designing a flyer, writing code, or delivering food across campus, every task completed on Grind contributes to an immutable onchain reputation. 
 
 This creates a transparent and verified resume from your actual work history. No matter how little the job, Grind tracks your effort, evaluates your performance through client ratings, and builds your credibility. The platform acts as a powerful combination of LinkedIn and modern gig marketplaces but strictly tailored for the university ecosystem. It eliminates the friction of traditional networking by providing a real, transparent environment where students connect, work, and build a lasting reputation.
+
+Students no longer need to rely on empty resumes or unprovable claims. Every gig executed through the platform produces verifiable proof of completion. This onchain record demonstrates work quality, punctuality, and client satisfaction directly to future employers, campus recruiters, and clients worldwide.
 
 ## Platform Architecture
 
@@ -33,16 +38,35 @@ graph TD
     LiveKitServer[LiveKit WebRTC]
     SmartContracts[Onchain Escrow and Reputation]
     PaystackAPI[Paystack Payment Gateway]
+    BlockExplorer[Public Block Explorer]
 
     UserClient ==>|REST and WebSockets| BackendServer
     UserClient ==>|Direct Media Stream| LiveKitServer
     BackendServer ==>|Read and Write| SupabaseDB
     BackendServer ==>|Fiat Transactions| PaystackAPI
     BackendServer ==>|Deploy and Trigger| SmartContracts
-    UserClient ==>|Interact| SmartContracts
+    UserClient ==>|Interact and Query| SmartContracts
+    SmartContracts ==>|Public Verification| BlockExplorer
 ```
 
-The Web App Client communicates with the Node.js backend for authentication and data management. Real time chat and gig updates use WebSockets. Live streaming is handled completely by LiveKit for low latency video. Smart Contracts manage the cNGN escrow, ensuring that payments are locked until the gig is successfully completed, while also updating the GrindScore onchain to reflect the student credibility.
+The Web App Client communicates with the Node.js backend for authentication and data management. Real time chat and gig updates use WebSockets. Live streaming is handled completely by LiveKit for low latency video. Smart Contracts manage the cNGN escrow, ensuring that payments are locked until the gig is successfully completed, while also updating the GrindScore onchain to reflect the student credibility. Every event emitted by the smart contracts is indexed and immediately visible on the public block explorer.
+
+## Blockchain Explorer Transparency
+
+Grind is built on the foundation that reputation should be undeniable, public, and verifiable by anyone without trusting a central authority. Every critical financial and reputation event is anchored onchain and can be inspected in real time using any standard blockchain explorer.
+
+### Public Transaction Verifiability
+* Every escrow deposit creates a distinct transaction hash viewable on the block explorer
+* Students and clients can click through directly to inspect the smart contract address, the exact amount of cNGN locked, the timestamp of initiation, and the authorized participant addresses
+* The release of escrowed cNGN generates an irreversible payout receipt on the ledger, establishing irrefutable evidence of successful delivery
+* Dispute resolutions and arbitrated refunds are recorded as public onchain events with immutable log outputs
+
+### Onchain Resume and Credibility Audit
+* A student wallet address functions as a verifiable public portfolio
+* Anyone can paste a student wallet address into the block explorer to see the full chronological history of completed contracts
+* GrindScore points minted to the student address cannot be artificially inflated, deleted, or fabricated
+* Client ratings and gig completion proofs are permanently linked to the participant address, giving recruiters and employers absolute confidence in the authenticity of past performance
+* Zero fake reviews and zero fabricated work history because every single point originated from an escrow settled agreement
 
 ## Tech Stack
 
@@ -84,6 +108,28 @@ The Web App Client communicates with the Node.js backend for authentication and 
     </tr>
   </tbody>
 </table>
+
+## Underlying Technology Stack
+
+Grind combines modern web performance with decentralized finance protocols to guarantee speed, security, and immutability.
+
+### Smart Contract Layer
+* GrindEscrow contract holds funds in trust until the client approves completion or the predefined timeout triggers
+* GrindScore contract acts as a non transferable reputation token tallying points from verified work
+* GrindDID contract anchors student campus status and identity attributes on the blockchain
+* Native cNGN ERC20 standard token compliance enabling rapid, low fee transactions pegged to the Nigerian Naira
+
+### Real Time Media and Communication
+* LiveKit WebRTC Selective Forwarding Unit architecture for high definition campus video broadcasts
+* Sub 100 millisecond stream latency allowing real time student questions, tutoring sessions, and interactive workshops
+* Socket.io dual transport communication layer providing instant chat messaging with automatic HTTP long polling fallback
+* Server side message sanitization and profanity filtering protecting the campus community
+
+### Hybrid Fiat and Web3 Payment Engine
+* Paystack checkout integration enabling easy Naira deposits via debit cards and dedicated virtual bank accounts
+* Automated conversion and minting of cNGN stable value directly into the student non custodial wallet
+* Transparent platform fee calculations showing exact operational and escrow costs prior to gig authorization
+* Instant peer to peer transfers between students using simple campus handles without intermediary bank delays
 
 ## Screens Overview
 
@@ -224,6 +270,16 @@ The Web App Client communicates with the Node.js backend for authentication and 
 * Feedback and Suggestions 500 char textarea sends to backend
 * Help Center Terms and Privacy Policy About Grind
 * Sign Out and Delete Account
+
+## Comprehensive Ecosystem Capabilities
+
+* Proof of Work History: Every gig completion acts as an authentic work certificate permanently anchored on the public blockchain
+* Dynamic GrindScore Algorithm: Mathematical reputation score calculated directly from verified job ratings, project complexity, on time completion rate, and peer validation
+* Campus Community Verification: Decentralized identity checks ensuring participants are actual students currently enrolled in university institutions
+* Milestone Based Releases: Escrow support for complex projects allowing payments to unlock incrementally as specific deliverables are approved
+* Live Stream Virtual Tipping: Audience members can reward live tutors, coders, and creators with cNGN gifts during interactive campus sessions
+* Dispute Resolution Engine: Multi signature arbitration framework protecting both student gig workers and campus clients from non delivery or non payment
+* Detailed Transaction Receipts: Downloadable digital receipts containing transaction hashes, timestamp proofs, and fee breakdowns for every wallet event
 
 ## Design System
 
