@@ -1,305 +1,339 @@
-# Grind — Campus Gig Economy
+# Grind Campus Gig Economy
 
-> **Production-ready MVP.** A trustless campus gig marketplace for Nigerian university students — post gigs, earn cNGN, stream live, and chat, all secured by smart-contract escrow.
-
----
+> Grind is a university first based LinkedIn and every popular job platform merged into one real no bullshit platform. It serves as an onchain reputation engine of work done. Grind is something that helps people track what they have done in their life and time in school no matter how little, building them a credibility to do things and creating a resume from work history. It is a trustless campus gig marketplace for Nigerian university students where you can post gigs, earn cNGN, stream live, and chat, all secured by smart contract escrow.
 
 ## Table of Contents
 
-1. [Tech Stack](#tech-stack)
-2. [Screens Overview](#screens-overview)
-3. [Feature Details](#feature-details)
-4. [Design System](#design-system)
-5. [Running Locally](#running-locally)
-6. [Environment Variables](#environment-variables)
-7. [API Reference](#api-reference)
-8. [Smart Contracts](#smart-contracts)
-9. [Added Features (beyond original spec)](#added-features)
+1. [Introduction](#introduction)
+2. [Platform Architecture](#platform-architecture)
+3. [Tech Stack](#tech-stack)
+4. [Screens Overview](#screens-overview)
+5. [Feature Details](#feature-details)
+6. [Design System](#design-system)
+7. [How to Use](#how-to-use)
+8. [API Reference](#api-reference)
+9. [Smart Contracts](#smart-contracts)
+10. [Added Features](#added-features)
 
----
+## Introduction
+
+Grind redefines how university students build their professional footprint. While traditional job platforms focus on post graduation experience, Grind captures the hustle, the micro jobs, and the raw talent developed during school years. Whether it is tutoring a peer, designing a flyer, writing code, or delivering food across campus, every task completed on Grind contributes to an immutable onchain reputation. 
+
+This creates a transparent and verified resume from your actual work history. No matter how little the job, Grind tracks your effort, evaluates your performance through client ratings, and builds your credibility. The platform acts as a powerful combination of LinkedIn and modern gig marketplaces but strictly tailored for the university ecosystem. It eliminates the friction of traditional networking by providing a real, transparent environment where students connect, work, and build a lasting reputation.
+
+## Platform Architecture
+
+Below is the high level architecture of the Grind ecosystem explaining how the frontend, backend, and smart contracts interact seamlessly.
+
+```mermaid
+graph TD
+    UserClient[Web App Client]
+    BackendServer[Node.js Express Backend]
+    SupabaseDB[Supabase Postgres]
+    LiveKitServer[LiveKit WebRTC]
+    SmartContracts[Onchain Escrow and Reputation]
+    PaystackAPI[Paystack Payment Gateway]
+
+    UserClient ==>|REST and WebSockets| BackendServer
+    UserClient ==>|Direct Media Stream| LiveKitServer
+    BackendServer ==>|Read and Write| SupabaseDB
+    BackendServer ==>|Fiat Transactions| PaystackAPI
+    BackendServer ==>|Deploy and Trigger| SmartContracts
+    UserClient ==>|Interact| SmartContracts
+```
+
+The Web App Client communicates with the Node.js backend for authentication and data management. Real time chat and gig updates use WebSockets. Live streaming is handled completely by LiveKit for low latency video. Smart Contracts manage the cNGN escrow, ensuring that payments are locked until the gig is successfully completed, while also updating the GrindScore onchain to reflect the student credibility.
 
 ## Tech Stack
 
-| Layer | Stack |
-|---|---|
-| Frontend | React 19 + Vite + TailwindCSS v4 + Radix UI + Lucide + Sonner |
-| Backend | Node.js + Express + Socket.io |
-| Auth | Supabase (email / phone OTP / Google OAuth) |
-| Payments | Smart-contract escrow (cNGN token) + Paystack |
-| Streaming | LiveKit WebRTC |
-| Database | Supabase Postgres |
-| Monorepo | pnpm workspaces |
-
----
+<table>
+  <thead>
+    <tr>
+      <th>Layer</th>
+      <th>Stack</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Frontend</td>
+      <td>React 19, Vite, TailwindCSS v4, Radix UI, Lucide, Sonner</td>
+    </tr>
+    <tr>
+      <td>Backend</td>
+      <td>Node.js, Express, Socket.io</td>
+    </tr>
+    <tr>
+      <td>Auth</td>
+      <td>Supabase Email, Phone OTP, Google OAuth</td>
+    </tr>
+    <tr>
+      <td>Payments</td>
+      <td>Smart contract escrow cNGN token, Paystack</td>
+    </tr>
+    <tr>
+      <td>Streaming</td>
+      <td>LiveKit WebRTC</td>
+    </tr>
+    <tr>
+      <td>Database</td>
+      <td>Supabase Postgres</td>
+    </tr>
+    <tr>
+      <td>Monorepo</td>
+      <td>pnpm workspaces</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Screens Overview
 
-| Screen | Entry Point |
-|---|---|
-| Splash | App load (2.2 s auto-advance) |
-| Login — Welcome | `/login` |
-| Login — Phone + OTP | Phone flow |
-| Login — Email + Register | Email flow |
-| Home Dashboard | `home` tab |
-| Gigs Board | `gigs` tab |
-| Gig Detail + Chat | Tap any gig card |
-| Post Gig (3 steps) | FAB `+` button |
-| Live — Browse | `live` tab |
-| Live — Watch + Chat + Gifts | Tap any stream |
-| Live — Go Live / Creator | "Go Live" button |
-| Wallet + Leaderboard | `wallet` tab |
-| Profile | `profile` tab |
-| Settings (6 sub-screens) | From Profile |
-
----
+<table>
+  <thead>
+    <tr>
+      <th>Screen</th>
+      <th>Entry Point</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Splash</td><td>App load 2.2 s auto advance</td></tr>
+    <tr><td>Login Welcome</td><td>/login</td></tr>
+    <tr><td>Login Phone and OTP</td><td>Phone flow</td></tr>
+    <tr><td>Login Email and Register</td><td>Email flow</td></tr>
+    <tr><td>Home Dashboard</td><td>home tab</td></tr>
+    <tr><td>Gigs Board</td><td>gigs tab</td></tr>
+    <tr><td>Gig Detail and Chat</td><td>Tap any gig card</td></tr>
+    <tr><td>Post Gig</td><td>FAB + button</td></tr>
+    <tr><td>Live Browse</td><td>live tab</td></tr>
+    <tr><td>Live Watch and Chat and Gifts</td><td>Tap any stream</td></tr>
+    <tr><td>Live Go Live or Creator</td><td>Go Live button</td></tr>
+    <tr><td>Wallet and Leaderboard</td><td>wallet tab</td></tr>
+    <tr><td>Profile</td><td>profile tab</td></tr>
+    <tr><td>Settings</td><td>From Profile</td></tr>
+  </tbody>
+</table>
 
 ## Feature Details
 
 ### Authentication
-- Animated splash screen with brand logo, auto-advances after 2.2 s
-- Welcome screen with three sign-in paths: **Google**, **Phone**, **Email**
-- Phone flow → 6-digit OTP verification (any code works in demo)
-- Email flow → Registration form (name, email pre-filled, password with show/hide)
-- Password minimum 6 characters enforced client-side
-- Persistent sessions stored in `localStorage`, restored on reload
-- Protected routes — unauthenticated users always land on Login
-- Referral tracking via `?ref=` URL param stored in `sessionStorage`
+* Animated splash screen with brand logo auto advances after 2.2 s
+* Welcome screen with three sign in paths Google Phone Email
+* Phone flow 6 digit OTP verification
+* Email flow Registration form name email pre filled password with show hide
+* Password minimum 6 characters enforced client side
+* Persistent sessions stored in localStorage restored on reload
+* Protected routes unauthenticated users always land on Login
+* Referral tracking via URL param stored in sessionStorage
 
 ### Home Dashboard
-- Personalised greeting (Good morning / afternoon / evening)
-- **Balance card** — cNGN balance with show/hide eye toggle, GrindScore + tier badge
-- Three wallet quick-buttons on card: Add Money, Transfer, Withdraw
-- **Quick Actions row** — Browse Gigs, Go Live, Refer Friend, Top Up
-- **Smart Pick banner** — dark card with "Post your first gig" CTA
-- **Exclusive Rewards** banner linking to wallet
-- Recommended gig feed (3 featured gigs)
-- **Notification bell** — unread red dot, slide-up notification panel
-- Mark all notifications read in one tap
-- Notification panel shows per-item read/unread styling
+* Personalised greeting Good morning afternoon evening
+* Balance card cNGN balance with show hide eye toggle GrindScore and tier badge
+* Three wallet quick buttons on card Add Money Transfer Withdraw
+* Quick Actions row Browse Gigs Go Live Refer Friend Top Up
+* Smart Pick banner dark card with Post your first gig CTA
+* Exclusive Rewards banner linking to wallet
+* Recommended gig feed featured gigs
+* Notification bell unread red dot slide up notification panel
+* Mark all notifications read in one tap
+* Notification panel shows per item read unread styling
 
 ### Gigs Board
-- **Search bar** with clear button — filters title, description, category in real time
-- **8 categories** — Writing, Design, Coding, Tutoring, Delivery, Research, Video, Other
-- **Filter chips** — toggle category drawer with `SlidersHorizontal` button
-- **Sort dropdown** — Newest First, Highest Pay, Lowest Pay, Most Urgent
-- Result count with "clear filters" shortcut
-- Empty state with icon and clear-all link
-- **Post Gig** button in header (same as FAB)
-- 10 seeded real gigs covering every category
+* Search bar with clear button filters title description category in real time
+* Categories Writing Design Coding Tutoring Delivery Research Video Other
+* Filter chips toggle category drawer
+* Sort dropdown Newest First Highest Pay Lowest Pay Most Urgent
+* Result count with clear filters shortcut
+* Empty state with icon and clear all link
+* Post Gig button in header same as FAB
+* 10 seeded real gigs covering every category
 
 ### Gig Card
-- Category colour badge (8 unique colour combos)
-- Formatted cNGN price with badge
-- 2-line title + 1-line description (clipped)
-- Poster avatar initial, handle, tier colour dot
-- Deadline badge — red for urgent (hours / 1 day), green otherwise
-- Escrow shield badge on every card
+* Category colour badge unique colour combos
+* Formatted cNGN price with badge
+* 2 line title 1 line description clipped
+* Poster avatar initial handle tier colour dot
+* Deadline badge red for urgent hours 1 day green otherwise
+* Escrow shield badge on every card
 
 ### Gig Detail
-- Full poster card — avatar, handle, tier dot, GrindScore, 5-star rating
-- **Chat button** opens in-app messenger with the poster
-- Category + deadline chips
-- Full title and description
-- **Payment breakdown table** — budget, platform fee (8%), escrow fee (1.5%), doer earnings
-- **Trustless Escrow** info card with smart contract explanation
-- Poster profile section with completed task count and dispute rate
-- **Apply for Gig** button → pitch modal with 300-char textarea
-- Applied state — button replaced by green "Applied!" confirmation
-- **Share gig** — copies `grind.market/gig/:id` to clipboard
-- **In-app chat panel** — slide-up messenger, sent/received bubble UI, simulated auto-reply, send on Enter or tap
+* Full poster card avatar handle tier dot GrindScore 5 star rating
+* Chat button opens in app messenger with the poster
+* Category and deadline chips
+* Full title and description
+* Payment breakdown table budget platform fee escrow fee doer earnings
+* Trustless Escrow info card with smart contract explanation
+* Poster profile section with completed task count and dispute rate
+* Apply for Gig button pitch modal with 300 char textarea
+* Applied state button replaced by green Applied confirmation
+* Share gig copies URL to clipboard
+* In app chat panel slide up messenger sent received bubble UI simulated auto reply send on Enter or tap
 
-### Post a Gig (3-step wizard)
-- **Progress bar** across 3 steps, back navigation on each
-- **Step 1 — Details:** title (100 char), 8-icon category grid, description (500 char), character counters
-- **Step 2 — Budget & Timeline:** large ₦ input, live fee breakdown (platform fee + escrow + doer earnings + total you pay), 5 deadline presets (1 / 3 / 7 / 14 / 30 days), minimum ₦500 validation
-- **Step 3 — Payment:** summary card, three payment methods:
-  - **Wallet** — instant deduction from cNGN balance
-  - **Debit Card** — Paystack integration
-  - **Bank Transfer** — generates unique virtual account + reference number in a toast
-- Escrow protection reminder on payment screen
-- **Success screen** — checkmark animation, "Gig is Live!" confirmation, back to board
+### Post a Gig 3 step wizard
+* Progress bar across 3 steps back navigation on each
+* Step 1 Details title 8 icon category grid description character counters
+* Step 2 Budget Timeline large NGN input live fee breakdown 5 deadline presets minimum validation
+* Step 3 Payment summary card three payment methods
+* Wallet instant deduction from cNGN balance
+* Debit Card Paystack integration
+* Bank Transfer generates unique virtual account and reference number in a toast
+* Escrow protection reminder on payment screen
+* Success screen checkmark animation confirmation back to board
 
 ### Live Streaming
-- **Browse page** — featured stream hero card + all streams list
-- Live/Offline status indicator with animated pulse dot
-- Viewer count on every stream card
-- Category filter bar: All, Coding, Design, Tutoring, Talk, Music, Gaming
-- **Go Live button** — red with Radio icon
-- **Watch screen:**
-  - Simulated video player (LiveKit-ready placeholder)
-  - Live viewer count that fluctuates every 3 s
-  - Creator name, follow button, tier dot
-  - **YouTube-style live chat** — coloured usernames, tier/gift badges, auto-scrolls
-  - Simulated incoming messages every 2.5 s
-  - **Heart reaction** button — burst animation on tap
-  - **Gift panel** — 4 gift tiers: Rose ₦50, Fire ₦100, Crown ₦500, Diamond ₦1000
-  - Gifting deducts from sender's cNGN wallet balance in real time
-  - Gift appears in chat as a highlighted message
-  - Send message on Enter or tap Send
-- **Go Live screen:**
-  - Camera / mic preview (toggleable)
-  - Stream title input
-  - Category selector (6 options)
-  - **Creator onboarding card** — shown on first stream
-  - Start Stream → sets `isCreator: true` on user object
-- **Live controls** — live timer, mute toggle, camera toggle, end stream
-- End stream returns to browse, shows "Great session!" toast
+* Browse page featured stream hero card and all streams list
+* Live Offline status indicator with animated pulse dot
+* Viewer count on every stream card
+* Category filter bar All Coding Design Tutoring Talk Music Gaming
+* Go Live button red with Radio icon
+* Watch screen Simulated video player Live viewer count Creator name follow button YouTube style live chat Heart reaction button Gift panel Gifting deducts from wallet
+* Go Live screen Camera mic preview Stream title input Category selector Creator onboarding card Start Stream
+* Live controls live timer mute toggle camera toggle end stream
+* End stream returns to browse shows toast
 
 ### Wallet
-- cNGN balance card with show/hide toggle
-- **Add Money modal:**
-  - Quick-amount chips: ₦1,000 / ₦2,500 / ₦5,000 / ₦10,000
-  - Card payment (Paystack)
-  - Bank Transfer — virtual account + unique reference in toast
-  - Balance updates in real time after funding
-- **Withdraw modal** — amount input, balance validation, minimum ₦500, "Arrives in 1-2 hours" toast
-- **Send cNGN modal** — recipient handle (`@username`) + amount, peer-to-peer transfer, balance validation
-- Transaction history — every transaction stored with title, amount, date, status, type
-- Type-aware icons — green arrow for earnings, red arrow for spending
-- **Download statement** — toast confirmation (PDF export hook)
-- **Campus Leaderboard tab:**
-  - Trophy banner showing user's campus rank
-  - User's own rank card highlighted in green
-  - Top 5 leaderboard with rank medals (gold/silver/bronze)
-  - GrindScore + tier colour dot per entry
+* cNGN balance card with show hide toggle
+* Add Money modal Quick amount chips Card payment Bank Transfer Balance updates in real time
+* Withdraw modal amount input balance validation minimum 500 Arrives in 1 to 2 hours toast
+* Send cNGN modal recipient handle and amount peer to peer transfer
+* Transaction history every transaction stored with title amount date status type
+* Type aware icons green arrow for earnings red arrow for spending
+* Download statement toast confirmation
+* Campus Leaderboard tab Trophy banner showing user campus rank Top 5 leaderboard with rank medals GrindScore and tier colour dot per entry
 
 ### Profile
-- Avatar with camera icon (change photo prompt)
-- **Inline edit mode** — tap pencil to edit name + bio, save/cancel buttons
-- Tier badge row with animated **progress bar** toward next tier, score display
-- **Stats row** — Tasks Done, On-Time Rate, Rating (3 cards)
-- **Total Earned** cNGN card with accent styling
-- **Referral link** — copies `grind.market/ref/:handle` to clipboard, shows referral count
-- **Growth Stats modal** — Income Growth, Response Rate, Completion Rate bars, Avg Delivery, Safety Score
-- **Work History modal** — filterable by positive transactions, per-gig receipt download button
-- Settings button (top bar + list item)
-- Sign Out button (danger red card)
+* Avatar with camera icon change photo prompt
+* Inline edit mode tap pencil to edit name and bio save cancel buttons
+* Tier badge row with animated progress bar toward next tier score display
+* Stats row Tasks Done On Time Rate Rating
+* Total Earned cNGN card with accent styling
+* Referral link copies URL to clipboard shows referral count
+* Growth Stats modal Income Growth Response Rate Completion Rate bars Avg Delivery Safety Score
+* Work History modal filterable by positive transactions per gig receipt download button
+* Settings button
+* Sign Out button danger red card
 
-### Settings (6 sub-screens)
-- User summary card at top with Edit shortcut
-- **My Profile** — name, phone, bio edit form, save with validation
-- **Login Settings** — current + new password with show/hide, Transaction PIN setup button
-- **Payment Settings** — Add Debit Card, Add Bank Account, Withdrawal Settings, Transaction Limits
-- **School & Level** — display-only (contact support to change)
-- **Notifications** — 4 per-type toggles: New Gig Matches, Chat Messages, Wallet Activity, Promotions
-- **Security Center** — Biometrics toggle, 2FA toggle, Active Sessions link
-- **Connected Accounts** — Google / socials (coming soon)
-- **Themes** — Dark mode (coming soon)
-- **Feedback & Suggestions** — 500-char textarea, sends to backend
-- **Help Center**, **Terms & Privacy Policy**, **About Grind** (v1.0.0)
-- **Sign Out** + **Delete Account** (danger zone, routes to support email)
-
----
+### Settings 6 sub screens
+* User summary card at top with Edit shortcut
+* My Profile name phone bio edit form save with validation
+* Login Settings current and new password with show hide Transaction PIN setup button
+* Payment Settings Add Debit Card Add Bank Account Withdrawal Settings Transaction Limits
+* School and Level display only contact support to change
+* Notifications 4 per type toggles
+* Security Center Biometrics toggle 2FA toggle Active Sessions link
+* Connected Accounts Google socials
+* Themes Dark mode
+* Feedback and Suggestions 500 char textarea sends to backend
+* Help Center Terms and Privacy Policy About Grind
+* Sign Out and Delete Account
 
 ## Design System
 
-| Token | Value |
-|---|---|
-| Brand green (accent) | `#00A651` |
-| Accent dark | `#007A3D` |
-| Accent light (bg tint) | `#E6F7EE` |
-| Primary (navy) | `#0A2540` |
-| Background | `#F4F6F8` |
-| Card | `#ffffff` |
-| Border | `#EAECF0` |
-| Danger | `#F04438` |
-| Warning | `#F79009` |
-| Tier — Starter | `#98A2B3` |
-| Tier — Bronze | `#CD7F32` |
-| Tier — Gold | `#F79009` |
-| Tier — Diamond | `#0BA5EC` |
+<table>
+  <thead>
+    <tr>
+      <th>Token</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Brand green</td><td>#00A651</td></tr>
+    <tr><td>Accent dark</td><td>#007A3D</td></tr>
+    <tr><td>Accent light</td><td>#E6F7EE</td></tr>
+    <tr><td>Primary navy</td><td>#0A2540</td></tr>
+    <tr><td>Background</td><td>#F4F6F8</td></tr>
+    <tr><td>Card</td><td>#ffffff</td></tr>
+    <tr><td>Border</td><td>#EAECF0</td></tr>
+    <tr><td>Danger</td><td>#F04438</td></tr>
+    <tr><td>Warning</td><td>#F79009</td></tr>
+    <tr><td>Tier Starter</td><td>#98A2B3</td></tr>
+    <tr><td>Tier Bronze</td><td>#CD7F32</td></tr>
+    <tr><td>Tier Gold</td><td>#F79009</td></tr>
+    <tr><td>Tier Diamond</td><td>#0BA5EC</td></tr>
+  </tbody>
+</table>
 
-- **Font:** Inter (body) + Plus Jakarta Sans (headings, 700–800)
-- **Radius:** `rounded-2xl` (12px) cards, `rounded-3xl` (24px) large cards, `rounded-full` pills
-- **Mobile-first:** `max-width: 480px`, safe-area insets (`env(safe-area-inset-bottom)`), `scrollbar-hide`
-- **Motion:** `animate-in fade-in slide-in-from-bottom` on modals/panels, `active:scale-95` on all tappable elements
-- **Shadows:** `shadow-sm` on cards, `shadow-lg shadow-accent/30` on primary CTAs
+* Font Inter body and Plus Jakarta Sans headings
+* Radius rounded 2xl 12px cards rounded 3xl 24px large cards rounded full pills
+* Mobile first max width 480px safe area insets scrollbar hide
+* Motion animate in fade in slide in from bottom on modals panels active scale 95 on all tappable elements
+* Shadows shadow sm on cards shadow lg shadow accent 30 on primary CTAs
 
----
+## How to Use
 
-## Running Locally
+First make sure you have pnpm installed on your machine.
+Clone the repository and open your terminal.
 
 ```bash
-# Install all workspace deps from root
 pnpm install
-
-# Frontend (http://localhost:5173)
-pnpm --filter web dev
-
-# Backend (http://localhost:3001)
-pnpm --filter server dev
+pnpm filter web dev
+pnpm filter server dev
 ```
 
----
-
-## Environment Variables
-
-Create `apps/server/.env`:
-
-```env
-PORT=3001
-CLIENT_ORIGIN=http://localhost:5173
-
-# Email (Gmail app password)
-EMAIL_USER=your_gmail@gmail.com
-EMAIL_PASS=your_app_password
-ADMIN_EMAIL=goodnessiyamah1@gmail.com
-
-# LiveKit
-LIVEKIT_HOST=wss://your-project.livekit.cloud
-LIVEKIT_API_KEY=your_api_key
-LIVEKIT_API_SECRET=your_api_secret
-
-# Supabase
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your_anon_key
-```
-
----
+The web app will run on your local port 5173. The backend server will run on port 3001. Open your browser and navigate to the localhost port 5173 to access the Grind application. You can create an account test the authentication explore the gigs board post new gigs and interact with the live streaming features. The mock data allows you to experience the fully populated application right away. 
 
 ## API Reference
 
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/apply` | Submit creator application (email notification) |
-| `POST` | `/api/chat/message` | HTTP fallback — send chat message |
-| `POST` | `/api/streams` | Create LiveKit room + return creator token |
-| `GET` | `/api/streams/:roomId/token` | Generate viewer join token |
-| `POST` | `/api/gifts` | Log a gift sent during live stream |
-| `GET` | `/api/gifts/:streamId` | Get all gifts for a stream |
-| WS | `socket.io` | Real-time chat (joinRoom / leaveRoom / chatMessage events) |
-
----
+<table>
+  <thead>
+    <tr>
+      <th>Method</th>
+      <th>Path</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>POST</td><td>/api/apply</td><td>Submit creator application</td></tr>
+    <tr><td>POST</td><td>/api/chat/message</td><td>HTTP fallback send chat message</td></tr>
+    <tr><td>POST</td><td>/api/streams</td><td>Create LiveKit room and return creator token</td></tr>
+    <tr><td>GET</td><td>/api/streams/:roomId/token</td><td>Generate viewer join token</td></tr>
+    <tr><td>POST</td><td>/api/gifts</td><td>Log a gift sent during live stream</td></tr>
+    <tr><td>GET</td><td>/api/gifts/:streamId</td><td>Get all gifts for a stream</td></tr>
+    <tr><td>WS</td><td>socket.io</td><td>Real time chat joinRoom leaveRoom chatMessage events</td></tr>
+  </tbody>
+</table>
 
 ## Smart Contracts
 
-Located in `packages/contracts/`:
+Located in packages/contracts/
 
-| Contract | Description |
-|---|---|
-| `GrindEscrow.sol` | Locks gig payment, releases on approval or refunds after timeout |
-| `GrindScore.sol` | On-chain reputation score, updated on task completion |
-| `GrindDID.sol` | Decentralised identity for campus-verified students |
+<table>
+  <thead>
+    <tr>
+      <th>Contract</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>GrindEscrow.sol</td><td>Locks gig payment releases on approval or refunds after timeout</td></tr>
+    <tr><td>GrindScore.sol</td><td>On chain reputation score updated on task completion</td></tr>
+    <tr><td>GrindDID.sol</td><td>Decentralised identity for campus verified students</td></tr>
+  </tbody>
+</table>
 
----
+## Added Features
 
-## Added Features (beyond original spec)
-
-| Feature | Details |
-|---|---|
-| OPay-inspired green UI | Full design system overhaul — green `#00A651`, card layouts, mobile-perfect |
-| 5-tab navigation | Home, Gigs, Live, Wallet, Profile with floating Post Gig FAB |
-| Referral system | Shareable link, referral count tracked on user object |
-| Notification centre | In-app bell panel, per-item read state, mark-all-read |
-| Creator tier progression | Progress bar toward next tier with score threshold display |
-| Gift economy | Rose / Fire / Crown / Diamond gifts during live streams, wallet-debited |
-| cNGN peer transfer | Send cNGN to any user by `@handle` |
-| Transaction PIN | PIN setup flow in Login Settings |
-| Feedback form | 500-char in-app feedback submission |
-| Escrow fee breakdown | Live calculation table before every gig payment |
-| Statement download | Wallet transaction history export |
-| Security toggles | Biometrics + 2FA toggles in Security Center |
-| Profanity filter | Server-side chat message sanitisation |
-| Gifts API | Persistent in-memory gift log (swap for DB in production) |
-| Smart contract rename | `Oui*` → `Grind*` contracts for brand consistency |
-| CSS bug fix | Resolved TailwindCSS v4 `@theme inline` import chain issue |
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>OPay inspired green UI</td><td>Full design system overhaul green card layouts mobile perfect</td></tr>
+    <tr><td>5 tab navigation</td><td>Home Gigs Live Wallet Profile with floating Post Gig FAB</td></tr>
+    <tr><td>Referral system</td><td>Shareable link referral count tracked on user object</td></tr>
+    <tr><td>Notification centre</td><td>In app bell panel per item read state mark all read</td></tr>
+    <tr><td>Creator tier progression</td><td>Progress bar toward next tier with score threshold display</td></tr>
+    <tr><td>Gift economy</td><td>Rose Fire Crown Diamond gifts during live streams wallet debited</td></tr>
+    <tr><td>cNGN peer transfer</td><td>Send cNGN to any user by handle</td></tr>
+    <tr><td>Transaction PIN</td><td>PIN setup flow in Login Settings</td></tr>
+    <tr><td>Feedback form</td><td>500 char in app feedback submission</td></tr>
+    <tr><td>Escrow fee breakdown</td><td>Live calculation table before every gig payment</td></tr>
+    <tr><td>Statement download</td><td>Wallet transaction history export</td></tr>
+    <tr><td>Security toggles</td><td>Biometrics 2FA toggles in Security Center</td></tr>
+    <tr><td>Profanity filter</td><td>Server side chat message sanitisation</td></tr>
+    <tr><td>Gifts API</td><td>Persistent in memory gift log</td></tr>
+    <tr><td>Smart contract rename</td><td>Brand consistency</td></tr>
+    <tr><td>CSS bug fix</td><td>Resolved TailwindCSS v4 theme inline import chain issue</td></tr>
+  </tbody>
+</table>
