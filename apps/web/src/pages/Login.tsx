@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { LogoMark } from '../app/components/brand/LogoMark';
 import { chatApi } from '../lib/adminApi';
+import { supportApi } from '../lib/supportApi';
 
 export const GOOGLE_CLIENT_ID = "24300395823-trbfqd7mjiho0tgl9jpaek4qtemuf5cd.apps.googleusercontent.com";
 
@@ -69,6 +70,8 @@ export const Login = () => {
     localStorage.setItem('grind_user', JSON.stringify({ email, name: email.split('@')[0], role: 'user' }));
     // Fire-and-forget login tracking (server records login_events)
     chatApi.logLogin(email);
+    // Shared-store tracking — powers the admin console "Logins" tab
+    supportApi.logLogin(email, email.split('@')[0], 'password');
     navigate('/profile');
   };
 
@@ -88,6 +91,7 @@ export const Login = () => {
       localStorage.setItem('grind_user', JSON.stringify({ name: 'Google User', email: 'user@google.com', role: 'user' }));
     }
     chatApi.logLogin(userEmail);
+    supportApi.logLogin(userEmail, null, 'google');
     navigate('/profile');
   };
 

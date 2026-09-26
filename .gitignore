@@ -35,3 +35,15 @@ typechain/
 typechain-types/
 *.log
 audit*.json
+
+# local dev store (never commit chat/login data)
+apps/server/data/
+
+
+# raw source videos (hero videos removed in favour of images)
+/bgvid.MP4
+/bgvid2.MP4
+/herobgvideo.MP4
+/herobgvideo2.MP4
+/Importation.MOV
+

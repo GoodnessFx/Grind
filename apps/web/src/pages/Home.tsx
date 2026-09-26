@@ -9,25 +9,35 @@ import { FeatureSteps } from '../components/blocks/feature-section';
 import { AccordionFeature } from '../components/blocks/accordion-feature-section';
 
 // ── Hidden admin trigger ─────────────────────────────────────────────────────
-// Invisible 6px dot in the footer: 4 clicks within 3 seconds → admin console.
+// Invisible 6px dot in the footer. Tap / click it 6 times inside 4 seconds to
+// open the admin console. There is no visible link, label or shortcut to it.
 const ADMIN_PATH = '/xk9-admin-console-7f3a';
-const AdminDot = () => {
+const ADMIN_TAPS = 6;
+const ADMIN_TAP_WINDOW_MS = 4000;
+
+export const useAdminTap = (requiredTaps = ADMIN_TAPS, windowMs = ADMIN_TAP_WINDOW_MS) => {
   const navigate = useNavigate();
-  const clicks = useRef<number[]>([]);
-  const onClick = () => {
+  const taps = useRef<number[]>([]);
+  return () => {
     const now = Date.now();
-    clicks.current = [...clicks.current.filter((t) => now - t < 3000), now];
-    if (clicks.current.length >= 4) {
-      clicks.current = [];
+    taps.current = [...taps.current.filter((t) => now - t < windowMs), now];
+    if (taps.current.length >= requiredTaps) {
+      taps.current = [];
       navigate(ADMIN_PATH);
     }
   };
+};
+
+const AdminDot = () => {
+  const handleTap = useAdminTap();
   return (
     <button
-      onClick={onClick}
+      type="button"
+      onClick={handleTap}
       aria-hidden="true"
       tabIndex={-1}
-      className="block mx-auto mt-6 w-[6px] h-[6px] rounded-full bg-white opacity-[0.06] hover:opacity-[0.12]"
+      title=""
+      className="block mx-auto mt-6 w-[8px] h-[8px] rounded-full bg-white opacity-[0.06] hover:opacity-[0.16] cursor-default"
     />
   );
 };
@@ -103,7 +113,7 @@ const PROOF_OF_WORK_FEATURES = [
   {
     id: 1,
     title: 'Your Grind Score is Your CV',
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1600&auto=format&fit=crop',
+    image: '/section/ui-main-gate.jpg',
     description:
       'Every completed order, positive review, and on-time delivery contributes to your Grind Score. It is a real, verifiable reputation that follows you beyond campus — into internships, jobs, and partnerships.',
     badge: 'Proof of Work',
@@ -111,7 +121,7 @@ const PROOF_OF_WORK_FEATURES = [
   {
     id: 2,
     title: 'Verified Student Profiles',
-    image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1600&auto=format&fit=crop',
+    image: '/section/ui-faculty-of-arts-library.jpg',
     description:
       'Every user on Grind verifies their student email and university. This means every buyer and seller is a real, accountable Nigerian student. No catfishes, no scammers.',
     badge: 'Verification',
@@ -119,7 +129,7 @@ const PROOF_OF_WORK_FEATURES = [
   {
     id: 3,
     title: 'Build a Portfolio That Matters',
-    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop',
+    image: '/section/ui-wole-soyinka-theatre.jpg',
     description:
       'Completed projects are automatically added to your public Grind Portfolio. Show employers and clients real work you\'ve done, rated by real people. It\'s the most honest portfolio you can build.',
     badge: 'Portfolio',
@@ -127,7 +137,7 @@ const PROOF_OF_WORK_FEATURES = [
   {
     id: 4,
     title: 'GrindFlex: Installment Payments',
-    image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1600&auto=format&fit=crop',
+    image: '/section/work-campus-collaboration.jpg',
     description:
       'GrindFlex lets buyers purchase high-value items or services in flexible weekly or monthly payments — all secured by Escrow. Sellers get paid as milestones are completed.',
     badge: 'GrindFlex',
@@ -135,7 +145,7 @@ const PROOF_OF_WORK_FEATURES = [
   {
     id: 5,
     title: 'Social Connect — Link Up & Vibe',
-    image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=1600&auto=format&fit=crop',
+    image: '/section/work-campus-designer.jpg',
     description:
       'Grind isn\'t just a marketplace. Connect with students on Campus Connect — post what you\'re working on, find a study partner, or simply say you\'re going for a stroll and see who links up.',
     badge: 'Community',
@@ -149,15 +159,26 @@ const STATS = [
   { v: '4.9/5', l: 'Average satisfaction' },
 ];
 
+// ── Hero background imagery ──────────────────────────────────────────────────
+// Six Nigerian campus / grind photographs crossfading on a 6s loop.
+// Every frame is stacked and only opacity changes, so the hero is never blank
+// mid-transition (no unmount/remount, no video buffering, no flash).
+const HERO_IMAGES = [
+  '/hero/hero1_oau.jpg',       // Obafemi Awolowo University — Oduduwa Hall
+  '/hero/hero2_tech.jpg',      // Nigerian tech hub, students shipping code
+  '/hero/hero3_creative.jpg',  // Creative students working together on campus
+  '/hero/hero4_library.jpg',   // University of Ibadan library —study grind
+  '/hero/hero5_hustle.jpg',    // University of Ibadan — campus hustle & delivery
+  '/hero/hero6_success.jpg',   // University of Ibadan — graduates, laptops in hand
+];
+const HERO_INTERVAL_MS = 6000;
+
 // ── Component ─────────────────────────────────────────────────────────────────
 export const Home = () => {
   const [search, setSearch] = useState('');
   const [showCookie, setShowCookie] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
-  // Hero background video playlist — both videos play back-to-back on loop
-  const HERO_VIDEOS = ['/bgvid.mp4', '/bgvid2.mp4'];
-  const [heroVideoIndex, setHeroVideoIndex] = useState(0);
-  const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const [heroIndex, setHeroIndex] = useState(0);
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
 
@@ -170,6 +191,26 @@ export const Home = () => {
         console.error(e);
       }
     }
+  }, []);
+
+  // Rotate the hero imagery. All six frames stay mounted (stacked) and only the
+  // opacity changes, so there is always a fully painted image behind the copy —
+  // the hero can never flash/blank between slides.
+  React.useEffect(() => {
+    // Warm the cache up-front so the very first crossfades are instant.
+    HERO_IMAGES.forEach((src) => {
+      const preload = new Image();
+      preload.src = src;
+    });
+
+    const id = window.setInterval(() => {
+      // Skip while the tab is hidden — no point animating off-screen.
+      if (document.visibilityState === 'visible') {
+        setHeroIndex((i) => (i + 1) % HERO_IMAGES.length);
+      }
+    }, HERO_INTERVAL_MS);
+
+    return () => window.clearInterval(id);
   }, []);
 
   const handleLogout = () => {
@@ -251,30 +292,23 @@ export const Home = () => {
 
       {/* ── Hero Section ── */}
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          {/* Fallback backdrop — shows instantly while the video buffers, and if the video can't play */}
-          <img
-            src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1920&auto=format&fit=crop"
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <video
-            key={heroVideoIndex}
-            ref={heroVideoRef}
-            className="w-full h-full object-cover"
-            src={HERO_VIDEOS[heroVideoIndex]}
-            autoPlay
-            muted
-            loop
-            preload={heroVideoIndex === 0 ? 'auto' : 'none'}
-            playsInline
-            disablePictureInPicture
-            disableRemotePlayback
-            aria-hidden="true"
-            onEnded={() => setHeroVideoIndex((i) => (i + 1) % HERO_VIDEOS.length)}
-            onError={() => setHeroVideoIndex((i) => (i + 1) % HERO_VIDEOS.length)}
-          />
+        <div className="absolute inset-0 z-0 bg-[#020d1f]">
+          {/* Six Nigerian campus / grind photographs, stacked and cross-fading.
+              Every frame stays mounted and only its opacity animates, so a fully
+              painted image is always behind the hero copy — it never blanks. */}
+          {HERO_IMAGES.map((src, i) => (
+            <img
+              key={src}
+              src={src}
+              alt=""
+              aria-hidden="true"
+              decoding="async"
+              loading={i === 0 ? 'eager' : 'lazy'}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[1500ms] ease-in-out will-change-[opacity] ${
+                i === heroIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+            />
+          ))}
           <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/45 to-[#006400]/40" />
         </div>
 
@@ -729,7 +763,9 @@ export const Home = () => {
           <div>
             <h4 className="font-black text-sm uppercase tracking-widest mb-6 text-white/80">Support</h4>
             <ul className="space-y-4 text-white/50 font-medium">
-              {['Help Center', 'Safety Center', 'Selling on Grind', 'Buyer Protection', 'Dispute Resolution'].map(l => (
+              <li><Link to="/support" className="hover:text-white transition-colors">Help Center</Link></li>
+              <li><Link to="/support" className="hover:text-white transition-colors">Chat with Support</Link></li>
+              {['Safety Center', 'Selling on Grind', 'Buyer Protection'].map(l => (
                 <li key={l}><a href="#" className="hover:text-white transition-colors">{l}</a></li>
               ))}
             </ul>

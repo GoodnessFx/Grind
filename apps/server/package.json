@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
+    "@types/pg": "^8.23.1",
     "bullmq": "^6.1.2",
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
@@ -19,6 +20,7 @@
     "ioredis": "^6.0.0",
     "livekit-server-sdk": "^2.18.0",
     "nodemailer": "^10.0.10",
+    "pg": "^8.23.0",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
     "zod": "^4.4.3"

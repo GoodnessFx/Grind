@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { LogoMark } from '../app/components/brand/LogoMark';
 import { GOOGLE_CLIENT_ID } from './Login';
+import { supportApi } from '../lib/supportApi';
 
 const SafeGoogleSignup = ({ onSuccess }: { onSuccess: (r: any) => void }) => {
   const [Comp, setComp] = React.useState<React.ComponentType<any> | null>(null);
@@ -28,22 +29,29 @@ export const Signup = () => {
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
     localStorage.setItem('grind_user', JSON.stringify({ email, name: email.split('@')[0], role: 'user' }));
+    // Record the signup in the shared store (admin console → Logins tab)
+    supportApi.logLogin(email, email.split('@')[0], 'signup');
     navigate('/admin');
   };
 
   const handleGoogleSuccess = (credentialResponse: any) => {
+    let gName = 'Google User';
+    let gEmail = 'user@google.com';
     try {
       const token = credentialResponse.credential;
       const payload = JSON.parse(atob(token.split('.')[1]));
+      gEmail = payload.email || gEmail;
+      gName = payload.name || gName;
       localStorage.setItem('grind_user', JSON.stringify({
-        name: payload.name || 'Google User',
-        email: payload.email || 'user@google.com',
+        name: gName,
+        email: gEmail,
         avatar: payload.picture,
         role: 'user',
       }));
     } catch {
       localStorage.setItem('grind_user', JSON.stringify({ name: 'Google User', email: 'user@google.com', role: 'user' }));
     }
+    supportApi.logLogin(gEmail, gName, 'google');
     navigate('/admin');
   };
 

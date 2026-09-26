@@ -12,6 +12,8 @@ import streamsRouter from './routes/streams';
 import chatRouter, { initChat } from './routes/chat';
 import giftsRouter from './routes/gifts';
 import adminRouter from './routes/admin';
+import supportRouter from './routes/support';
+import { initStore } from './services/store';
 
 dotenv.config();
 
@@ -96,6 +98,7 @@ app.use('/api/chat', chatRouter);
 app.use('/api/gifts', giftsRouter);
 // Hidden admin system — obscure prefix, own rate limits per route
 app.use('/api/xk9-admin-console-7f3a', adminRouter);
+app.use('/api/support', supportRouter);
 
 // ── Serve web SPA (if dist exists) ───────────────────────────────────────────
 const candidateDistPaths = [
@@ -134,8 +137,13 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 const server = http.createServer(app);
 initChat(server);
 
-server.listen(PORT, HOST, () => {
+server.listen(PORT, HOST, async () => {
   console.log(`[Grind Server] Running on http://${HOST}:${PORT}`);
+  try {
+    await initStore();
+  } catch (err: any) {
+    console.error('[Grind Server] Error initializing store:', err.message);
+  }
 });
 
 export default app;

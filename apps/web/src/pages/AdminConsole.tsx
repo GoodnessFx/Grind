@@ -5,9 +5,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Search, LogOut, Download, Send, Trash2, RefreshCw, ChevronLeft, ChevronRight, History,
+  Search, LogOut, Download, Send, RefreshCw, ChevronLeft, ChevronRight, History,
 } from 'lucide-react';
 import { adminApi, getAdminToken, setAdminToken } from '../lib/adminApi';
+import { supportApi, SupportThread, SupportMessage, AdminUser } from '../lib/supportApi';
 
 interface Profile {
   id: string;
@@ -288,101 +289,114 @@ function UsersTab() {
     </div>
   );
 }
-// ── Support Inbox tab ────────────────────────────────────────────────────────
+// ── Support Inbox tab (reads the ONE shared store the widget writes to) ───────
 function SupportTab() {
-  const [threads, setThreads] = useState<Thread[]>([]);
+  const [threads, setThreads] = useState<SupportThread[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ChatMsg[]>([]);
+  const [messages, setMessages] = useState<SupportMessage[]>([]);
   const [reply, setReply] = useState('');
   const [error, setError] = useState('');
-  const startX = useRef(0);
+  const [storeLabel, setStoreLabel] = useState('');
+  const [updatedAt, setUpdatedAt] = useState('');
+  const openIdRef = useRef<string | null>(null);
+
+  useEffect(() => { openIdRef.current = openId; }, [openId]);
 
   const loadThreads = useCallback(async () => {
     try {
-      const res = await adminApi.threads();
+      const res = await supportApi.fetchThreads();
       setThreads(res.threads ?? []);
+      setStoreLabel(res.store ?? '');
+      setUpdatedAt(new Date().toLocaleTimeString('en-NG'));
+      setError('');
     } catch (err: any) {
-      setError(err.message);
+      setError(`Shared store unreachable — ${err.message}`);
     }
   }, []);
 
   const loadThread = useCallback(async (userId: string) => {
     try {
-      const res = await adminApi.thread(userId);
+      const res = await supportApi.fetchMessages(userId);
       setMessages(res.messages ?? []);
+      // Opening the thread is the admin reading it → flip the user's ticks.
+      await supportApi.markRead(userId, 'support').catch(() => {});
+      setError('');
     } catch (err: any) {
-      setError(err.message);
+      setError(`Could not load thread — ${err.message}`);
     }
   }, []);
 
+  // Realtime: the admin stream receives every conversation, so threads and the
+  // open thread update instantly. No 5s polling loop.
+  useEffect(() => {
+    const cleanup = supportApi.subscribeRealtime({
+      isAdmin: true,
+      onEvent: (event) => {
+        if (event.type === 'message') {
+          loadThreads();
+          if (openIdRef.current && event.data?.user_id === openIdRef.current) {
+            loadThread(openIdRef.current);
+          }
+        }
+      },
+    });
+    return cleanup;
+  }, [loadThreads, loadThread]);
+
   useEffect(() => {
     loadThreads();
-    const iv = setInterval(loadThreads, 5000);
+    // Safety fallback only — the SSE stream above is the real transport.
+    const iv = setInterval(loadThreads, 20000);
     return () => clearInterval(iv);
   }, [loadThreads]);
 
   useEffect(() => {
-    if (!openId) return;
-    loadThread(openId);
-    const iv = setInterval(() => loadThread(openId), 5000);
-    return () => clearInterval(iv);
+    if (openId) loadThread(openId);
   }, [openId, loadThread]);
 
   const sendReply = async () => {
     if (!openId || !reply.trim()) return;
     try {
-      await adminApi.reply(openId, reply.trim());
+      await supportApi.sendMessage({ userId: openId, sender: 'support', body: reply.trim() });
       setReply('');
-      loadThread(openId);
+      await loadThread(openId);
       loadThreads();
     } catch (err: any) {
       setError(err.message);
     }
-  };
-
-  const deleteThread = async (userId: string) => {
-    if (!window.confirm('Delete this entire support thread? This cannot be undone.')) return;
-    try {
-      await adminApi.deleteThread(userId);
-      if (openId === userId) setOpenId(null);
-      loadThreads();
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
-
-  // Touch swipe-left-to-delete on thread rows
-  const onTouchStart = (e: React.TouchEvent) => { startX.current = e.touches[0].clientX; };
-  const onTouchEnd = (e: React.TouchEvent, userId: string) => {
-    const deltaX = e.changedTouches[0].clientX - startX.current;
-    if (deltaX < -60) deleteThread(userId); // swiped left
   };
 
   return (
     <div className="flex gap-4">
       {/* Thread list */}
       <div className={`w-full ${openId ? 'hidden md:block md:w-72' : ''} space-y-1.5`}>
+        <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-white/40 mb-1">
+          <span>{storeLabel ? `Store: ${storeLabel}` : 'Store: …'}</span>
+          <span>updated {updatedAt || '—'}</span>
+        </div>
         {error && <p className="text-xs text-red-400 mb-2">{error}</p>}
-        {threads.length === 0 && <p className="text-xs text-white/30 p-3">No support threads yet.</p>}
+        {threads.length === 0 && !error && (
+          <p className="text-xs text-white/30 p-3">No support threads yet.</p>
+        )}
         {threads.map((t) => (
           <div
-            key={t.user_id}
-            onTouchStart={onTouchStart}
-            onTouchEnd={(e) => onTouchEnd(e, t.user_id)}
-            className={`group flex items-center gap-2 p-3 rounded-lg border cursor-pointer ${openId === t.user_id ? 'bg-[#1E56CC]/20 border-[#1E56CC]' : 'bg-[#020d1f] border-white/10 hover:border-white/20'}`}
-            onClick={() => setOpenId(t.user_id)}
+            key={t.userId}
+            className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer ${openId === t.userId ? 'bg-[#1E56CC]/20 border-[#1E56CC]' : 'bg-[#020d1f] border-white/10 hover:border-white/20'}`}
+            onClick={() => setOpenId(t.userId)}
           >
             <div className="flex-1 min-w-0">
-              <div className="text-white text-xs font-bold truncate">{t.full_name || t.username || t.user_id.slice(0, 8)}</div>
-              <div className="text-white/40 text-[11px] truncate">{t.sender === 'support' ? 'You: ' : ''}{t.body}</div>
+              <div className="text-white text-xs font-bold truncate">
+                {t.userName || t.userEmail || t.userId.slice(0, 12)}
+              </div>
+              <div className="text-white/40 text-[11px] truncate">
+                {t.lastSender === 'support' ? 'You: ' : ''}{t.lastMessage}
+              </div>
             </div>
-            <button
-              onClick={(e) => { e.stopPropagation(); deleteThread(t.user_id); }}
-              className="opacity-100 md:opacity-0 md:group-hover:opacity-100 text-red-400 hover:text-red-300 p-1"
-              aria-label="Delete thread"
-            >
-              <Trash2 size={14} />
-            </button>
+            {t.unreadCount > 0 && (
+              <span className="shrink-0 bg-red-500 text-white text-[10px] font-black min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center">
+                {t.unreadCount}
+              </span>
+            )}
           </div>
         ))}
       </div>
@@ -391,8 +405,11 @@ function SupportTab() {
       {openId && (
         <div className="flex-1 flex flex-col bg-[#020d1f] border border-white/10 rounded-lg overflow-hidden" style={{ minHeight: 420 }}>
           <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
-            <h4 className="text-white text-sm font-bold">
-              {threads.find((t) => t.user_id === openId)?.full_name || threads.find((t) => t.user_id === openId)?.username || 'Thread'}
+            <h4 className="text-white text-sm font-bold truncate">
+              {(() => {
+                const t = threads.find((x) => x.userId === openId);
+                return t?.userName || t?.userEmail || 'Thread';
+              })()}
             </h4>
             <button onClick={() => setOpenId(null)} className="text-white/40 hover:text-white text-xs md:hidden">Back</button>
           </div>
@@ -456,11 +473,124 @@ function AuditTab() {
   );
 }
 
+// ── Logins tab (who signed up / logged in — straight from the shared store) ───
+function LoginsTab() {
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [storeLabel, setStoreLabel] = useState('');
+  const [updatedAt, setUpdatedAt] = useState('');
+  const [openEmail, setOpenEmail] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [error, setError] = useState('');
+
+  const load = useCallback(async () => {
+    try {
+      const res = await supportApi.fetchAdminUsers();
+      setUsers(res.users ?? []);
+      setStoreLabel(res.store ?? '');
+      setUpdatedAt(new Date().toLocaleTimeString('en-NG'));
+      setError('');
+    } catch (err: any) {
+      setError(`Shared store unreachable — ${err.message}`);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    // Live: every signup/login is broadcast from the server as it happens.
+    const cleanup = supportApi.subscribeRealtime({
+      isAdmin: true,
+      onEvent: (event) => { if (event.type === 'login') load(); },
+    });
+    // Safety fallback only — the SSE stream above is the real transport.
+    const iv = setInterval(load, 20000);
+    return () => { cleanup(); clearInterval(iv); };
+  }, [load]);
+
+  const filtered = users.filter((u) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return (u.email || '').toLowerCase().includes(q) || (u.name || '').toLowerCase().includes(q);
+  });
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-4">
+        <div className="flex-1 flex items-center gap-2 bg-[#020d1f] border border-white/10 rounded-lg px-3">
+          <Search size={14} className="text-white/40" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search email or name…"
+            className="flex-1 bg-transparent py-2.5 text-sm text-white outline-none"
+          />
+        </div>
+        <button onClick={load} className="p-2.5 bg-[#020d1f] border border-white/10 rounded-lg text-white/60 hover:text-white">
+          <RefreshCw size={14} />
+        </button>
+      </div>
+
+      <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-white/40 mb-2">
+        <span>{storeLabel ? `Store: ${storeLabel}` : 'Store: …'}</span>
+        <span>updated {updatedAt || '—'}</span>
+      </div>
+
+      {error && (
+        <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-3">{error}</p>
+      )}
+
+      {!error && users.length === 0 && (
+        <p className="text-xs text-white/30 p-3">No signups or logins recorded yet.</p>
+      )}
+
+      <div className="space-y-1.5">
+        {filtered.map((u) => {
+          const open = openEmail === u.email;
+          return (
+            <div key={u.email} className="bg-[#020d1f] border border-white/10 rounded-lg overflow-hidden">
+              <button
+                onClick={() => setOpenEmail(open ? null : u.email)}
+                className="w-full flex items-center gap-3 p-3 text-left hover:bg-white/[0.02]"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="text-white text-xs font-bold truncate">{u.name || u.email}</div>
+                  <div className="text-white/40 text-[11px] truncate">{u.email}</div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-[#4d8bff] text-xs font-black">
+                    {u.login_count} login{u.login_count === 1 ? '' : 's'}
+                  </div>
+                  <div className="text-white/30 text-[10px]">last {fmt(u.last_login_at)}</div>
+                </div>
+                <History size={14} className="text-white/30 shrink-0" />
+              </button>
+              {open && (
+                <div className="border-t border-white/10 p-3 space-y-1 max-h-64 overflow-y-auto">
+                  <p className="text-white/40 text-[10px] uppercase tracking-wider mb-1">
+                    Full history · signed up {fmt(u.created_at)}
+                  </p>
+                  {u.logins.length === 0 && <p className="text-xs text-white/30">No login rows.</p>}
+                  {u.logins.map((l) => (
+                    <div key={l.id} className="flex justify-between text-[11px] text-white/60">
+                      <span>{fmt(l.created_at)}</span>
+                      <span className="text-white/40">{l.method || 'email'}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Main console shell ───────────────────────────────────────────────────────
 export default function AdminConsole() {
   const navigate = useNavigate();
   const [authed, setAuthed] = useState(!!getAdminToken());
-  const [tab, setTab] = useState<'users' | 'support' | 'audit'>('users');
+  const [tab, setTab] = useState<'logins' | 'support' | 'users' | 'audit'>('logins');
 
   const logout = () => {
     setAdminToken(null);
@@ -476,13 +606,13 @@ export default function AdminConsole() {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-white font-black text-lg tracking-tight">Console</h1>
           <div className="flex items-center gap-2">
-            {(['users', 'support', 'audit'] as const).map((t) => (
+            {(['logins', 'support', 'users', 'audit'] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
                 className={`px-4 py-2 rounded-lg text-xs font-bold capitalize transition-colors ${tab === t ? 'bg-[#1E56CC] text-white' : 'bg-white/5 text-white/50 hover:text-white'}`}
               >
-                {t === 'support' ? 'Support Inbox' : t === 'audit' ? 'Audit Log' : 'Users'}
+                {t === 'support' ? 'Support Inbox' : t === 'audit' ? 'Audit Log' : t === 'logins' ? 'Logins' : 'Users'}
               </button>
             ))}
             <button onClick={logout} className="p-2 rounded-lg bg-white/5 text-white/50 hover:text-white" aria-label="Log out">
@@ -490,6 +620,7 @@ export default function AdminConsole() {
             </button>
           </div>
         </div>
+        {tab === 'logins' && <LoginsTab />}
         {tab === 'users' && <UsersTab />}
         {tab === 'support' && <SupportTab />}
         {tab === 'audit' && <AuditTab />}

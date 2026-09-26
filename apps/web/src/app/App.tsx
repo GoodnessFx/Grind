@@ -12,9 +12,9 @@ import { Signup } from '../pages/Signup';
 import { GrindFlex } from '../pages/GrindFlex';
 import { Explorer } from '../pages/Explorer';
 import { Leaderboard } from '../pages/Leaderboard';
-import { SupportChat } from '../components/common/SupportChat';
-import { ChatWidget } from '../components/common/ChatWidget';
 import AdminConsole from '../pages/AdminConsole';
+import { Support } from '../pages/Support';
+import { ChatWidget } from '../components/common/ChatWidget';
 import { CartProvider } from '../context/CartContext';
 import { wakePing } from '../lib/adminApi';
 
@@ -50,10 +50,12 @@ function AppRoutes() {
         <Route path="/explorer" element={<Explorer />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/xk9-admin-console-7f3a" element={<AdminConsole />} />
+        <Route path="/support" element={<Support />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      {/* Legacy localStorage chat for guests; DB-backed widget for logged-in users */}
-      {localStorage.getItem('grind_user') ? <ChatWidget /> : <SupportChat />}
+      {/* Support widget backed by the shared store. Guests get a guest thread,
+          signed-in students get their account thread — no login required. */}
+      <ChatWidget />
     </BrowserRouter>
     </CartProvider>
   );
