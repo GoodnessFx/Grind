@@ -74,6 +74,24 @@ export const adminApi = {
       token: getAdminToken(),
       body: JSON.stringify(patch),
     }),
+  createUser: (user: {
+    full_name: string;
+    username: string;
+    email: string;
+    phone?: string;
+    role?: 'seller' | 'individual' | 'company' | 'admin';
+    verified_badge?: string;
+  }) =>
+    apiFetch(`${ADMIN_PREFIX}/users`, {
+      method: 'POST',
+      token: getAdminToken(),
+      body: JSON.stringify(user),
+    }),
+  deleteUser: (id: string) =>
+    apiFetch(`${ADMIN_PREFIX}/users/${id}`, {
+      method: 'DELETE',
+      token: getAdminToken(),
+    }),
   exportUrl: () => `${API_BASE}${ADMIN_PREFIX}/users/export?token=${getAdminToken() ?? ''}`,
   userLogins: (id: string, page = 1, limit = 20) =>
     apiFetch(`${ADMIN_PREFIX}/users/${id}/logins?page=${page}&limit=${limit}`, {

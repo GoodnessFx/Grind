@@ -61,6 +61,51 @@ export const Login = () => {
     const stored = localStorage.getItem('grind_user');
     if (stored) {
       navigate('/profile');
+      return;
+    }
+    // Handle implicit OAuth redirect back from Google (fallback flow).
+    // The access token / id token arrive in the URL hash fragment.
+    const hash = window.location.hash;
+    if (hash) {
+      const params = new URLSearchParams(hash.replace(/^#/, ''));
+      const accessToken = params.get('access_token');
+      const idToken = params.get('id_token');
+      if (idToken) {
+        try {
+          const payload = JSON.parse(atob(idToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+          localStorage.setItem('grind_user', JSON.stringify({
+            name: payload.name || 'Google User',
+            email: payload.email || 'user@google.com',
+            avatar: payload.picture,
+            role: 'user',
+          }));
+          const gEmail = payload.email || 'user@google.com';
+          chatApi.logLogin(gEmail);
+          supportApi.logLogin(gEmail, payload.name || null, 'google');
+          window.history.replaceState({}, document.title, window.location.pathname);
+          navigate('/profile');
+        } catch { /* ignore */ }
+      } else if (accessToken) {
+        // exchange for userinfo if only an access token was returned
+        fetch(`https://www.googleapis.com/oauth2/v2/userinfo`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        })
+          .then(r => r.json())
+          .then((user: any) => {
+            localStorage.setItem('grind_user', JSON.stringify({
+              name: user.name || 'Google User',
+              email: user.email || 'user@google.com',
+              avatar: user.picture,
+              role: 'user',
+            }));
+            const gEmail = user.email || 'user@google.com';
+            chatApi.logLogin(gEmail);
+            supportApi.logLogin(gEmail, user.name || null, 'google');
+            window.history.replaceState({}, document.title, window.location.pathname);
+            navigate('/profile');
+          })
+          .catch(() => {});
+      }
     }
   }, []);
 
@@ -114,7 +159,7 @@ export const Login = () => {
               Sign in to your<br />Workspace.
             </h1>
             <p className="text-white/70 text-lg leading-relaxed max-w-md font-medium">
-              Join Nigeria's leading campus marketplace. Post services, find gigs, sell products — all protected by escrow.
+              Join Nigeria's leading campus marketplace. Post services, find gigs, sell products, all protected by escrow.
             </p>
           </div>
         </div>
@@ -132,7 +177,7 @@ export const Login = () => {
       </div>
 
       {/* Right — Form panel */}
-      <div className="flex-1 flex flex-col justify-center items-center p-8 bg-white">
+      <div className="flex-1 flex flex-col justify-center items-center px-5 sm:p-8 py-10 bg-white">
         <div className="w-full max-w-[400px]">
           {/* Mobile logo */}
           <Link to="/" className="flex lg:hidden items-center gap-2 mb-12">
@@ -140,7 +185,7 @@ export const Login = () => {
             <span className="text-black font-bold text-xl">Grind</span>
           </Link>
 
-          <h2 className="text-3xl font-black text-black mb-2 tracking-tight">Log in</h2>
+          <h2 className="text-3xl font-black text-black mb-2 tracking-tight font-display">Log in</h2>
           <p className="text-[#666666] text-base mb-8">Enter your details to access your account.</p>
 
           <div className="mb-6">
@@ -188,7 +233,7 @@ export const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-white hover:bg-gray-200 text-black font-bold py-3.5 rounded-[50px] transition-colors flex items-center justify-center gap-2 mt-4 text-lg shadow-lg shadow-gray-200/20"
+              className="w-full bg-black hover:bg-[var(--grind-nigeria)] text-white font-bold py-3.5 rounded-[50px] transition-colors flex items-center justify-center gap-2 mt-4 text-lg shadow-lg"
             >
               Log in <ArrowRight size={18} />
             </button>

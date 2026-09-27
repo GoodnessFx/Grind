@@ -131,7 +131,7 @@ export function requestProduct(planId: string): FlexPlan | null {
 
   plan.transactions.push({
     id: genId(), planId, amount: plan.paidAmount, type: 'release',
-    note: `Escrow released to seller — product request initiated`,
+    note: `Escrow released to seller: product request initiated`,
     time: now(), hash: genHash(),
   });
   plan.status = 'requested';
@@ -146,7 +146,7 @@ function seedIfEmpty() {
   const plans = getAllPlans();
   if (plans.length > 0) return;
   const demo = createPlan({
-    title: 'iPhone 15 Pro Max — 256GB Black',
+    title: 'iPhone 15 Pro Max 256GB Black',
     description: 'Buy the latest iPhone in installments. Fully secured in Grind escrow.',
     targetAmount: 850000,
     installmentAmount: 85000,
@@ -450,11 +450,11 @@ export const GrindFlex = () => {
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-2">
               <PiggyBank size={20} className="text-[#4A90FF]" />
-              <span className="text-[#4A90FF] text-sm font-semibold">GrindFlex — Pay Small Small</span>
+              <span className="text-[#4A90FF] text-sm font-semibold">GrindFlex: Pay Small Small</span>
             </div>
             <h1 className="text-3xl font-black text-white mb-2">Buy anything on Grind in installments.</h1>
             <p className="text-gray-400 max-w-lg">
-              Set a savings target, pay at your own pace, and watch your escrow balance grow. When you hit the target — claim your product. Cancel anytime (10% fee applies).
+              Set a savings target, pay at your own pace, and watch your escrow balance grow. When you hit the target, claim your product. Cancel anytime (10% fee applies).
             </p>
           </div>
 

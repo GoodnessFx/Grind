@@ -286,24 +286,24 @@ export function ChatWidget() {
         </div>
       )}
 
-      {/* Floating trigger pill/button */}
+      {/* Floating trigger button — compact support agent icon */}
       <button
         onClick={() => setOpen(!open)}
-        className="group relative flex items-center gap-2.5 bg-[#006400] hover:bg-[#004d00] text-white font-bold px-4 py-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-200 active:scale-95 border-2 border-white/20"
+        aria-label="Campus Support"
+        title="Campus Support"
+        className="group relative w-13 h-13 sm:w-14 sm:h-14 bg-[#006400] hover:bg-[#004d00] text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-200 active:scale-95 border-2 border-white/20 hover:scale-105"
       >
-        <div className="relative">
-          <MessageCircle size={20} />
-          {unreadCount > 0 && !open && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-bounce shadow">
-              {unreadCount}
-            </span>
-          )}
-        </div>
-        <span className="text-sm font-semibold tracking-wide">Campus Support</span>
+        <MessageCircle size={24} />
+        {unreadCount > 0 && !open && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center animate-bounce shadow">
+            {unreadCount}
+          </span>
+        )}
         <span
-          className={`w-2 h-2 rounded-full ${
-            connectionStatus === 'connected' ? 'bg-green-300' : 'bg-amber-300'
+          className={`absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full border border-[#006400] ${
+            connectionStatus === 'connected' ? 'bg-green-400' : 'bg-amber-400'
           }`}
+          title={connectionStatus === 'connected' ? 'Online' : 'Reconnecting'}
         />
       </button>
     </div>

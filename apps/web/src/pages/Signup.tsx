@@ -31,7 +31,7 @@ export const Signup = () => {
     localStorage.setItem('grind_user', JSON.stringify({ email, name: email.split('@')[0], role: 'user' }));
     // Record the signup in the shared store (admin console → Logins tab)
     supportApi.logLogin(email, email.split('@')[0], 'signup');
-    navigate('/admin');
+    navigate('/profile');
   };
 
   const handleGoogleSuccess = (credentialResponse: any) => {
@@ -52,7 +52,7 @@ export const Signup = () => {
       localStorage.setItem('grind_user', JSON.stringify({ name: 'Google User', email: 'user@google.com', role: 'user' }));
     }
     supportApi.logLogin(gEmail, gName, 'google');
-    navigate('/admin');
+    navigate('/profile');
   };
 
   return (

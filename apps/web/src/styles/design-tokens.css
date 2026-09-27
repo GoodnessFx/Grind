@@ -1,18 +1,18 @@
 /* src/styles/design-tokens.css */
 
 :root {
-  /* Colors (Mitao inspired) */
-  --color-primary: #0066cc;
-  --color-secondary: #00a8a8;
+  /* Colors (Grind brand: Nigerian green + black + gold) */
+  --color-primary: #006400;
+  --color-secondary: #b8860b;
   --color-accent: #ff6b6b;
-  --color-success: #27ae60;
+  --color-success: #16a34a;
   --color-error: #e74c3c;
   --color-warning: #f39c12;
-  
+
   --color-bg-light: #f5f7fa;
   --color-bg-white: #ffffff;
-  --color-text-primary: #2c3e50;
-  --color-text-secondary: #7f8c8d;
+  --color-text-primary: #111111;
+  --color-text-secondary: #666666;
   --color-border: #d0d7de;
   
   /* Typography (Mitao inspired) */

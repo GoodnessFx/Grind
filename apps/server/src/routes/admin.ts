@@ -116,13 +116,89 @@ const patchSchema = z.object({
   username: z.string().min(1).max(60).optional(),
   phone: z.string().max(30).optional(),
   email: z.string().max(200).optional(),
+  role: z.enum(['individual', 'seller', 'company', 'admin']).optional(),
+  verified_badge: z.enum(['unverified', 'pending', 'bronze', 'silver', 'gold', 'platinum']).optional(),
+});
+
+const createUserSchema = z.object({
+  full_name: z.string().min(1).max(120),
+  username: z.string().min(1).max(60),
+  email: z.string().email(),
+  phone: z.string().max(30).optional(),
+  role: z.enum(['individual', 'seller', 'company', 'admin']).default('seller'),
+  verified_badge: z.enum(['unverified', 'pending', 'bronze', 'silver', 'gold', 'platinum']).default('gold'),
+});
+
+// POST /users — admin creates a new seller or client from the panel
+router.post('/users', adminMiddleware, createValidator(createUserSchema), async (req, res) => {
+  try {
+    const payload = req.body as z.infer<typeof createUserSchema>;
+    const full_name = sanitize(payload.full_name);
+    const username = sanitize(payload.username).toLowerCase();
+    const email = sanitize(payload.email).toLowerCase();
+    const phone = payload.phone ? sanitize(payload.phone) : null;
+    const role = payload.role || 'seller';
+    const verified_badge = payload.verified_badge || 'gold';
+
+    // Duplicate check
+    const { data: existingUser } = await db()
+      .from('profiles')
+      .select('id')
+      .or(`username.eq.${username},email.eq.${email}`)
+      .maybeSingle();
+
+    if (existingUser) {
+      return res.status(409).json({ error: 'Username or email already in use' });
+    }
+
+    // Generate random UUID for profile row
+    const id = (await import('crypto')).randomUUID();
+    const newProfile = {
+      id,
+      full_name,
+      username,
+      email,
+      phone,
+      role,
+      verified_badge,
+      grind_score: role === 'seller' ? 85 : 50,
+      created_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await db().from('profiles').insert(newProfile).select().single();
+    if (error) throw error;
+
+    await audit((req as any).admin.sub, 'create_user', id, null, newProfile);
+    res.status(201).json({ user: data });
+  } catch (err: any) {
+    console.error('[admin/users POST]', err.message);
+    res.status(500).json({ error: err.message || 'Failed to create user' });
+  }
+});
+
+// DELETE /users/:id — delete a client or seller from backend
+router.delete('/users/:id', adminMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data: existing } = await db().from('profiles').select('*').eq('id', id).maybeSingle();
+    if (!existing) return res.status(404).json({ error: 'User not found' });
+
+    const { error } = await db().from('profiles').delete().eq('id', id);
+    if (error) throw error;
+
+    await audit((req as any).admin.sub, 'delete_user', id, existing, null);
+    res.json({ success: true, deletedId: id });
+  } catch (err: any) {
+    console.error('[admin/users DELETE]', err.message);
+    res.status(500).json({ error: err.message || 'Failed to delete user' });
+  }
 });
 
 router.patch('/users/:id', adminMiddleware, createValidator(patchSchema), async (req, res) => {
   try {
     const { id } = req.params;
     const updates: Record<string, string> = {};
-    for (const key of ['full_name', 'username', 'phone', 'email'] as const) {
+    for (const key of ['full_name', 'username', 'phone', 'email', 'role', 'verified_badge'] as const) {
       if (req.body[key] !== undefined) updates[key] = sanitize(req.body[key]);
     }
 

@@ -122,7 +122,9 @@ function UsersTab() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState<Profile | null>(null);
-  const [form, setForm] = useState({ full_name: '', username: '', phone: '', email: '' });
+  const [form, setForm] = useState({ full_name: '', username: '', phone: '', email: '', role: 'seller', verified_badge: 'gold' });
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [addForm, setAddForm] = useState({ full_name: '', username: '', email: '', phone: '', role: 'seller' as 'seller' | 'individual', verified_badge: 'gold' });
   const [msg, setMsg] = useState('');
   const [loginsFor, setLoginsFor] = useState<{ user: Profile; events: LoginEvent[]; total: number } | null>(null);
   const limit = 20;
@@ -144,7 +146,14 @@ function UsersTab() {
 
   const startEdit = (u: Profile) => {
     setEditing(u);
-    setForm({ full_name: u.full_name ?? '', username: u.username ?? '', phone: u.phone ?? '', email: u.email ?? '' });
+    setForm({
+      full_name: u.full_name ?? '',
+      username: u.username ?? '',
+      phone: u.phone ?? '',
+      email: u.email ?? '',
+      role: u.role ?? 'seller',
+      verified_badge: u.verified_badge ?? 'unverified',
+    });
     setMsg('');
   };
 
@@ -152,8 +161,45 @@ function UsersTab() {
     if (!editing) return;
     try {
       await adminApi.updateUser(editing.id, form);
-      setMsg('Saved.');
+      setMsg('Saved successfully.');
       setEditing(null);
+      load();
+    } catch (err: any) {
+      setMsg(err.message);
+    }
+  };
+
+  const quickVerify = async (u: Profile) => {
+    try {
+      const nextBadge = u.verified_badge === 'gold' ? 'platinum' : 'gold';
+      await adminApi.updateUser(u.id, { verified_badge: nextBadge, role: 'seller' });
+      setMsg(`Verified ${u.full_name || u.username} as ${nextBadge.toUpperCase()} seller.`);
+      load();
+    } catch (err: any) {
+      setMsg(err.message);
+    }
+  };
+
+  const deleteUser = async (u: Profile) => {
+    if (!window.confirm(`Are you sure you want to delete ${u.full_name || u.username} (${u.email})? This cannot be undone.`)) {
+      return;
+    }
+    try {
+      await adminApi.deleteUser(u.id);
+      setMsg(`Deleted user ${u.full_name || u.username}.`);
+      load();
+    } catch (err: any) {
+      setMsg(err.message);
+    }
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await adminApi.createUser(addForm);
+      setMsg(`Added ${addForm.role} "${addForm.full_name}" successfully.`);
+      setIsAddOpen(false);
+      setAddForm({ full_name: '', username: '', email: '', phone: '', role: 'seller', verified_badge: 'gold' });
       load();
     } catch (err: any) {
       setMsg(err.message);
@@ -197,6 +243,12 @@ function UsersTab() {
             className="flex-1 bg-transparent py-2.5 text-sm text-white outline-none"
           />
         </div>
+        <button
+          onClick={() => setIsAddOpen(true)}
+          className="flex items-center gap-1.5 bg-[#006400] hover:bg-[#004d00] text-white text-xs font-bold px-4 py-2.5 rounded-lg"
+        >
+          + Add User / Seller
+        </button>
         <button onClick={exportCsv} className="flex items-center gap-1.5 bg-[#1E56CC] hover:bg-[#1848B0] text-white text-xs font-bold px-4 py-2.5 rounded-lg">
           <Download size={14} /> CSV
         </button>
@@ -209,7 +261,7 @@ function UsersTab() {
         <div className="mb-4 bg-[#020d1f] border border-white/10 rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-white text-sm font-bold flex items-center gap-2">
-              <History size={14} /> Login history — {loginsFor.user.full_name || loginsFor.user.username}
+              <History size={14} /> Login history: {loginsFor.user.full_name || loginsFor.user.username}
               <span className="text-white/40 font-normal">({loginsFor.total} total)</span>
             </h4>
             <button onClick={() => setLoginsFor(null)} className="text-white/40 hover:text-white text-xs">Close</button>
@@ -217,7 +269,7 @@ function UsersTab() {
           <div className="max-h-60 overflow-y-auto space-y-1.5">
             {loginsFor.events.map((e) => (
               <div key={e.id} className="text-xs text-white/60 flex justify-between gap-4">
-                <span className="truncate">{e.email || '—'}</span>
+                <span className="truncate">{e.email || 'n/a'}</span>
                 <span className="text-white/30 shrink-0">{fmt(e.created_at)}</span>
               </div>
             ))}
@@ -230,7 +282,7 @@ function UsersTab() {
         <table className="w-full text-left text-xs">
           <thead className="bg-[#020d1f] text-white/40 uppercase tracking-wider">
             <tr>
-              {['Name', 'Username', 'Email', 'Phone', 'Score', 'Joined', ''].map((h) => (
+              {['Name', 'Username', 'Email', 'Role', 'Status', 'Score', 'Joined', 'Actions'].map((h) => (
                 <th key={h} className="px-3 py-2.5 font-semibold">{h}</th>
               ))}
             </tr>
@@ -238,20 +290,50 @@ function UsersTab() {
           <tbody>
             {users.map((u) => (
               <tr key={u.id} className="border-t border-white/5 hover:bg-white/[0.02]">
-                <td className="px-3 py-2.5 text-white">{u.full_name || '—'}</td>
-                <td className="px-3 py-2.5 text-white/60">{u.username || '—'}</td>
-                <td className="px-3 py-2.5 text-white/60">{u.email || '—'}</td>
-                <td className="px-3 py-2.5 text-white/60">{u.phone || '—'}</td>
+                <td className="px-3 py-2.5 text-white font-medium">{u.full_name || 'n/a'}</td>
+                <td className="px-3 py-2.5 text-white/60">@{u.username || 'n/a'}</td>
+                <td className="px-3 py-2.5 text-white/60">{u.email || 'n/a'}</td>
+                <td className="px-3 py-2.5 text-white/60 capitalize">
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                    u.role === 'seller' ? 'bg-[#006400]/20 text-green-400' : 'bg-white/10 text-white/70'
+                  }`}>
+                    {u.role || 'client'}
+                  </span>
+                </td>
+                <td className="px-3 py-2.5">
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                    u.verified_badge === 'platinum' ? 'bg-purple-900/40 text-purple-300 border border-purple-500/30' :
+                    u.verified_badge === 'gold' ? 'bg-amber-900/40 text-amber-300 border border-amber-500/30' :
+                    u.verified_badge === 'silver' ? 'bg-gray-800 text-gray-300' :
+                    'bg-white/5 text-white/40'
+                  }`}>
+                    {u.verified_badge || 'unverified'}
+                  </span>
+                </td>
                 <td className="px-3 py-2.5 text-white/60">{u.grind_score ?? 0}</td>
                 <td className="px-3 py-2.5 text-white/40">{fmt(u.created_at)}</td>
-                <td className="px-3 py-2.5 text-right whitespace-nowrap">
-                  <button onClick={() => startEdit(u)} className="text-[#4d8bff] hover:underline mr-3">Edit</button>
+                <td className="px-3 py-2.5 text-right whitespace-nowrap space-x-2">
+                  <button
+                    onClick={() => quickVerify(u)}
+                    className="text-green-400 hover:text-green-300 font-bold"
+                    title="Toggle Gold/Platinum verification"
+                  >
+                    Verify
+                  </button>
+                  <button onClick={() => startEdit(u)} className="text-[#4d8bff] hover:underline">Edit</button>
                   <button onClick={() => openLogins(u)} className="text-white/50 hover:text-white">Logins</button>
+                  <button
+                    onClick={() => deleteUser(u)}
+                    className="text-red-400 hover:text-red-300 hover:underline"
+                    title="Delete user permanently"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
             {!loading && users.length === 0 && (
-              <tr><td colSpan={7} className="px-3 py-8 text-center text-white/30">No users found.</td></tr>
+              <tr><td colSpan={8} className="px-3 py-8 text-center text-white/30">No users found.</td></tr>
             )}
           </tbody>
         </table>
@@ -279,10 +361,123 @@ function UsersTab() {
                 />
               </div>
             ))}
+            <div className="mb-3">
+              <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-1">Role</label>
+              <select
+                value={form.role}
+                onChange={(e) => setForm({ ...form, role: e.target.value })}
+                className="w-full bg-[#020d1f] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#1E56CC]"
+              >
+                <option value="seller">Seller</option>
+                <option value="individual">Client / Individual</option>
+                <option value="company">Company</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div className="mb-3">
+              <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-1">Verification Status</label>
+              <select
+                value={form.verified_badge}
+                onChange={(e) => setForm({ ...form, verified_badge: e.target.value })}
+                className="w-full bg-[#020d1f] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#1E56CC]"
+              >
+                <option value="unverified">Unverified</option>
+                <option value="pending">Pending</option>
+                <option value="bronze">Bronze Seller</option>
+                <option value="silver">Silver Seller</option>
+                <option value="gold">Gold Seller (Verified)</option>
+                <option value="platinum">Platinum Seller (Top)</option>
+              </select>
+            </div>
             <div className="flex gap-2 mt-4">
               <button onClick={saveEdit} className="flex-1 bg-[#1E56CC] hover:bg-[#1848B0] text-white font-bold py-2.5 rounded-lg text-xs">Save</button>
               <button onClick={() => setEditing(null)} className="flex-1 border border-white/10 text-white/60 py-2.5 rounded-lg text-xs">Cancel</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add User / Seller Modal */}
+      {isAddOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setIsAddOpen(false)}>
+          <div className="bg-[#0A1628] border border-white/10 rounded-xl p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-white font-bold text-sm mb-4">Add Seller or Client</h3>
+            <form onSubmit={handleCreateUser} className="space-y-3">
+              <div>
+                <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-1">Full Name</label>
+                <input
+                  required
+                  value={addForm.full_name}
+                  onChange={(e) => setAddForm({ ...addForm, full_name: e.target.value })}
+                  placeholder="e.g. Fola Ade"
+                  className="w-full bg-[#020d1f] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#006400]"
+                />
+              </div>
+              <div>
+                <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-1">Username</label>
+                <input
+                  required
+                  value={addForm.username}
+                  onChange={(e) => setAddForm({ ...addForm, username: e.target.value })}
+                  placeholder="e.g. fola_designs"
+                  className="w-full bg-[#020d1f] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#006400]"
+                />
+              </div>
+              <div>
+                <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-1">Email</label>
+                <input
+                  required
+                  type="email"
+                  value={addForm.email}
+                  onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
+                  placeholder="fola@campus.edu.ng"
+                  className="w-full bg-[#020d1f] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#006400]"
+                />
+              </div>
+              <div>
+                <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-1">Phone (optional)</label>
+                <input
+                  value={addForm.phone}
+                  onChange={(e) => setAddForm({ ...addForm, phone: e.target.value })}
+                  placeholder="+234..."
+                  className="w-full bg-[#020d1f] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#006400]"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-1">Account Role</label>
+                  <select
+                    value={addForm.role}
+                    onChange={(e) => setAddForm({ ...addForm, role: e.target.value as any })}
+                    className="w-full bg-[#020d1f] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#006400]"
+                  >
+                    <option value="seller">Seller</option>
+                    <option value="individual">Client</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-1">Badge</label>
+                  <select
+                    value={addForm.verified_badge}
+                    onChange={(e) => setAddForm({ ...addForm, verified_badge: e.target.value })}
+                    className="w-full bg-[#020d1f] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#006400]"
+                  >
+                    <option value="gold">Gold (Verified)</option>
+                    <option value="platinum">Platinum</option>
+                    <option value="silver">Silver</option>
+                    <option value="unverified">Unverified</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button type="submit" className="flex-1 bg-[#006400] hover:bg-[#004d00] text-white font-bold py-2.5 rounded-lg text-xs">
+                  Create User
+                </button>
+                <button type="button" onClick={() => setIsAddOpen(false)} className="flex-1 border border-white/10 text-white/60 py-2.5 rounded-lg text-xs">
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -310,7 +505,7 @@ function SupportTab() {
       setUpdatedAt(new Date().toLocaleTimeString('en-NG'));
       setError('');
     } catch (err: any) {
-      setError(`Shared store unreachable — ${err.message}`);
+      setError(`Shared store unreachable: ${err.message}`);
     }
   }, []);
 
@@ -322,7 +517,7 @@ function SupportTab() {
       await supportApi.markRead(userId, 'support').catch(() => {});
       setError('');
     } catch (err: any) {
-      setError(`Could not load thread — ${err.message}`);
+      setError(`Could not load thread: ${err.message}`);
     }
   }, []);
 
@@ -371,8 +566,8 @@ function SupportTab() {
       {/* Thread list */}
       <div className={`w-full ${openId ? 'hidden md:block md:w-72' : ''} space-y-1.5`}>
         <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-white/40 mb-1">
-          <span>{storeLabel ? `Store: ${storeLabel}` : 'Store: …'}</span>
-          <span>updated {updatedAt || '—'}</span>
+          <span>{storeLabel ? `Store: ${storeLabel}` : 'Store: loaded'}</span>
+          <span>updated {updatedAt || 'n/a'}</span>
         </div>
         {error && <p className="text-xs text-red-400 mb-2">{error}</p>}
         {threads.length === 0 && !error && (
@@ -490,7 +685,7 @@ function LoginsTab() {
       setUpdatedAt(new Date().toLocaleTimeString('en-NG'));
       setError('');
     } catch (err: any) {
-      setError(`Shared store unreachable — ${err.message}`);
+      setError(`Shared store unreachable: ${err.message}`);
     }
   }, []);
 
@@ -531,8 +726,8 @@ function LoginsTab() {
       </div>
 
       <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-white/40 mb-2">
-        <span>{storeLabel ? `Store: ${storeLabel}` : 'Store: …'}</span>
-        <span>updated {updatedAt || '—'}</span>
+        <span>{storeLabel ? `Store: ${storeLabel}` : 'Store: loaded'}</span>
+        <span>updated {updatedAt || 'n/a'}</span>
       </div>
 
       {error && (

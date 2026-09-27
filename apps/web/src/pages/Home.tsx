@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Search, ArrowRight, Shield, Zap, Download, X, SearchCheck,
+  Search, ArrowRight, Shield, Zap, Download, X, SearchCheck, Menu,
   Star, CheckCircle2, TrendingUp, Users, Lock, Globe, Briefcase, Award
 } from 'lucide-react';
 import { LogoMark } from '../app/components/brand/LogoMark';
@@ -44,68 +44,63 @@ const AdminDot = () => {
 
 // ── Static Data ──────────────────────────────────────────────────────────────
 const SERVICES_CATEGORIES = [
-  { label: 'Web Design & Dev', count: '340+' },
-  { label: 'Graphic Design', count: '280+' },
-  { label: 'Content Writing', count: '195+' },
-  { label: 'Video Editing', count: '142+' },
-  { label: 'Photography', count: '98+' },
-  { label: 'UI/UX Design', count: '130+' },
-  { label: 'Data Analysis', count: '85+' },
-  { label: 'Python & Automation', count: '64+' },
-  { label: 'Mobile App Dev', count: '72+' },
-  { label: 'Cybersecurity', count: '41+' },
-  { label: '3D & Motion Graphics', count: '55+' },
-  { label: 'Virtual Assistance', count: '160+' },
-  { label: 'Copywriting', count: '118+' },
-  { label: 'SEO & Digital Marketing', count: '92+' },
-  { label: 'Cloud & DevOps', count: '38+' },
-  { label: 'Tutoring & Teaching', count: '210+' },
-  { label: 'Music & Audio', count: '76+' },
-  { label: 'Social Media Mgmt', count: '120+' },
+  { label: 'Content Creation', count: '48+' },
+  { label: 'Graphic Design', count: '32+' },
+  { label: 'Social Media', count: '27+' },
+  { label: 'Video Editing', count: '35+' },
+  { label: 'Photography', count: '21+' },
+  { label: 'Web Development', count: '26+' },
+  { label: 'Tutoring', count: '19+' },
+  { label: 'Beauty', count: '24+' },
+  { label: 'Music & Audio', count: '18+' },
+  { label: 'Writing', count: '22+' },
+  { label: 'Data Analysis', count: '16+' },
+  { label: 'Delivery', count: '30+' },
 ];
 
 const PRODUCT_CATEGORIES = [
-  { label: 'Laptops & Gadgets', count: '85+' },
-  { label: 'Textbooks & Courses', count: '430+' },
-  { label: 'Fashion & Clothing', count: '190+' },
-  { label: 'Food & Catering', count: '65+' },
-  { label: 'Event Planning', count: '44+' },
-  { label: 'Accommodation', count: '32+' },
-  { label: 'Transport & Rides', count: '57+' },
-  { label: 'Printing & Binding', count: '89+' },
+  { label: 'Fashion & Thrift', count: '39+' },
+  { label: 'Food & Catering', count: '28+' },
+  { label: 'Phones & Gadgets', count: '23+' },
+  { label: 'Eyewear', count: '14+' },
+  { label: 'Beauty & Hair', count: '26+' },
+  { label: 'Laptops & Gadgets', count: '17+' },
+  { label: 'Textbooks & Courses', count: '31+' },
+  { label: 'Campus Match', count: '12+' },
+  { label: 'Printing & Binding', count: '15+' },
+  { label: 'Health & Fitness', count: '11+' },
 ];
 
 const FEATURED_SELLERS = [
-  { name: 'Chidera O.', skill: 'Brand Designer', rating: 4.9, reviews: 87, uni: 'UNILAG', avatar: 'C', badge: 'Top Rated', price: '₦15,000/project' },
-  { name: 'Emeka A.', skill: 'Full-Stack Dev', rating: 4.8, reviews: 64, uni: 'FUTA', avatar: 'E', badge: 'Verified Pro', price: '₦25,000/project' },
-  { name: 'Amara B.', skill: 'Video Editor', rating: 5.0, reviews: 121, uni: 'UI', avatar: 'A', badge: 'Top Rated', price: '₦10,000/project' },
-  { name: 'Tunde F.', skill: 'IELTS Tutor', rating: 4.9, reviews: 43, uni: 'OAU', avatar: 'T', badge: 'New Star', price: '₦5,000/session' },
+  { name: 'Chidera O.', skill: 'Brand Designer', rating: 4.9, reviews: 87, uni: 'UNILAG', avatar: 'C', badge: 'Top Rated', handle: '@chidera.designs' },
+  { name: 'Amara B.', skill: 'Content Creator', rating: 5.0, reviews: 121, uni: 'UI', avatar: 'A', badge: 'Top Rated', handle: '@amara.b' },
+  { name: 'Tunde F.', skill: 'IELTS Tutor', rating: 4.9, reviews: 43, uni: 'OAU', avatar: 'T', badge: 'Top Rated', handle: '@tunde_cuts' },
 ];
 
 const GRIND_FEATURES = [
   {
     step: 'Step 1',
     title: 'Create Your Free Account',
-    content: 'Sign up in 30 seconds with your school email or Google. Choose whether you want to buy, sell, or both — you can always switch later.',
-    image: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=1600&auto=format&fit=crop',
+    content: 'Sign up in 30 seconds with your school email or Google. Choose whether you want to buy, sell, or both. You can always switch later.',
+    image: '/hero/hero4_library.jpg',
   },
   {
     step: 'Step 2',
     title: 'Discover Verified Talent & Products',
     content: 'Browse hundreds of listings from verified Nigerian students. Filter by university, price, or category. Every seller has a Grind Score you can trust.',
-    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1600&auto=format&fit=crop',
+    image: '/section/work-campus-designer.jpg',
   },
   {
     step: 'Step 3',
     title: 'Pay Safely Through Escrow',
     content: 'Your payment is locked securely in Grind\'s Escrow vault. The seller cannot touch the money until you confirm you are 100% satisfied.',
-    image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?q=80&w=1600&auto=format&fit=crop',
+    image: '/hero/hero6_success.jpg',
   },
   {
     step: 'Step 4',
     title: 'Release Funds & Leave a Review',
     content: 'Once you\'re happy with your order, release the funds with one click. Leave a review to help others, and build your Grind Score with every interaction.',
-    image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1600&auto=format&fit=crop',
+    image: '/section/work-campus-collaboration.jpg',
   },
 ];
 
@@ -115,7 +110,7 @@ const PROOF_OF_WORK_FEATURES = [
     title: 'Your Grind Score is Your CV',
     image: '/section/ui-main-gate.jpg',
     description:
-      'Every completed order, positive review, and on-time delivery contributes to your Grind Score. It is a real, verifiable reputation that follows you beyond campus — into internships, jobs, and partnerships.',
+      'Every completed order, positive review, and on-time delivery contributes to your Grind Score. It is a real, verifiable reputation that follows you beyond campus: into internships, jobs, and partnerships.',
     badge: 'Proof of Work',
   },
   {
@@ -139,23 +134,23 @@ const PROOF_OF_WORK_FEATURES = [
     title: 'GrindFlex: Installment Payments',
     image: '/section/work-campus-collaboration.jpg',
     description:
-      'GrindFlex lets buyers purchase high-value items or services in flexible weekly or monthly payments — all secured by Escrow. Sellers get paid as milestones are completed.',
+      'GrindFlex lets buyers purchase high-value items or services in flexible weekly or monthly payments, all secured by Escrow. Sellers get paid as milestones are completed.',
     badge: 'GrindFlex',
   },
   {
     id: 5,
-    title: 'Social Connect — Link Up & Vibe',
+    title: 'Social Connect: Link Up & Vibe',
     image: '/section/work-campus-designer.jpg',
     description:
-      'Grind isn\'t just a marketplace. Connect with students on Campus Connect — post what you\'re working on, find a study partner, or simply say you\'re going for a stroll and see who links up.',
+      'Grind is more than just a marketplace. Connect with students on Campus Connect: post what you are working on, find a study partner, or simply say you are going for a stroll and see who links up.',
     badge: 'Community',
   },
 ];
 
 const STATS = [
-  { v: '₦850k+', l: 'Paid to students' },
-  { v: '120+', l: 'Active listings' },
-  { v: '500+', l: 'Registered users' },
+  { v: '₦50k+', l: 'Paid to students' },
+  { v: '48+', l: 'Active listings' },
+  { v: '3+', l: 'Registered students' },
   { v: '4.9/5', l: 'Average satisfaction' },
 ];
 
@@ -176,7 +171,19 @@ const HERO_INTERVAL_MS = 6000;
 // ── Component ─────────────────────────────────────────────────────────────────
 export const Home = () => {
   const [search, setSearch] = useState('');
-  const [showCookie, setShowCookie] = useState(true);
+  const [showCookie, setShowCookie] = useState(() => {
+    try {
+      return !sessionStorage.getItem('grind_cookie_consent');
+    } catch {
+      return true;
+    }
+  });
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const acceptCookies = () => {
+    try { sessionStorage.setItem('grind_cookie_consent', 'accepted'); } catch { /* ignore */ }
+    setShowCookie(false);
+  };
   const [showBanner, setShowBanner] = useState(true);
   const [heroIndex, setHeroIndex] = useState(0);
   const [user, setUser] = useState<any>(null);
@@ -244,18 +251,27 @@ export const Home = () => {
       )}
 
       {/* ── Navbar ── */}
-      <header className="absolute top-10 w-full z-40 px-6">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <LogoMark size={40} tone="light" />
-            <span className="text-white font-bold text-2xl tracking-tight">Grind</span>
+      <header className={`absolute ${showBanner ? 'top-10' : 'top-0 pt-3'} w-full z-40 px-4 sm:px-6`}>
+        <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-2">
+          <Link to="/" className="flex items-center gap-2 shrink-0">
+            <LogoMark size={36} tone="light" />
+            <span className="text-white font-bold text-xl sm:text-2xl tracking-tight">Grind</span>
           </Link>
+          <button
+            onClick={() => setMenuOpen(o => !o)}
+            className="md:hidden text-white p-2 -mr-1"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          >
+            {menuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
           <nav className="hidden md:flex items-center gap-8">
             <Link to="/marketplace" className="text-white/90 hover:text-white font-medium transition-colors">Marketplace</Link>
-            <Link to="/marketplace" className="text-white/90 hover:text-white font-medium transition-colors">Services</Link>
+            <Link to="/services" className="text-white/90 hover:text-white font-medium transition-colors">Services</Link>
+            <Link to="/campus" className="text-white/90 hover:text-white font-medium transition-colors">Campus</Link>
+            <Link to="/live" className="text-white/90 hover:text-white font-medium transition-colors">Live</Link>
             <Link to="/admin" className="text-white/90 hover:text-white font-medium transition-colors">Dashboard</Link>
           </nav>
-          <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
             {user ? (
               <>
                 <Link to="/profile" className="flex items-center gap-2 text-white/90 hover:text-white font-medium transition-colors">
@@ -288,6 +304,41 @@ export const Home = () => {
             )}
           </div>
         </div>
+
+        {/* Mobile menu */}
+        {menuOpen && (
+          <div className="md:hidden mt-3 max-w-[1400px] mx-auto bg-black/90 backdrop-blur rounded-2xl border border-white/10 p-3 flex flex-col gap-1">
+            {[
+              { to: '/marketplace', label: 'Marketplace' },
+              { to: '/services', label: 'Services' },
+              { to: '/campus', label: 'Campus Connect' },
+              { to: '/live', label: 'Go Live' },
+              { to: '/admin', label: 'Dashboard' },
+            ].map(l => (
+              <Link
+                key={l.to}
+                to={l.to}
+                onClick={() => setMenuOpen(false)}
+                className="px-4 py-3 rounded-xl text-white/90 hover:text-white hover:bg-white/10 font-semibold text-sm"
+              >
+                {l.label}
+              </Link>
+            ))}
+            <div className="flex gap-2 pt-2 border-t border-white/10">
+              {user ? (
+                <>
+                  <Link to="/profile" onClick={() => setMenuOpen(false)} className="flex-1 text-center text-white/90 font-semibold text-sm px-4 py-2.5 rounded-full border border-white/20">Profile</Link>
+                  <button onClick={handleLogout} className="flex-1 text-center text-white font-bold text-sm px-4 py-2.5 rounded-full bg-red-700">Log out</button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" onClick={() => setMenuOpen(false)} className="flex-1 text-center text-white/90 font-semibold text-sm px-4 py-2.5 rounded-full border border-white/20">Log in</Link>
+                  <Link to="/signup" onClick={() => setMenuOpen(false)} className="flex-1 text-center text-black font-bold text-sm px-4 py-2.5 rounded-full bg-white">Sign up free</Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       {/* ── Hero Section ── */}
@@ -318,7 +369,7 @@ export const Home = () => {
             Nigeria's #1 Campus Gig Economy
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.05] tracking-tight mb-5">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white leading-[1.05] tracking-tight mb-5 font-display">
             Built for Campus<br />
             <span className="text-[#60a5fa]">Grinders.</span>
           </h1>
@@ -328,19 +379,19 @@ export const Home = () => {
           </p>
 
           <form onSubmit={handleSearch} className="flex bg-white rounded-full p-1.5 max-w-2xl mx-auto shadow-2xl mb-5">
-            <div className="flex-1 flex items-center px-5">
-              <Search className="text-gray-400 mr-3 shrink-0" size={22} />
+            <div className="flex-1 flex items-center px-4 sm:px-5 min-w-0">
+              <Search className="text-gray-400 mr-2 sm:mr-3 shrink-0" size={20} />
               <input
                 type="text"
                 placeholder="Search for web design, tutoring, laptops..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full text-lg text-gray-900 outline-none bg-transparent placeholder:text-gray-400"
+                className="w-full text-base sm:text-lg text-gray-900 outline-none bg-transparent placeholder:text-gray-400 min-w-0"
               />
             </div>
             <button
               type="submit"
-              className="bg-black hover:bg-[#006400] text-white font-bold px-8 py-3.5 rounded-full transition-all text-base flex items-center gap-2 shadow-lg"
+              className="bg-black hover:bg-[#006400] text-white font-bold px-4 sm:px-8 py-3 sm:py-3.5 rounded-full transition-all text-sm sm:text-base flex items-center gap-2 shadow-lg shrink-0"
             >
               Search <SearchCheck size={20} />
             </button>
@@ -389,8 +440,8 @@ export const Home = () => {
       <section className="py-20 bg-[#f8fafc] border-b border-gray-100">
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-black text-[var(--grind-primary)] tracking-tight mb-4">Everything You Need, On Campus</h2>
-            <p className="text-xl text-gray-500">From digital skills to physical products — find it all on Grind.</p>
+            <h2 className="text-3xl sm:text-4xl font-black text-[var(--grind-primary)] tracking-tight mb-4 font-grotesk">Everything You Need, On Campus</h2>
+            <p className="text-base sm:text-xl text-gray-500">From digital skills to physical products, find it all on Grind.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {/* Services Column */}
@@ -403,7 +454,7 @@ export const Home = () => {
                 {SERVICES_CATEGORIES.map(cat => (
                   <Link
                     key={cat.label}
-                    to={`/marketplace?cat=${encodeURIComponent(cat.label)}`}
+                    to={`/services?cat=${encodeURIComponent(cat.label)}`}
                     className="flex justify-between items-center py-3 px-4 rounded-xl hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200 transition-all group"
                   >
                     <span className="text-gray-700 font-medium group-hover:text-[var(--grind-primary)] transition-colors">{cat.label}</span>
@@ -440,6 +491,7 @@ export const Home = () => {
         <FeatureSteps
           features={GRIND_FEATURES}
           title="Your Journey Starts Here"
+          titleClassName="font-editorial"
           autoPlayInterval={4500}
         />
       </section>
@@ -450,19 +502,19 @@ export const Home = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-14 gap-4">
             <div>
               <p className="text-black font-bold text-sm uppercase tracking-widest mb-3">Talent on Campus</p>
-              <h2 className="text-4xl font-black text-black tracking-tight">Meet Your Next Hire</h2>
-              <p className="text-black/60 mt-3 text-lg">Top-rated student freelancers across Nigeria's campuses.</p>
+              <h2 className="text-3xl sm:text-4xl font-black text-black tracking-tight font-editorial">Meet Your Next Hire</h2>
+              <p className="text-black/60 mt-3 text-base sm:text-lg">Only top rated student freelancers across Nigerian campuses.</p>
             </div>
-            <Link to="/marketplace" className="flex items-center gap-2 text-black hover:text-black font-bold transition-colors border border-gray-300 px-6 py-3 rounded-full hover:border-gray-500">
-              View All Sellers <ArrowRight size={18} />
+            <Link to="/marketplace?sort=Highest%20Rated" className="flex items-center gap-2 text-black hover:text-black font-bold transition-colors border border-gray-300 px-6 py-3 rounded-full hover:border-gray-500">
+              View Top Rated <ArrowRight size={18} />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {FEATURED_SELLERS.map(seller => (
               <Link
                 key={seller.name}
-                to="/marketplace"
+                to={`/marketplace?q=${encodeURIComponent(seller.name)}`}
                 className="bg-gray-50 border border-gray-100 hover:border-[#006400]/50 hover:bg-gray-100 rounded-2xl p-6 transition-all group"
               >
                 <div className="flex items-center gap-3 mb-4">
@@ -471,10 +523,9 @@ export const Home = () => {
                   </div>
                   <div>
                     <h4 className="text-black font-bold">{seller.name}</h4>
-                    <p className="text-gray-500 text-sm">{seller.uni}</p>
+                    <p className="text-gray-500 text-sm">{seller.skill} · {seller.uni}</p>
                   </div>
                 </div>
-                <p className="text-gray-700 font-medium mb-4">{seller.skill}</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1 text-yellow-500">
                     <Star size={14} fill="currentColor" />
@@ -482,10 +533,15 @@ export const Home = () => {
                   </div>
                   <span className="text-[#006400] text-xs font-bold bg-[#006400]/10 px-2 py-1 rounded-full">{seller.badge}</span>
                 </div>
-                <div className="mt-4 pt-4 border-t border-gray-200 text-black font-bold text-sm">{seller.price}</div>
+                <div className="mt-4 pt-4 border-t border-gray-200 flex gap-2">
+                  <span className="flex-1 text-center bg-black group-hover:bg-[var(--grind-nigeria)] text-white font-bold text-sm py-2.5 rounded-full transition-colors">
+                    Connect with them
+                  </span>
+                </div>
               </Link>
             ))}
           </div>
+          <p className="text-center text-gray-500 text-sm mt-6">Prices are agreed with each seller. Hire them for your next project.</p>
         </div>
       </section>
 
@@ -493,6 +549,7 @@ export const Home = () => {
       <AccordionFeature
         features={PROOF_OF_WORK_FEATURES}
         heading="Grind Is More Than a Marketplace"
+        headingClassName="font-display"
         subheading="It is proof that you showed up, delivered, and earned it. Every feature on Grind is designed to give you a real shot."
       />
 
@@ -506,11 +563,11 @@ export const Home = () => {
               <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center">
                 <Lock className="text-black" size={32} />
               </div>
-              <h2 className="text-4xl font-black text-[var(--grind-primary)] tracking-tight leading-tight">
+              <h2 className="text-3xl sm:text-4xl font-black text-[var(--grind-primary)] tracking-tight leading-tight font-editorial">
                 100% Escrow Protection. Every Time.
               </h2>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                When you pay on Grind, your money goes into a secure Escrow vault — not to the seller. 
+              <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
+                When you pay on Grind, your money goes into a secure Escrow vault, not to the seller.
                 The seller only gets paid when <em>you</em> confirm you received exactly what was promised. Zero risk of being defrauded.
               </p>
               <Link to="/marketplace" className="inline-flex items-center gap-2 bg-black text-white font-bold px-6 py-3 rounded-full hover:bg-[var(--grind-nigeria)] transition-colors">
@@ -522,9 +579,9 @@ export const Home = () => {
                 <Shield size={14} /> Protected
               </div>
               <img
-                src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?q=80&w=1000&auto=format&fit=crop"
+                src="/hero/hero2_tech.jpg"
                 className="rounded-3xl shadow-2xl w-full object-cover aspect-[4/3]"
-                alt="Secure payment"
+                alt="Nigerian student developer paid through Grind escrow"
               />
             </div>
           </div>
@@ -565,7 +622,7 @@ export const Home = () => {
               <div className="w-16 h-16 bg-[var(--grind-primary)] rounded-2xl flex items-center justify-center">
                 <Zap className="text-white" size={32} />
               </div>
-              <h2 className="text-4xl font-black text-[var(--grind-primary)] tracking-tight leading-tight">
+              <h2 className="text-3xl sm:text-4xl font-black text-[var(--grind-primary)] tracking-tight leading-tight font-editorial">
                 Pay Small Small with GrindFlex.
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed">
@@ -583,21 +640,21 @@ export const Home = () => {
               <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center">
                 <Users className="text-[var(--grind-nigeria)]" size={32} />
               </div>
-              <h2 className="text-4xl font-black text-[var(--grind-primary)] tracking-tight leading-tight">
+              <h2 className="text-3xl sm:text-4xl font-black text-[var(--grind-primary)] tracking-tight leading-tight font-editorial">
                 More Than Gigs. It's a Community.
               </h2>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                Campus Connect lets you post casual updates, say you're heading to the library, find a study partner, or simply link up for a stroll. Share your wins and services to your socials too — Instagram, X, WhatsApp.
+              <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
+                Campus Connect lets you post casual updates, say you are heading to the library, find a study partner, or simply link up for a stroll. Share your wins and services to your socials too: Instagram, X, WhatsApp.
               </p>
-              <Link to="/signup" className="inline-flex items-center gap-2 bg-black text-white font-bold px-6 py-3 rounded-full hover:bg-[var(--grind-nigeria)] transition-colors">
+              <Link to="/campus" className="inline-flex items-center gap-2 bg-black text-white font-bold px-6 py-3 rounded-full hover:bg-[var(--grind-nigeria)] transition-colors">
                 Join the Community <ArrowRight size={18} />
               </Link>
             </div>
             <div className="relative">
               <img
-                src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=1000&auto=format&fit=crop"
+                src="/hero/hero3_creative.jpg"
                 className="rounded-3xl shadow-2xl w-full object-cover aspect-[4/3]"
-                alt="Students community"
+                alt="Nigerian student creators linking up on campus"
               />
             </div>
           </div>
@@ -611,7 +668,7 @@ export const Home = () => {
           <div className="w-20 h-20 bg-black rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-blue-500/30">
             <Award className="text-white" size={40} />
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-[var(--grind-primary)] tracking-tight mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[var(--grind-primary)] tracking-tight mb-6 font-display">
             Your Score. Your Legacy.
           </h2>
           <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
@@ -632,7 +689,7 @@ export const Home = () => {
       <section className="py-24 bg-white border-b border-gray-100">
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-black text-[var(--grind-primary)] tracking-tight mb-4">Real Students. Real Results.</h2>
+            <h2 className="text-3xl sm:text-4xl font-black text-[var(--grind-primary)] tracking-tight mb-4 font-editorial">Real Students. Real Results.</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
@@ -664,15 +721,15 @@ export const Home = () => {
       <section className="bg-[var(--grind-primary)] py-24 text-center">
         <div className="max-w-[800px] mx-auto px-6">
           <TrendingUp size={48} className="text-black mx-auto mb-6" />
-          <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-6 leading-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-6 leading-tight font-display">
             Ready to Start Your Grind?
           </h2>
-          <p className="text-xl text-white/70 mb-10">
-            Join 42,000+ students already earning, buying, and connecting on Nigeria's most trusted campus platform.
+          <p className="text-base sm:text-xl text-white/70 mb-10">
+            Join students already earning, buying, and connecting on Nigeria's most trusted campus platform.
           </p>
           <Link
             to="/signup"
-            className="inline-flex items-center gap-3 bg-black hover:bg-[#006400] text-white font-black text-xl px-12 py-5 rounded-full transition-all shadow-2xl shadow-blue-500/30"
+            className="inline-flex items-center gap-3 bg-black hover:bg-[#006400] text-white font-black text-lg sm:text-xl px-10 sm:px-12 py-4 sm:py-5 rounded-full transition-all shadow-2xl shadow-blue-500/30"
           >
             Create Free Account <ArrowRight size={24} />
           </Link>
@@ -680,16 +737,16 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* ── Cookie Consent ── */}
+      {/* ── Cookie Consent (appears again on a fresh visit after accepting) ── */}
       {showCookie && (
-        <div className="fixed bottom-6 left-6 max-w-sm bg-white p-6 rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in slide-in-from-bottom-4">
+        <div className="fixed bottom-4 left-4 right-4 sm:right-auto sm:bottom-6 sm:left-6 sm:max-w-sm bg-white p-5 sm:p-6 rounded-2xl shadow-2xl border border-gray-100 z-50">
           <h4 className="font-black text-[var(--grind-primary)] mb-2">We value your privacy</h4>
           <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-            We use cookies to enhance your experience, personalize content, and analyze traffic. Read our <a href="#" className="text-[var(--grind-nigeria)] font-medium hover:underline">Cookie Policy</a>.
+            We use cookies to enhance your experience, personalize content, and analyze traffic. Read our <Link to="/legal/cookie-policy" className="text-[var(--grind-nigeria)] font-medium hover:underline">Cookie Policy</Link>.
           </p>
           <div className="flex gap-3">
-            <button onClick={() => setShowCookie(false)} className="flex-1 bg-[var(--grind-primary)] hover:bg-[var(--grind-nigeria)] text-white font-bold py-2.5 rounded-full transition-colors text-sm">Accept All</button>
-            <button onClick={() => setShowCookie(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-[var(--grind-primary)] font-bold py-2.5 rounded-full transition-colors text-sm">Decline</button>
+            <button onClick={acceptCookies} className="flex-1 bg-black hover:bg-[var(--grind-nigeria)] text-white font-bold py-2.5 rounded-full transition-colors text-sm">Accept All</button>
+            <button onClick={acceptCookies} className="flex-1 bg-gray-100 hover:bg-gray-200 text-[var(--grind-primary)] font-bold py-2.5 rounded-full transition-colors text-sm">Decline</button>
           </div>
         </div>
       )}
@@ -745,18 +802,31 @@ export const Home = () => {
             </div>
             <p className="text-white/50 mb-6 font-medium max-w-xs leading-relaxed">The trustless campus gig economy. Built exclusively for Nigerian students who are ready to earn their shot.</p>
             <div className="flex gap-3">
-              {['X', 'IG', 'LI', 'TG'].map(s => (
-                <button key={s} className="w-10 h-10 rounded-full bg-white/10 hover:bg-[var(--grind-nigeria)] flex items-center justify-center transition-colors text-white text-xs font-black">{s}</button>
-              ))}
+              <a href="https://x.com/" target="_blank" rel="noopener noreferrer" aria-label="Grind on X" className="w-10 h-10 rounded-full bg-white/10 hover:bg-[var(--grind-nigeria)] flex items-center justify-center transition-colors text-white">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+              </a>
+              <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Grind on Instagram" className="w-10 h-10 rounded-full bg-white/10 hover:bg-[var(--grind-nigeria)] flex items-center justify-center transition-colors text-white">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
+              </a>
+              <a href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" aria-label="Grind on LinkedIn" className="w-10 h-10 rounded-full bg-white/10 hover:bg-[var(--grind-nigeria)] flex items-center justify-center transition-colors text-white">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z" /></svg>
+              </a>
+              <a href="https://wa.me/2348072027335" target="_blank" rel="noopener noreferrer" aria-label="Grind on WhatsApp" className="w-10 h-10 rounded-full bg-white/10 hover:bg-[var(--grind-nigeria)] flex items-center justify-center transition-colors text-white">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
+              </a>
             </div>
           </div>
 
           <div>
             <h4 className="font-black text-sm uppercase tracking-widest mb-6 text-white/80">Platform</h4>
             <ul className="space-y-4 text-white/50 font-medium">
-              {['Marketplace', 'GrindFlex', 'Leaderboard', 'Dashboard', 'Campus Connect'].map(l => (
-                <li key={l}><a href="#" className="hover:text-white transition-colors">{l}</a></li>
-              ))}
+              <li><Link to="/marketplace" className="hover:text-white transition-colors">Marketplace</Link></li>
+              <li><Link to="/services" className="hover:text-white transition-colors">Services</Link></li>
+              <li><Link to="/campus" className="hover:text-white transition-colors">Campus Connect</Link></li>
+              <li><Link to="/live" className="hover:text-white transition-colors">Go Live</Link></li>
+              <li><Link to="/grindflex" className="hover:text-white transition-colors">GrindFlex</Link></li>
+              <li><Link to="/leaderboard" className="hover:text-white transition-colors">Leaderboard</Link></li>
+              <li><Link to="/admin" className="hover:text-white transition-colors">Dashboard</Link></li>
             </ul>
           </div>
 
@@ -765,18 +835,19 @@ export const Home = () => {
             <ul className="space-y-4 text-white/50 font-medium">
               <li><Link to="/support" className="hover:text-white transition-colors">Help Center</Link></li>
               <li><Link to="/support" className="hover:text-white transition-colors">Chat with Support</Link></li>
-              {['Safety Center', 'Selling on Grind', 'Buyer Protection'].map(l => (
-                <li key={l}><a href="#" className="hover:text-white transition-colors">{l}</a></li>
-              ))}
+              <li><Link to="/legal/safety-center" className="hover:text-white transition-colors">Safety Center</Link></li>
+              <li><Link to="/legal/selling-on-grind" className="hover:text-white transition-colors">Selling on Grind</Link></li>
+              <li><Link to="/legal/buyer-protection" className="hover:text-white transition-colors">Buyer Protection</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-black text-sm uppercase tracking-widest mb-6 text-white/80">Legal</h4>
             <ul className="space-y-4 text-white/50 font-medium">
-              {['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Escrow Agreement'].map(l => (
-                <li key={l}><a href="#" className="hover:text-white transition-colors">{l}</a></li>
-              ))}
+              <li><Link to="/legal/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/legal/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link to="/legal/cookie-policy" className="hover:text-white transition-colors">Cookie Policy</Link></li>
+              <li><Link to="/legal/escrow-agreement" className="hover:text-white transition-colors">Escrow Agreement</Link></li>
             </ul>
           </div>
         </div>

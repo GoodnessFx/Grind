@@ -15,6 +15,26 @@
   .pt-safe {
     padding-top: max(0px, env(safe-area-inset-top));
   }
+
+  /* ── Section display fonts (intentional type variety per section) ── */
+  .font-display {
+    font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+  }
+  .font-editorial {
+    font-family: 'Playfair Display', 'Plus Jakarta Sans', serif;
+  }
+  .font-grotesk {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+  }
+
+  /* Keep headings clean: no ragged single-word line breaks, no hyphens */
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+    hyphens: none;
+  }
+  p {
+    text-wrap: pretty;
+  }
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;

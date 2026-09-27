@@ -15,9 +15,10 @@ interface AccordionFeatureProps {
   features: FeatureItem[]
   heading?: string
   subheading?: string
+  headingClassName?: string
 }
 
-export function AccordionFeature({ features, heading, subheading }: AccordionFeatureProps) {
+export function AccordionFeature({ features, heading, subheading, headingClassName = "" }: AccordionFeatureProps) {
   const [activeId, setActiveId] = useState<number>(features[0]?.id ?? 1)
   const activeFeature = features.find(f => f.id === activeId)
 
@@ -27,7 +28,7 @@ export function AccordionFeature({ features, heading, subheading }: AccordionFea
         {(heading || subheading) && (
           <div className="text-center mb-16">
             {heading && (
-              <h2 className="text-4xl font-black text-[var(--grind-primary)] tracking-tight mb-4">{heading}</h2>
+              <h2 className={`text-4xl font-black text-[var(--grind-primary)] tracking-tight mb-4 ${headingClassName}`}>{heading}</h2>
             )}
             {subheading && (
               <p className="text-xl text-gray-500 max-w-2xl mx-auto">{subheading}</p>

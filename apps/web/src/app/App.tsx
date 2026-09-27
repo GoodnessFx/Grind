@@ -3,6 +3,10 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Splash } from './components/Splash';
 import { Home } from '../pages/Home';
 import { Marketplace } from '../pages/Marketplace';
+import { Services } from '../pages/Services';
+import { Campus } from '../pages/Campus';
+import { Live } from '../pages/Live';
+import { Legal } from '../pages/Legal';
 import { ListingDetail } from '../pages/ListingDetail';
 import { Checkout } from '../pages/Checkout';
 import { Profile } from '../pages/Profile';
@@ -40,6 +44,10 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/campus" element={<Campus />} />
+        <Route path="/live" element={<Live />} />
+        <Route path="/legal/:slug" element={<Legal />} />
         <Route path="/listing/:id" element={<ListingDetail />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/profile" element={<Profile />} />

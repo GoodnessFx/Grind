@@ -13,6 +13,7 @@ interface FeatureStepsProps {
   features: Feature[]
   className?: string
   title?: string
+  titleClassName?: string
   autoPlayInterval?: number
   imageHeight?: string
 }
@@ -21,6 +22,7 @@ export function FeatureSteps({
   features,
   className,
   title = "How to get Started",
+  titleClassName = "",
   autoPlayInterval = 4000,
   imageHeight = "h-[400px]",
 }: FeatureStepsProps) {
@@ -43,7 +45,7 @@ export function FeatureSteps({
   return (
     <div className={cn("p-8 md:p-12", className)}>
       <div className="max-w-7xl mx-auto w-full">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-10 text-center text-[var(--grind-primary)] tracking-tight">
+        <h2 className={`text-3xl md:text-4xl lg:text-5xl font-bold mb-10 text-center text-[var(--grind-primary)] tracking-tight ${titleClassName}`}>
           {title}
         </h2>
 
