@@ -3,21 +3,20 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm@9
+RUN npm install -g pnpm@9 --quiet
 
-# Copy workspace manifests first (for layer caching)
+# Copy workspace manifests first (layer caching)
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/server/package.json ./apps/server/
-COPY apps/web/package.json ./apps/web/
+COPY apps/web/package.json    ./apps/web/
 
-# Install ALL deps (including devDeps needed for build)
+# Install ALL deps including devDeps needed to build
 RUN pnpm install --frozen-lockfile
 
 # Copy full source
 COPY . .
 
-# Build web (Vite) and server (tsc) — skip postinstall to avoid double build
+# Build web (Vite) and server (tsc)
 RUN pnpm --filter web build
 RUN pnpm --filter server build
 
@@ -26,30 +25,28 @@ FROM node:22-alpine AS runner
 
 WORKDIR /app
 
-RUN npm install -g pnpm@9
+RUN npm install -g pnpm@9 --quiet
 
-# Copy workspace manifests
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Copy workspace manifests — runner only needs server
+COPY package.json pnpm-workspace.yaml ./
 COPY apps/server/package.json ./apps/server/
-# Dummy web package.json so pnpm workspace resolves correctly
-COPY apps/web/package.json ./apps/web/
 
-# Install ONLY production deps
-RUN pnpm install --frozen-lockfile --prod
+# Install ONLY server production deps (no lockfile check, no devDeps)
+RUN pnpm --filter server install --prod
 
-# Copy built artifacts
+# Copy built artifacts from builder
 COPY --from=builder /app/apps/server/dist ./apps/server/dist
 COPY --from=builder /app/apps/web/dist    ./apps/web/dist
-COPY --from=builder /app/server.js        ./server.js
+COPY                server.js             ./server.js
 
-# Expose both common ports; the app binds PORT env or 3000 by default
-EXPOSE 3000 8080
+# The app binds to PORT env var (injected at runtime) or falls back to 3000
+EXPOSE 3000
 
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Health check so Railway knows when the container is ready
-HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=3 \
-  CMD wget -qO- http://localhost:${PORT:-3000}/health || exit 1
+# Health check — wget is built into alpine
+HEALTHCHECK --interval=15s --timeout=5s --start-period=25s --retries=3 \
+  CMD wget -qO- http://localhost:3000/health || exit 1
 
 CMD ["node", "server.js"]

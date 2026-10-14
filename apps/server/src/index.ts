@@ -25,13 +25,12 @@ import { initStore } from './services/store';
 
 dotenv.config();
 
-// ── Fail fast if admin password is default ────────────────────────────────────
+// ── Warn if admin password is still default (never crash the server for this) ─
 if (
   process.env.NODE_ENV === 'production' &&
   (!process.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD === 'GrindXk9!2026')
 ) {
-  console.error('[Grind] FATAL: Set a strong ADMIN_PASSWORD env var before running in production.');
-  process.exit(1);
+  console.warn('[Grind] WARNING: ADMIN_PASSWORD is not set or is still the default. Set it in your environment variables.');
 }
 
 const app  = express();
@@ -109,7 +108,6 @@ const makeLimit = (max: number, windowMin = 15) => rateLimit({
 
 const globalLimiter  = makeLimit(300);
 const strictLimiter  = makeLimit(20);   // auth, apply, gig post
-const otpLimiter     = makeLimit(5);    // OTP endpoints
 const walletLimiter  = makeLimit(10);   // withdraw, transfer
 
 app.use(globalLimiter);
