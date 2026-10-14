@@ -18,6 +18,8 @@ import { Explorer } from '../pages/Explorer';
 import { Leaderboard } from '../pages/Leaderboard';
 import AdminConsole from '../pages/AdminConsole';
 import { Support } from '../pages/Support';
+import { AuthCallback } from '../pages/AuthCallback';
+import { Onboarding } from '../pages/Onboarding';
 import { ChatWidget } from '../components/common/ChatWidget';
 import { CartProvider } from '../context/CartContext';
 import { wakePing } from '../lib/adminApi';
@@ -59,6 +61,8 @@ function AppRoutes() {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/xk9-admin-console-7f3a" element={<AdminConsole />} />
         <Route path="/support" element={<Support />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/onboarding" element={<Onboarding />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {/* Support widget backed by the shared store. Guests get a guest thread,

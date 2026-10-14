@@ -218,6 +218,9 @@ importers:
       '@react-oauth/google':
         specifier: ^0.13.5
         version: 0.13.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@supabase/supabase-js':
+        specifier: ^2.112.3
+        version: 2.112.3
       canvas-confetti:
         specifier: 1.9.4
         version: 1.9.4
