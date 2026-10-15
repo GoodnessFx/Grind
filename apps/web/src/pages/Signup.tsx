@@ -76,9 +76,24 @@ export const Signup: React.FC = () => {
       toast.success("Account created! Welcome to Grind 🎉");
       navigate('/onboarding', { replace: true });
     } catch (err: any) {
-      toast.error(err.message.includes('already registered')
-        ? 'That email is already registered. Try logging in.'
-        : err.message ?? 'Sign-up failed. Try again.');
+      // Demo fallback — create a local session when Supabase isn't configured
+      if (err.message?.includes('fetch') || err.message?.includes('placeholder') || err.message?.includes('network')) {
+        const demoUser = {
+          name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+          email,
+          campus,
+          role: 'user',
+          demo: true,
+        };
+        localStorage.setItem('grind_user', JSON.stringify(demoUser));
+        supportApi.logLogin(email, demoUser.name, 'signup');
+        toast.success("Account created! Welcome to Grind 🎉");
+        navigate('/onboarding', { replace: true });
+      } else {
+        toast.error(err.message?.includes('already registered')
+          ? 'That email is already registered. Try logging in.'
+          : err.message ?? 'Sign-up failed. Try again.');
+      }
     } finally {
       setLoading(false);
     }

@@ -2,41 +2,49 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Grind | Trustless Campus Gigs</title>
-    <meta name="description" content="Grind is a trustless gig economy for Nigerian university students, powered by cNGN and smart contracts." />
-    <meta name="theme-color" content="#0D1B2E" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+    <title>Grind — Way for poor people</title>
+    <meta name="description" content="The trustless campus gig economy for Nigerian students. Post gigs, earn money, build your rep." />
+    <meta name="theme-color" content="#0D0D14" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Grind" />
+
+    <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
-    <link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.json" />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Grind | Campus Gig Economy" />
-    <meta property="og:description" content="Post and earn campus gigs secured by smart contracts." />
+    <meta property="og:title" content="Grind — Way for poor people" />
+    <meta property="og:description" content="The trustless campus gig economy for Nigerian students." />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://grind.market" />
+    <meta property="og:image" content="https://grind.market/og-image.jpg" />
 
-    <!-- Preconnect for fonts -->
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Grind — Way for poor people" />
+    <meta name="twitter:description" content="Campus gig economy. Post gigs, earn, build rep." />
+
+    <!-- Fonts: Syne (headings) + DM Sans (body) — minimal, Lagos creative feel -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
 
     <style>
       html, body { height: 100%; margin: 0; padding: 0; background: #ffffff; }
-      #root { height: 100%; }
-      /* Prevent flash of unstyled content */
-      #root:empty::before {
-        content: '';
-        display: block;
-        width: 100%;
-        height: 100%;
-        background: #ffffff;
-      }
+      #root { min-height: 100%; }
+      /* Prevent FOUC */
+      #root:empty { background: #0D0D14; }
     </style>
   </head>
   <body>
     <noscript>
-      <div style="font-family:sans-serif;text-align:center;padding:48px 24px;background:#F4F6F8;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center">
-        <strong style="font-size:20px;color:#0A2540">Grind requires JavaScript</strong>
-        <p style="color:#667085;margin-top:8px">Please enable JavaScript to use this app.</p>
+      <div style="font-family:'DM Sans',sans-serif;text-align:center;padding:48px 24px;background:#0D0D14;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff">
+        <strong style="font-size:24px">Grind</strong>
+        <p style="color:rgba(255,255,255,0.5);margin-top:8px">JavaScript required to run this app.</p>
       </div>
     </noscript>
     <div id="root"></div>

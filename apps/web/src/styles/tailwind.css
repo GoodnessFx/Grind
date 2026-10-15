@@ -16,15 +16,20 @@
     padding-top: max(0px, env(safe-area-inset-top));
   }
 
-  /* ── Section display fonts (intentional type variety per section) ── */
+  /* ── Section display fonts ── */
   .font-display {
-    font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Syne', 'Space Grotesk', sans-serif;
+    letter-spacing: -0.03em;
   }
   .font-editorial {
-    font-family: 'Playfair Display', 'Plus Jakarta Sans', serif;
+    font-family: 'Syne', 'Space Grotesk', sans-serif;
+    letter-spacing: -0.03em;
   }
   .font-grotesk {
-    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-family: 'Syne', 'Space Grotesk', sans-serif;
+  }
+  .font-body {
+    font-family: 'DM Sans', sans-serif;
   }
 
   /* Keep headings clean: no ragged single-word line breaks, no hyphens */

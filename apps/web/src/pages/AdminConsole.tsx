@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { adminApi, getAdminToken, setAdminToken } from '../lib/adminApi';
 import { supportApi, SupportThread, SupportMessage, AdminUser } from '../lib/supportApi';
+import { LogoMark } from '../app/components/brand/LogoMark';
 
 interface Profile {
   id: string;
@@ -81,35 +82,46 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#020d1f] flex items-center justify-center p-6">
-      <form onSubmit={submit} className="w-full max-w-sm bg-[#0A1628] border border-white/10 rounded-2xl p-8">
-        <h1 className="text-white font-black text-xl mb-1">Console</h1>
-        <p className="text-white/40 text-xs mb-6">Restricted access. All activity is logged.</p>
-        <input
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Username"
-          autoComplete="username"
-          className="w-full mb-3 px-4 py-3 rounded-lg bg-[#020d1f] border border-white/10 text-white text-sm outline-none focus:border-[#1E56CC]"
-          required
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          autoComplete="current-password"
-          className="w-full mb-4 px-4 py-3 rounded-lg bg-[#020d1f] border border-white/10 text-white text-sm outline-none focus:border-[#1E56CC]"
-          required
-        />
-        {error && <p className="text-red-400 text-xs mb-4">{error}</p>}
-        <button
-          type="submit"
-          disabled={busy}
-          className="w-full bg-[#1E56CC] hover:bg-[#1848B0] disabled:opacity-50 text-white font-bold py-3 rounded-lg text-sm transition-colors"
-        >
-          {busy ? 'Verifying…' : 'Sign in'}
-        </button>
+    <div className="min-h-screen bg-[#0D0D14] flex items-center justify-center p-6">
+      <form onSubmit={submit} className="w-full max-w-sm">
+        {/* Logo */}
+        <div className="flex items-center gap-3 justify-center mb-10">
+          <LogoMark size={36} tone="light" framed />
+          <div>
+            <p style={{ fontFamily: "'Syne',sans-serif" }} className="text-white font-black text-xl tracking-tight">Grind</p>
+            <p className="text-white/30 text-xs">Admin Console</p>
+          </div>
+        </div>
+
+        <div className="bg-white/[0.04] border border-white/8 rounded-2xl p-7">
+          <h1 className="text-white font-black text-lg mb-1">Sign in</h1>
+          <p className="text-white/30 text-xs mb-6">Restricted access. All actions are logged.</p>
+          <input
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Username"
+            autoComplete="username"
+            className="w-full mb-3 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-[#00A651] transition-colors placeholder:text-white/20"
+            required
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            autoComplete="current-password"
+            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-[#00A651] transition-colors placeholder:text-white/20"
+            required
+          />
+          {error && <p className="text-red-400 text-xs mb-4 bg-red-500/10 px-3 py-2 rounded-lg">{error}</p>}
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full bg-[#00A651] hover:bg-[#008040] disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm transition-colors"
+          >
+            {busy ? 'Verifying…' : 'Sign in'}
+          </button>
+        </div>
       </form>
     </div>
   );
@@ -795,26 +807,46 @@ export default function AdminConsole() {
 
   if (!authed) return <AdminLogin onLogin={() => setAuthed(true)} />;
 
+  const adminUsername = getAdminToken()
+    ? (() => { try { return JSON.parse(atob(getAdminToken()!.split('.')[1])).sub ?? 'admin'; } catch { return 'admin'; } })()
+    : 'admin';
+
   return (
-    <div className="min-h-screen bg-[#020d1f] p-4 md:p-8">
+    <div className="min-h-screen bg-[#0D0D14] p-4 md:p-8" style={{ fontFamily: "'DM Sans',sans-serif" }}>
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-white font-black text-lg tracking-tight">Console</h1>
+
+        {/* Top bar with logo */}
+        <div className="flex items-center justify-between mb-7">
+          <div className="flex items-center gap-3">
+            <LogoMark size={30} tone="light" />
+            <div>
+              <p style={{ fontFamily: "'Syne',sans-serif" }} className="text-white font-black text-base tracking-tight leading-none">Grind</p>
+              <p className="text-white/30 text-[10px] leading-none mt-0.5">Admin Console</p>
+            </div>
+          </div>
+
           <div className="flex items-center gap-2">
             {(['logins', 'support', 'users', 'audit'] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`px-4 py-2 rounded-lg text-xs font-bold capitalize transition-colors ${tab === t ? 'bg-[#1E56CC] text-white' : 'bg-white/5 text-white/50 hover:text-white'}`}
+                className={`px-4 py-2 rounded-lg text-xs font-bold capitalize transition-colors ${tab === t ? 'bg-[#00A651] text-white' : 'bg-white/5 text-white/40 hover:text-white'}`}
               >
-                {t === 'support' ? 'Support Inbox' : t === 'audit' ? 'Audit Log' : t === 'logins' ? 'Logins' : 'Users'}
+                {t === 'support' ? 'Support' : t === 'audit' ? 'Audit' : t === 'logins' ? 'Logins' : 'Users'}
               </button>
             ))}
-            <button onClick={logout} className="p-2 rounded-lg bg-white/5 text-white/50 hover:text-white" aria-label="Log out">
-              <LogOut size={14} />
-            </button>
+            <div className="flex items-center gap-2 ml-2 pl-3 border-l border-white/10">
+              <div className="w-6 h-6 rounded-full bg-[#00A651] flex items-center justify-center text-white text-[10px] font-black">
+                {adminUsername[0]?.toUpperCase()}
+              </div>
+              <span className="text-white/40 text-xs hidden sm:block">{adminUsername}</span>
+              <button onClick={logout} className="p-1.5 rounded-lg bg-white/5 text-white/40 hover:text-white transition-colors" aria-label="Log out">
+                <LogOut size={13} />
+              </button>
+            </div>
           </div>
         </div>
+
         {tab === 'logins' && <LoginsTab />}
         {tab === 'users' && <UsersTab />}
         {tab === 'support' && <SupportTab />}
