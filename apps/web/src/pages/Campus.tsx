@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MessageCircle, Send, Radio, Search, X } from 'lucide-react';
+import { Heart, MessageCircle, Send, Radio, Search, X, Flag } from 'lucide-react';
 import { Navbar } from '../components/common/Navbar';
+import { ReportModal } from '../components/common/ReportModal';
 import { PEOPLE } from '../data/listings';
 
 interface Post {
@@ -89,6 +90,7 @@ export const Campus = () => {
   const [chats, setChats] = useState<Record<string, Message[]>>(() => load('grind_chats', SEED_CHATS));
   const [msgDraft, setMsgDraft] = useState('');
   const [chatOpenMobile, setChatOpenMobile] = useState(false);
+  const [showReport, setShowReport] = useState(false);
 
   useEffect(() => localStorage.setItem('grind_feed_posts', JSON.stringify(posts)), [posts]);
   useEffect(() => localStorage.setItem('grind_chats', JSON.stringify(chats)), [chats]);
@@ -270,10 +272,18 @@ export const Campus = () => {
               <div className="flex-1 flex flex-col max-h-[420px]">
                 <div className="p-3 border-b border-gray-100 flex items-center gap-2">
                   <img src={chatPerson.avatar} alt={chatPerson.name} className="w-8 h-8 rounded-full object-cover" />
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="text-xs font-bold text-black truncate">{chatPerson.name}</div>
                     <div className="text-[11px] text-green-600">Online</div>
                   </div>
+                  <button
+                    onClick={() => setShowReport(true)}
+                    className="text-gray-300 hover:text-red-500 transition-colors p-1.5 rounded-lg"
+                    aria-label="Report this user"
+                    title="Report this user"
+                  >
+                    <Flag size={14} />
+                  </button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-3 space-y-2">
                   {(chats[activeChat] || []).length === 0 && (
@@ -316,6 +326,11 @@ export const Campus = () => {
           </aside>
         </div>
       </div>
+
+      {/* Report the chat partner */}
+      {showReport && (
+        <ReportModal targetType="user" targetId={activeChat} onClose={() => setShowReport(false)} />
+      )}
     </div>
   );
 };

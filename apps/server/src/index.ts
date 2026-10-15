@@ -19,9 +19,12 @@ import requestsRouter from './routes/requests';
 import leaderboardRouter from './routes/leaderboard';
 import spinRouter from './routes/spin';
 import shareCardRouter from './routes/sharecard';
+import usersRouter from './routes/users';
+import reportsRouter from './routes/reports';
 import adminRouter from './routes/admin';
 import supportRouter from './routes/support';
 import { initStore } from './services/store';
+import { startStreamReminderSweeper } from './routes/streams';
 
 dotenv.config();
 
@@ -128,6 +131,8 @@ app.use('/api/spin',           spinRouter);
 app.use('/api/share-card',     shareCardRouter);
 app.use('/api/streams',        streamsRouter);
 app.use('/api/gifts',          giftsRouter);
+app.use('/api/users',          usersRouter);
+app.use('/api/reports',        reportsRouter);
 app.use('/api/support',        supportRouter);
 app.use('/api',                strictLimiter, applyRouter);
 app.use('/api/xk9-admin-console-7f3a', adminRouter);
@@ -167,6 +172,8 @@ initChat(server);
 server.listen(PORT, HOST, async () => {
   console.log(`[Grind Server] Running on http://${HOST}:${PORT}`);
   try { await initStore(); } catch (e: any) { console.error('[Store]', e.message); }
+  // Scheduled stream reminders — fires a notification when a stream is due
+  startStreamReminderSweeper();
 });
 
 // ── Graceful shutdown ─────────────────────────────────────────────────────────

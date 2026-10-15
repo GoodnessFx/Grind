@@ -7,6 +7,7 @@ import {
 import { LogoMark } from '../app/components/brand/LogoMark';
 import { FeatureSteps } from '../components/blocks/feature-section';
 import { AccordionFeature } from '../components/blocks/accordion-feature-section';
+import { HustleDashboard } from '../components/common/HustleDashboard';
 
 // ── Hidden admin trigger — 6 taps in 4 seconds on the footer dot ─────────────
 const ADMIN_PATH = '/xk9-admin-console-7f3a';
@@ -307,6 +308,9 @@ export const Home = () => {
         </div>
       </section>
 
+      {/* ── Hustle dashboard: Sapa Meter · Daily Spin · Seller of the Week ── */}
+      <HustleDashboard />
+
       {/* ── Categories ── */}
       <section className="py-20 bg-[#F7F8FA] border-b border-gray-100">
         <div className="max-w-[1200px] mx-auto px-6">
@@ -593,7 +597,7 @@ export const Home = () => {
             </div>
           </div>
           {[
-            { title: 'Platform', links: ['/marketplace', '/services', '/campus', '/live', '/grindflex', '/leaderboard'].map((to, i) => ({ to, label: ['Marketplace', 'Services', 'Campus', 'Live', 'GrindFlex', 'Leaderboard'][i] })) },
+            { title: 'Platform', links: ['/marketplace', '/gigs', '/requests', '/services', '/campus', '/live', '/grindflex', '/leaderboard'].map((to, i) => ({ to, label: ['Marketplace', 'Gigs', 'Requests', 'Services', 'Campus', 'Live', 'GrindFlex', 'Leaderboard'][i] })) },
             { title: 'Support', links: ['/support', '/legal/safety-center', '/legal/buyer-protection'].map((to, i) => ({ to, label: ['Help Center', 'Safety Center', 'Buyer Protection'][i] })) },
             { title: 'Legal', links: ['/legal/privacy-policy', '/legal/terms-of-service', '/legal/escrow-agreement'].map((to, i) => ({ to, label: ['Privacy Policy', 'Terms of Service', 'Escrow Agreement'][i] })) },
           ].map(col => (

@@ -249,13 +249,16 @@ CREATE TABLE IF NOT EXISTS reports (
   id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   reporter_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   target_type TEXT NOT NULL,                 -- gig, user, message, post
-  target_id   UUID NOT NULL,
+  target_id   TEXT NOT NULL,                 -- target id (text so local/mock ids also reportable)
   reason      TEXT NOT NULL,
   details     TEXT,
   status      TEXT DEFAULT 'open',           -- open, reviewed, actioned, dismissed
   reviewed_by UUID REFERENCES users(id),
   created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Migration (idempotent) — relax target_id from UUID to TEXT on existing installs
+ALTER TABLE reports ALTER COLUMN target_id TYPE TEXT USING target_id::text;
 
 -- ============================================================
 -- 12. REQUESTS BOARD

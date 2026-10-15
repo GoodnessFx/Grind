@@ -34,8 +34,9 @@ Every screen, its route, its API endpoint, and its build status.
 | Notifications panel (real) | GET /api/notifications | BUILT |
 | Smart Pick banner | GET /api/gigs?featured=true | BUILT |
 | Streak display | From user.streak_count | BUILT |
-| Sapa Meter | user.weekly_earn_target | BUILT (UI only, target set in profile) |
-| Seller of the week | GET /api/leaderboard?limit=1 | BUILT |
+| Sapa Meter | Weekly credits from GET /api/wallet vs target (editable inline) | BUILT — HustleDashboard on / |
+| Seller of the week | GET /api/leaderboard?limit=1, falls back to /global | BUILT — HustleDashboard on / |
+| Daily Spin widget | GET/POST /api/spin with wheel animation | BUILT — HustleDashboard on / |
 | Quick actions | Navigate to gigs, wallet, live, referral | BUILT |
 
 ## Gigs
@@ -58,6 +59,11 @@ Every screen, its route, its API endpoint, and its build status.
 | Rate and review | /gigs/:id/review | POST /api/reviews | PARTIAL |
 | Urgent Now tag | Gig card | is_urgent field | BUILT |
 | Scam filter | Server-side on POST | hasScamContent() | BUILT |
+| Spam warning (client pre-check) | /post-gig mirrors server keywords, shows inline warning | BUILT |
+| Report gig | Gig card flag button | POST /api/reports | BUILT |
+| Share card after completion | Auto-opens on approve, also on completed detail | GET /api/share-card/:userId | BUILT |
+| Referral reward (₦500) | Fires in approve on referred doer's first completed gig | transactions type=referral_reward | BUILT |
+| Referral capture | /ref/:handle → sessionStorage → signup/OAuth writes referred_by | BUILT |
 
 ## Requests Board
 
@@ -100,15 +106,19 @@ Every screen, its route, its API endpoint, and its build status.
 | Browse streams | /live | GET /api/streams | BUILT |
 | Watch stream + chat + gifts | /live (panel) | Socket.io stream room + POST /api/gifts | BUILT |
 | Go live (LiveKit) | /live | POST /api/streams | BUILT |
-| Scheduled streams | /live | GET /api/streams?scheduled=true | PARTIAL |
-| Gift with wallet debit | — | POST /api/gifts | BUILT |
+| Scheduled streams | /live | POST /api/streams/schedule + GET /api/streams/scheduled | BUILT |
+| Stream reminder | Notification when scheduled time reaches (server sweeper + browser) | BUILT |
+| Gift with wallet debit | — | POST /api/gifts | PARTIAL — gifts logged, wallet debit not yet wired |
+| Spray-money gift names | Small Spray / Money Rain / Oga Spray / Grand Spray | BUILT |
 
 ## Profile
 
 | Screen | Route | API | Status |
 |---|---|---|---|
 | Own profile | /profile | GET /api/users/me | BUILT |
-| Public profile | /u/:handle | GET /api/users/:handle (public) | PARTIAL |
+| Public profile | /u/:handle | GET /api/users/by-handle/:handle (public, real stats) | BUILT |
+| OG meta tags | /u/:handle dynamic | og:title/desc/image/url + twitter card | BUILT |
+| QR per seller profile | Real scannable QR (qrcode lib) on /u/:handle | BUILT |
 | Edit profile | /profile/edit | PUT /api/users/:id | BUILT |
 | Work history | /profile | GET /api/gigs/my/active | BUILT |
 | Share card | /profile | GET /api/share-card/:userId | BUILT |
@@ -126,7 +136,8 @@ Every screen, its route, its API endpoint, and its build status.
 
 | Feature | Status |
 |---|---|
-| Language toggle Pidgin/English | BUILT |
+| Language toggle Pidgin/English | BUILT — /settings page, persists to localStorage + profile |
+| Notification toggles (per type) | BUILT — /settings page |
 | Notification toggles (per type) | BUILT |
 | Change password | BUILT |
 | Bank details (add/edit) | BUILT |
@@ -181,8 +192,8 @@ These features are in the spec but not yet built:
 
 | Feature | Notes |
 |---|---|
-| Public profile /u/:handle with OG meta tags | Route added to App.tsx, page not yet written |
-| Seller of the week homepage widget | API query exists, UI not yet placed |
+| ~~Public profile /u/:handle with OG meta tags~~ | BUILT — page + API + OG tags + share-card OG image |
+| ~~Seller of the week homepage widget~~ | BUILT — HustleDashboard on / |
 | Report queue in admin | Schema exists, admin UI not wired |
 | Dispute resolution admin UI | Schema + API exist |
 | CSV/PDF statement download | Transactions API works, file gen not done |

@@ -39,13 +39,28 @@ export const AuthCallback: React.FC = () => {
         const meta  = user.user_metadata ?? {};
         const base  = (meta.full_name ?? meta.name ?? 'user').toLowerCase().replace(/\s+/g, '_');
         const handle = `${base}_${Math.floor(Math.random() * 9000) + 1000}`;
+        // Referral capture for OAuth signups (/ref/:handle landing stores grind_ref)
+        let referredBy: string | null = null;
+        try {
+          const refCode = (sessionStorage.getItem('grind_ref') ?? '').replace(/^@/, '').trim().toLowerCase();
+          if (refCode) {
+            const { data: referrer } = await supabase
+              .from('users')
+              .select('id')
+              .eq('handle', refCode)
+              .maybeSingle();
+            if (referrer?.id && referrer.id !== user.id) referredBy = referrer.id;
+          }
+        } catch { /* referral is best-effort */ }
         await upsertProfile(user.id, {
           email:      user.email ?? '',
           handle,
           full_name:  meta.full_name ?? meta.name ?? '',
           avatar_url: meta.avatar_url ?? meta.picture ?? null,
           onboarding_step: 1,
+          ...(referredBy ? { referred_by: referredBy } : {}),
         } as any);
+        if (referredBy) { try { sessionStorage.removeItem('grind_ref'); } catch { /* ignore */ } }
         navigate('/onboarding', { replace: true });
       } else if (!existing.onboarding_complete) {
         navigate('/onboarding', { replace: true });

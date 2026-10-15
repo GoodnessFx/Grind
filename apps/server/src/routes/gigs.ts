@@ -14,6 +14,9 @@ import { sanitize } from './chat';
 const router = Router();
 const db = () => supabaseAdmin ?? supabase;
 
+// Referral reward — paid once, on a referred doer's FIRST completed gig
+const REFERRAL_REWARD_KOBO = 50_000; // ₦500
+
 // Spam / scam keyword filter for gig content
 const SCAM_KEYWORDS = [
   'send me money', 'pay upfront', 'western union', 'moneygram', 'bitcoin', 'btc',
@@ -284,6 +287,13 @@ router.post('/:id/approve', requireAuth, async (req: AuthRequest, res) => {
   // Calculate doer earnings (deduct platform + escrow fee)
   const doerEarns = Math.round(gig.budget * (1 - 0.08 - 0.015));
 
+  // How many gigs had the doer completed BEFORE this one? (referral reward fires on the first)
+  const { count: priorCompleted } = await db()
+    .from('gigs')
+    .select('id', { count: 'exact', head: true })
+    .eq('doer_id', gig.doer_id)
+    .eq('status', 'completed');
+
   await db().from('gigs').update({ status: 'completed' }).eq('id', gigId);
 
   // Credit doer wallet
@@ -309,6 +319,43 @@ router.post('/:id/approve', requireAuth, async (req: AuthRequest, res) => {
   await db().rpc('increment_grind_score', { p_user_id: gig.doer_id, p_points: 25 });
 
   await notifyUser(gig.doer_id, 'Alert! Money don land.', `₦${(doerEarns / 100).toLocaleString()} don enter your wallet for "${gig.title}".`, 'money_in', gigId);
+
+  // ── Referral reward — fires once, on the referred doer's first completed gig ──
+  if ((priorCompleted ?? 0) === 0) {
+    try {
+      const { data: doerRow } = await db()
+        .from('users')
+        .select('referred_by')
+        .eq('id', gig.doer_id)
+        .single();
+      const referrerId = doerRow?.referred_by;
+      if (referrerId && referrerId !== gig.doer_id) {
+        const refRef = `GRD-REF-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`;
+        await db().from('transactions').insert({
+          user_id:     referrerId,
+          amount:      REFERRAL_REWARD_KOBO,
+          reference:   refRef,
+          type:        'referral_reward',
+          status:      'success',
+          description: 'Referral reward — your invite completed their first gig',
+        });
+        await (supabaseAdmin ?? supabase).rpc('increment_wallet_balance', {
+          p_user_id: referrerId,
+          p_amount:  REFERRAL_REWARD_KOBO,
+        });
+        await notifyUser(
+          referrerId,
+          'Referral reward! 🎉',
+          `Your invite don finish their first gig. ₦${REFERRAL_REWARD_KOBO / 100} don enter your wallet.`,
+          'money_in',
+          gigId,
+        );
+      }
+    } catch (refErr: any) {
+      // Never fail the approval because of the referral bonus
+      console.error('[referral] reward failed:', refErr?.message ?? refErr);
+    }
+  }
 
   res.json({ success: true, doer_earnings: doerEarns });
 });

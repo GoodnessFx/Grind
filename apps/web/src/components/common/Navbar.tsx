@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { Search, Bell, MessageSquare, Menu, X } from 'lucide-react';
+import { Search, Bell, MessageSquare, Menu, X, Settings } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../lib/auth';
 
 const NAV_LINKS = [
   { label: 'Marketplace', to: '/marketplace' },
+  { label: 'Gigs', to: '/gigs' },
+  { label: 'Requests', to: '/requests' },
   { label: 'Services', to: '/services' },
   { label: 'Campus', to: '/campus' },
   { label: 'Live', to: '/live' },
@@ -13,6 +16,7 @@ const NAV_LINKS = [
 export const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { session } = useAuth();
   const [query, setQuery] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -94,6 +98,13 @@ export const Navbar = () => {
           <div className="h-7 w-px bg-[var(--color-border)] hidden sm:block mx-1"></div>
 
           {/* Auth buttons: always visible on mobile, compact sizing */}
+          {session && (
+            <Link to="/settings" className="shrink-0 hidden sm:flex" aria-label="Settings">
+              <button className={`p-2.5 rounded-full transition-colors ${isActive('/settings') ? 'bg-gray-100 text-black' : 'text-gray-600 hover:text-black hover:bg-gray-50'}`}>
+                <Settings size={18} />
+              </button>
+            </Link>
+          )}
           <Link to="/login" className="shrink-0">
             <button className="px-3 sm:px-5 py-2 rounded-full text-sm font-bold text-black border border-gray-200 hover:border-black hover:bg-gray-50 transition-colors">
               Log in
@@ -141,6 +152,17 @@ export const Navbar = () => {
               {l.label}
             </Link>
           ))}
+          {session && (
+            <Link
+              to="/settings"
+              onClick={() => setMenuOpen(false)}
+              className={`px-3 py-2.5 rounded-xl text-sm font-bold transition-colors ${
+                isActive('/settings') ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Settings
+            </Link>
+          )}
         </div>
       )}
     </nav>

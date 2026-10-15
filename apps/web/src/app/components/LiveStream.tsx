@@ -51,10 +51,10 @@ const SEED_CHAT: ChatMessage[] = [
 ];
 
 const GIFTS = [
-  { id: "rose", emoji: "🌹", label: "Rose", price: 50 },
-  { id: "fire", emoji: "🔥", label: "Fire", price: 100 },
-  { id: "crown", emoji: "👑", label: "Crown", price: 500 },
-  { id: "diamond", emoji: "💎", label: "Diamond", price: 1000 },
+  { id: "rose", emoji: "💸", label: "Small Spray", price: 50 },
+  { id: "fire", emoji: "🌧️", label: "Money Rain", price: 100 },
+  { id: "crown", emoji: "👑", label: "Oga Spray", price: 500 },
+  { id: "diamond", emoji: "💎", label: "Grand Spray", price: 1000 },
 ];
 
 const STREAM_CATEGORIES = ["All", "Coding", "Design", "Tutoring", "Talk", "Music", "Gaming"];

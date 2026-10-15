@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight, CheckCircle2, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { LogoMark } from '../app/components/brand/LogoMark';
@@ -25,6 +25,7 @@ const UNIVERSITIES = [
 
 export const Signup: React.FC = () => {
   const navigate        = useNavigate();
+  const [params]        = useSearchParams();
   const [step, setStep] = useState<Step>(1);
   const [email, setEmail]         = useState('');
   const [password, setPassword]   = useState('');
@@ -63,6 +64,21 @@ export const Signup: React.FC = () => {
 
       const baseHandle = `${firstName.toLowerCase().replace(/\s+/g, '_')}_${Math.floor(Math.random() * 9000) + 1000}`;
 
+      // ── Referral capture: ?ref=handle or /ref/:handle landing (sessionStorage) ──
+      let referredBy: string | null = null;
+      try {
+        const refCode = (params.get('ref') ?? sessionStorage.getItem('grind_ref') ?? '')
+          .replace(/^@/, '').trim().toLowerCase();
+        if (refCode) {
+          const { data: referrer } = await supabase
+            .from('users')
+            .select('id')
+            .eq('handle', refCode)
+            .maybeSingle();
+          if (referrer?.id && referrer.id !== user.id) referredBy = referrer.id;
+        }
+      } catch { /* referral is best-effort */ }
+
       await upsertProfile(user.id, {
         email,
         handle: baseHandle,
@@ -70,7 +86,11 @@ export const Signup: React.FC = () => {
         campus,
         phone: phone || undefined,
         onboarding_step: 1,
+        ...(referredBy ? { referred_by: referredBy } : {}),
       } as any);
+      if (referredBy) {
+        try { sessionStorage.removeItem('grind_ref'); } catch { /* ignore */ }
+      }
 
       supportApi.logLogin(email, `${firstName} ${lastName}`, 'signup');
       toast.success("Account created! Welcome to Grind 🎉");

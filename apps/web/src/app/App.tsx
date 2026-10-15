@@ -20,6 +20,12 @@ import AdminConsole from '../pages/AdminConsole';
 import { Support } from '../pages/Support';
 import { AuthCallback } from '../pages/AuthCallback';
 import { Onboarding } from '../pages/Onboarding';
+import { PublicProfile } from '../pages/PublicProfile';
+import { GigsPage } from '../pages/GigsPage';
+import { PostGigPage } from '../pages/PostGigPage';
+import { RequestsBoard } from '../pages/RequestsBoard';
+import { Settings } from '../pages/Settings';
+import { ReferralLanding } from '../pages/ReferralLanding';
 import { ChatWidget } from '../components/common/ChatWidget';
 import { CartProvider } from '../context/CartContext';
 import { wakePing } from '../lib/adminApi';
@@ -63,6 +69,12 @@ function AppRoutes() {
         <Route path="/support" element={<Support />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/u/:handle" element={<PublicProfile />} />
+        <Route path="/gigs" element={<GigsPage />} />
+        <Route path="/post-gig" element={<PostGigPage />} />
+        <Route path="/requests" element={<RequestsBoard />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/ref/:handle" element={<ReferralLanding />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {/* Support widget backed by the shared store. Guests get a guest thread,
