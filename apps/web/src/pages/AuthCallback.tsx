@@ -80,7 +80,7 @@ export const AuthCallback: React.FC = () => {
         </div>
         <h2 className="text-xl font-black text-gray-900 mb-2">Sign-in failed</h2>
         <p className="text-gray-500 text-sm mb-6">{error}</p>
-        <a href="/login" className="bg-[#0A2540] text-white font-bold px-6 py-3 rounded-full text-sm hover:bg-[#00A651] transition-colors">
+        <a href="/login" className="bg-[#00A651] text-white font-bold px-6 py-3 rounded-full text-sm hover:bg-[#008040] transition-colors">
           Try again
         </a>
       </div>

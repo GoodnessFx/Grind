@@ -1,4 +1,6 @@
 {
+  "id": "/",
+  "scope": "/",
   "name": "Grind — Campus Gig Economy",
   "short_name": "Grind",
   "description": "Way for poor people. The trustless campus gig economy for Nigerian students.",
@@ -8,12 +10,6 @@
   "theme_color": "#0D0D14",
   "orientation": "portrait-primary",
   "icons": [
-    {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
@@ -25,9 +21,14 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ],
-  "screenshots": [],
   "categories": ["productivity", "education", "finance"],
   "lang": "en-NG"
 }

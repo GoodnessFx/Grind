@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Eye, EyeOff, ArrowRight, Phone, Mail, ChevronLeft, Shield } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Phone, Mail, ChevronLeft, Shield, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { LogoMark } from '../app/components/brand/LogoMark';
 import {
@@ -193,11 +193,11 @@ export const Login: React.FC = () => {
   );
 
   const brand = (
-    <div className="hidden lg:flex lg:w-[45%] bg-[#0A2540] flex-col p-14 justify-between relative overflow-hidden">
-      <div className="absolute -top-32 -left-16 w-72 h-72 bg-[#00A651]/10 rounded-full blur-[80px]" />
+    <div className="hidden lg:flex lg:w-[45%] bg-[#0D0D14] flex-col p-14 justify-between relative overflow-hidden">
+      <div className="absolute -top-32 -left-16 w-72 h-72 bg-[#00A651]/12 rounded-full blur-[80px]" />
       <div className="relative z-10">
-        <Link to="/" className="flex items-center gap-2 mb-14">
-          <LogoMark size={32} tone="light" />
+        <Link to="/" className="flex items-center gap-2.5 mb-14">
+          <LogoMark size={34} tone="light" />
           <span className="text-white font-bold text-2xl tracking-tight">Grind</span>
         </Link>
         <h1 className="text-5xl font-black text-white leading-tight mb-5 tracking-tight">
@@ -208,10 +208,21 @@ export const Login: React.FC = () => {
         </p>
       </div>
       <blockquote className="relative z-10 border-t border-white/10 pt-8">
-        <p className="text-white/80 text-base italic mb-4">"I made ₦180,000 in my first month on Grind just from logo design."</p>
+        <div className="flex items-center gap-0.5 mb-3">
+          {[...Array(5)].map((_, i) => <Star key={i} size={14} className="text-[#00A651]" fill="#00A651" />)}
+        </div>
+        <p className="text-white/80 text-base italic leading-relaxed mb-4">
+          "I made ₦180,000 in my first month on Grind just from logo design. Escrow made clients trust me from day one."
+        </p>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-[#00A651] flex items-center justify-center text-white font-bold">A</div>
-          <div><div className="text-white text-sm font-semibold">Amara S.</div><div className="text-white/40 text-xs">UI Designer · UNILAG</div></div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-white text-sm font-semibold">Amara S.</span>
+              <Shield size={12} className="text-[#00A651]" />
+            </div>
+            <div className="text-white/40 text-xs">UI Designer · UNILAG · Verified student</div>
+          </div>
         </div>
       </blockquote>
     </div>
@@ -240,7 +251,7 @@ export const Login: React.FC = () => {
             <Phone className="w-4 h-4 text-[#00A651]" /> Continue with Phone
           </button>
           <button onClick={() => setStep('email')}
-            className="w-full flex items-center justify-center gap-3 bg-[#0A2540] hover:bg-[#00A651] py-3.5 rounded-full text-sm font-bold text-white transition-colors shadow-lg">
+            className="w-full flex items-center justify-center gap-3 bg-[#00A651] hover:bg-[#008040] py-3.5 rounded-full text-sm font-bold text-white transition-colors shadow-lg">
             <Mail className="w-4 h-4" /> Continue with Email
           </button>
         </div>
@@ -283,7 +294,7 @@ export const Login: React.FC = () => {
             </button>
           </div>
           <button type="submit" onClick={handleEmailPassword} disabled={loading}
-            className="w-full bg-[#0A2540] hover:bg-[#00A651] text-white font-bold py-3.5 rounded-full transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
+            className="w-full bg-[#00A651] hover:bg-[#008040] text-white font-bold py-3.5 rounded-full transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
             {loading ? 'Logging in...' : <><span>Log in</span><ArrowRight className="w-4 h-4" /></>}
           </button>
           <button type="button" onClick={handleEmailOtpSend} disabled={loading}
@@ -305,7 +316,7 @@ export const Login: React.FC = () => {
         <p className="text-gray-500 text-sm mb-8">Enter the 6-digit code we sent to <span className="font-semibold text-gray-800">{email}</span></p>
         <OtpInput otp={otp} onChange={setOtpDigit} />
         <button onClick={handleEmailOtpVerify} disabled={loading}
-          className="w-full mt-4 bg-[#0A2540] hover:bg-[#00A651] text-white font-bold py-3.5 rounded-full transition-colors disabled:opacity-60">
+          className="w-full mt-4 bg-[#00A651] hover:bg-[#008040] text-white font-bold py-3.5 rounded-full transition-colors disabled:opacity-60">
           {loading ? 'Verifying...' : 'Verify and log in'}
         </button>
         <button onClick={resend} className="w-full mt-3 text-center text-sm text-[#00A651] font-semibold py-2">
@@ -328,7 +339,7 @@ export const Login: React.FC = () => {
               className="flex-1 px-4 py-3 border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#00A651] transition-colors" />
           </div>
           <button type="submit" disabled={loading}
-            className="w-full bg-[#0A2540] hover:bg-[#00A651] text-white font-bold py-3.5 rounded-full transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
+            className="w-full bg-[#00A651] hover:bg-[#008040] text-white font-bold py-3.5 rounded-full transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
             {loading ? 'Sending...' : <><span>Send Code</span><ArrowRight className="w-4 h-4" /></>}
           </button>
         </form>
@@ -343,7 +354,7 @@ export const Login: React.FC = () => {
         <p className="text-gray-500 text-sm mb-8">Enter the code sent to <span className="font-semibold text-gray-800">{phone}</span></p>
         <OtpInput otp={otp} onChange={setOtpDigit} />
         <button onClick={handlePhoneOtpVerify} disabled={loading}
-          className="w-full mt-4 bg-[#0A2540] hover:bg-[#00A651] text-white font-bold py-3.5 rounded-full transition-colors disabled:opacity-60">
+          className="w-full mt-4 bg-[#00A651] hover:bg-[#008040] text-white font-bold py-3.5 rounded-full transition-colors disabled:opacity-60">
           {loading ? 'Verifying...' : 'Verify and log in'}
         </button>
         <button onClick={resend} className="w-full mt-3 text-center text-sm text-[#00A651] font-semibold py-2">

@@ -37,6 +37,16 @@ class ErrorBoundary extends React.Component<
 const root = document.getElementById("root");
 if (!root) throw new Error("No #root element found in index.html");
 
+// Register the PWA service worker — makes Grind installable as an app
+// (add to home screen / app drawer) on any device, and keeps the shell offline.
+if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((err) => {
+      console.warn('[Grind PWA] service worker registration failed:', err?.message ?? err);
+    });
+  });
+}
+
 createRoot(root).render(
   <React.StrictMode>
     <ErrorBoundary>

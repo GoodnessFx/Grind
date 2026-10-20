@@ -1,7 +1,8 @@
 export interface SupportMessage {
   id: string;
   user_id: string;
-  sender: 'user' | 'support';
+  /** 'ai' = instant Grind AI reply (local-only); 'support' = human admin reply (realtime) */
+  sender: 'user' | 'support' | 'ai';
   body: string;
   read: boolean;
   created_at: string;

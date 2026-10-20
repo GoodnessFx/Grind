@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Eye, EyeOff, ArrowRight, CheckCircle2, ChevronLeft } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, CheckCircle2, ChevronLeft, Star, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { LogoMark } from '../app/components/brand/LogoMark';
 import { signUpWithEmail, signInWithGoogle, upsertProfile, supabase } from '../lib/auth';
@@ -120,8 +120,8 @@ export const Signup: React.FC = () => {
   };
 
   const brand = (
-    <div className="hidden lg:flex lg:w-[45%] bg-[#0A2540] flex-col p-14 justify-between relative overflow-hidden">
-      <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#00A651]/10 rounded-full blur-[80px]" />
+    <div className="hidden lg:flex lg:w-[45%] bg-[#0D0D14] flex-col p-14 justify-between relative overflow-hidden">
+      <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#00A651]/12 rounded-full blur-[80px]" />
       <div className="relative z-10">
         <Link to="/" className="flex items-center gap-2 mb-14">
           <LogoMark size={32} tone="light" />
@@ -144,10 +144,21 @@ export const Signup: React.FC = () => {
         </ul>
       </div>
       <blockquote className="relative z-10 border-t border-white/10 pt-8">
-        <p className="text-white/70 text-sm italic mb-3">"I closed 4 gigs in my first week. The escrow made clients trust me instantly."</p>
+        <div className="flex items-center gap-0.5 mb-3">
+          {[...Array(5)].map((_, i) => <Star key={i} size={14} className="text-[#00A651]" fill="#00A651" />)}
+        </div>
+        <p className="text-white/80 text-sm italic leading-relaxed mb-3">
+          "Four gigs in my first week. My GrindScore now opens doors that no CV ever could."
+        </p>
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-[#00A651] flex items-center justify-center text-white font-bold text-sm">A</div>
-          <div><div className="text-white text-sm font-semibold">Amara S.</div><div className="text-white/40 text-xs">UI Designer · UNILAG</div></div>
+          <div className="w-9 h-9 rounded-full bg-[#00A651] flex items-center justify-center text-white font-bold text-sm">C</div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-white text-sm font-semibold">Chidera O.</span>
+              <Shield size={12} className="text-[#00A651]" />
+            </div>
+            <div className="text-white/40 text-xs">300L Law · OAU · Verified student</div>
+          </div>
         </div>
       </blockquote>
     </div>
@@ -217,7 +228,7 @@ export const Signup: React.FC = () => {
                   </div>
                 </div>
                 <button type="submit" disabled={loading}
-                  className="w-full bg-[#0A2540] hover:bg-[#00A651] text-white font-bold py-3.5 rounded-full transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-60">
+                  className="w-full bg-[#00A651] hover:bg-[#008040] text-white font-bold py-3.5 rounded-full transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-60">
                   {loading ? 'Please wait...' : <><span>Continue</span><ArrowRight className="w-4 h-4" /></>}
                 </button>
               </form>

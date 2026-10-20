@@ -14,9 +14,9 @@ interface LogoMarkProps {
 /**
  * Grind brand mark.
  *
- * Inspired by the attached logo: a dark 3-D sphere with concentric ring lines
- * wrapping its surface, lit from the top-left, with a signature
- * violet-to-purple ambient glow emanating from the base.
+ * Inspired by the brand mark: a dark 3-D sphere with concentric ring lines
+ * wrapping its surface, lit from the top-left, with a signature green
+ * ambient glow emanating from the base (matches the app's #00A651 primary).
  *
  * Renders as a pure SVG — sharp at any size from favicon to splash hero.
  * The "framed" prop adds the near-black rounded-square app-icon shell.
@@ -53,15 +53,15 @@ export function LogoMark({
           <stop offset="100%" stopColor="#0a0a12" />
         </radialGradient>
 
-        {/* Violet glow pool at base */}
+        {/* Green glow pool at base — matches the app's #00A651 primary */}
         <radialGradient
           id={`${id}_glow`}
           cx="50%" cy="100%"
           r="60%"
           gradientUnits="objectBoundingBox"
         >
-          <stop offset="0%"   stopColor="#7B3FE4" stopOpacity="0.85" />
-          <stop offset="50%"  stopColor="#4B1FA0" stopOpacity="0.45" />
+          <stop offset="0%"   stopColor="#00A651" stopOpacity="0.9" />
+          <stop offset="50%"  stopColor="#00703A" stopOpacity="0.5" />
           <stop offset="100%" stopColor="#0a0a12"  stopOpacity="0"   />
         </radialGradient>
 
@@ -76,11 +76,11 @@ export function LogoMark({
           <stop offset="100%" stopColor="#ffffff" stopOpacity="0"    />
         </radialGradient>
 
-        {/* Ring tint — subtle purple sheen */}
+        {/* Ring tint — subtle green sheen */}
         <linearGradient id={`${id}_ring`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor="#9B6DFF" stopOpacity="0.7" />
-          <stop offset="50%"  stopColor="#6B3FBF" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="#9B6DFF" stopOpacity="0.7" />
+          <stop offset="0%"   stopColor="#34D07F" stopOpacity="0.7" />
+          <stop offset="50%"  stopColor="#00A651" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#34D07F" stopOpacity="0.7" />
         </linearGradient>
 
         <clipPath id={`${id}_clip`}>
@@ -119,12 +119,12 @@ export function LogoMark({
       {/* ── Top-left highlight ────────────────────────────────── */}
       <circle cx="50" cy="50" r="46" fill={`url(#${id}_hi)`} />
 
-      {/* ── Rim light — thin violet arc at bottom-right ─────── */}
+      {/* ── Rim light — thin green arc at bottom-right ─────── */}
       <circle
         cx="50" cy="50" r="44"
-        stroke="#8B5CF6"
+        stroke="#00E07A"
         strokeWidth="1.5"
-        strokeOpacity="0.35"
+        strokeOpacity="0.4"
         fill="none"
         strokeDasharray="60 200"
         strokeDashoffset="-80"
@@ -146,14 +146,14 @@ export function LogoMark({
         height: Math.round(size * 1.5),
         borderRadius: Math.round(size * 0.3),
         background: "radial-gradient(circle at 40% 30%, #1a1a2e 0%, #0d0d14 100%)",
-        boxShadow: `0 0 ${Math.round(size * 0.5)}px rgba(123,63,228,0.25), 0 ${Math.round(size * 0.1)}px ${Math.round(size * 0.4)}px rgba(0,0,0,0.7)`,
+        boxShadow: `0 0 ${Math.round(size * 0.5)}px rgba(0,166,81,0.3), 0 ${Math.round(size * 0.1)}px ${Math.round(size * 0.4)}px rgba(0,0,0,0.7)`,
       }}
     >
       {/* Subtle ambient inner glow */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse at 50% 110%, rgba(100,40,200,0.18) 0%, transparent 70%)",
+          background: "radial-gradient(ellipse at 50% 110%, rgba(0,166,81,0.16) 0%, transparent 70%)",
         }}
       />
       {mark}

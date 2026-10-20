@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, Bell, MessageSquare, Menu, X, Settings } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../lib/auth';
+import { LogoMark } from '../../app/components/brand/LogoMark';
 
 const NAV_LINKS = [
   { label: 'Marketplace', to: '/marketplace' },
@@ -41,9 +42,7 @@ export const Navbar = () => {
             {menuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
           <Link to="/" className="flex items-center gap-2 text-xl sm:text-2xl font-black text-black tracking-tight font-display">
-            <span className="w-8 h-8 rounded-lg bg-black flex items-center justify-center">
-              <span className="text-[var(--grind-nigeria)] font-black text-lg leading-none">G</span>
-            </span>
+            <LogoMark size={30} tone="dark" />
             Grind
           </Link>
         </div>

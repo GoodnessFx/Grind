@@ -1,7 +1,77 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, ChevronDown, Check, CheckCheck, Sparkles, User, ExternalLink } from 'lucide-react';
 import { supportApi, SupportMessage, getOrInitSupportUser } from '../../lib/supportApi';
+import { LogoMark } from '../../app/components/brand/LogoMark';
 import { Link } from 'react-router-dom';
+
+// ── Grind AI knowledge base ────────────────────────────────────────────────────
+// Instant answers for common questions. Human admins see every user message in
+// the Admin Console and can reply in realtime (SSE) — AI never blocks that.
+const AI_KB: { keys: string[]; answer: string }[] = [
+  {
+    keys: ['escrow', 'lock', 'safe', 'secure', 'protect'],
+    answer: 'Every payment on Grind locks in escrow 🛡️ — the money only lands in the doer\'s wallet when the poster approves the work. If person conduct well, open a dispute and our team go review am within 24 hours.',
+  },
+  {
+    keys: ['withdraw', 'cash out', 'bank', 'payout'],
+    answer: 'Withdrawals land for your bank in 1–2 hours (rare cases up to 24h). Go to Wallet → Withdraw, enter the amount and your bank details. Minimum withdrawal na ₦500.',
+  },
+  {
+    keys: ['verif', 'badge', 'student id', 'school email'],
+    answer: 'Verify with your school email or upload your student ID (Onboarding → Verification). The verified badge builds trust and brings more gigs your way.',
+  },
+  {
+    keys: ['post', 'create gig', 'publish', 'new gig'],
+    answer: 'To post a gig: tap "Post a Gig" from Home or the Gigs page. Fill in title, description, budget (min ₦500) and deadline. Scam keywords go hold the gig for review before e go live.',
+  },
+  {
+    keys: ['spin', 'daily spin', 'wheel'],
+    answer: 'Daily Spin dey your home page — one spin per day. You fit win ₦100–₦500 credit or a free gig post! Credit enters your wallet immediately. 🎡',
+  },
+  {
+    keys: ['refer', 'invite', 'referral'],
+    answer: 'Share your referral link (Settings → Refer & Earn). When your invite completes their first gig, you chop ₦500 straight to your wallet! 🎉',
+  },
+  {
+    keys: ['fee', 'charge', 'commission', 'percentage', 'cost'],
+    answer: 'Platform fee na 8% + 1.5% escrow fee on each gig. That\'s all — no hidden charges. The doer receives budget minus those two fees.',
+  },
+  {
+    keys: ['fund', 'deposit', 'top up', 'topup', 'card', 'paystack'],
+    answer: 'Fund your wallet: Wallet → Fund. You fit use card (Paystack) or bank transfer to your unique virtual account. Money lands instantly.',
+  },
+  {
+    keys: ['scam', 'fraud', 'report', 'suspicious'],
+    answer: 'Nor send money outside Grind, nor pay upfront for any gig. If person misbehave, tap the Report button (flag icon) on their profile, gig or chat — we go look am.',
+  },
+  {
+    keys: ['live', 'stream', 'spray', 'gift'],
+    answer: 'You fit watch campus live streams on /live and spray money (₦50–₦1,000) for creators. Creators fit even schedule streams ahead with reminders! 💸',
+  },
+  {
+    keys: ['grindscore', 'grind score', 'score', 'tier'],
+    answer: 'Your GrindScore na your CV 💪 — every completed gig, positive review and on-time delivery grows am. It determines your tier: Fresher → Padi → Plug → Oga → Big Boy/Girl.',
+  },
+  {
+    keys: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'how far', 'una'],
+    answer: 'Hello! 👋 I\'m Grind AI. Ask me anything about escrow, withdrawals, posting gigs, verification or referrals — I answer sharp sharp.',
+  },
+];
+
+function grindAiReply(text: string): string {
+  const lower = text.toLowerCase();
+  for (const entry of AI_KB) {
+    if (entry.keys.some((k) => lower.includes(k))) return entry.answer;
+  }
+  return "Hmm, I nor sure about that one 😅 — I don pass am to the Grind support team. A human go reply you here shortly. Meanwhile you fit ask me about: escrow, withdrawals, verification, referrals or daily spin.";
+}
+
+const AI_SUGGESTIONS = [
+  'How does escrow work?',
+  'How do I withdraw?',
+  'How do I get verified?',
+  'How does the daily spin work?',
+];
 
 function timeLabel(iso: string) {
   try {
@@ -17,6 +87,7 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<SupportMessage[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [aiTyping, setAiTyping] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'reconnecting'>('connected');
   const [unreadCount, setUnreadCount] = useState(0);
   const [guestNameInput, setGuestNameInput] = useState('');
@@ -105,9 +176,7 @@ export function ChatWidget() {
     }
   }, [messages, open]);
 
-  const handleSend = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    const body = input.trim();
+  const sendBody = async (body: string) => {
     if (!body || sending || !currentUser.userId) return;
 
     setSending(true);
@@ -127,12 +196,37 @@ export function ChatWidget() {
         });
       }
       setInput('');
+
+      // ── Grind AI instant answer (human admin still sees the message above
+      //    in the Admin Console and can reply in realtime) ──────────────────
+      setAiTyping(true);
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `ai_${Date.now()}`,
+            user_id: currentUser.userId,
+            sender: 'ai',
+            body: grindAiReply(body),
+            read: true,
+            created_at: new Date().toISOString(),
+          } as SupportMessage,
+        ]);
+        setAiTyping(false);
+      }, 900);
     } catch (err) {
       console.error('[Support] send error:', err);
     } finally {
       setSending(false);
     }
   };
+
+  const handleSend = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    await sendBody(input.trim());
+  };
+
+  const askSuggestion = (q: string) => sendBody(q);
 
   const handleSaveGuestName = () => {
     if (!guestNameInput.trim()) return;
@@ -148,16 +242,16 @@ export function ChatWidget() {
           className="w-[90vw] sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom duration-200"
           style={{ height: '480px' }}
         >
-          {/* Header */}
+          {/* Header — Grind AI */}
           <div className="bg-[#006400] text-white px-4 py-3.5 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center font-bold text-white shadow-inner">
-                <Sparkles size={18} className="text-green-200" />
+              <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center bg-white shrink-0">
+                <LogoMark size={22} tone="dark" />
               </div>
               <div>
                 <div className="text-white text-sm font-bold flex items-center gap-2">
-                  Grind Support
-                  <span className="text-[10px] bg-white/25 px-2 py-0.5 rounded-full font-medium">Campus 24/7</span>
+                  Grind AI
+                  <span className="text-[10px] bg-white/25 px-2 py-0.5 rounded-full font-medium">AI + human team</span>
                 </div>
                 <div className="text-white/80 text-xs flex items-center gap-1.5 mt-0.5">
                   <span
@@ -165,7 +259,7 @@ export function ChatWidget() {
                       connectionStatus === 'connected' ? 'bg-green-300 animate-pulse' : 'bg-amber-300'
                     }`}
                   />
-                  <span>{connectionStatus === 'connected' ? 'Active Realtime' : 'Reconnecting...'}</span>
+                  <span>{connectionStatus === 'connected' ? 'Online — answers instantly' : 'Reconnecting...'}</span>
                 </div>
               </div>
             </div>
@@ -222,26 +316,50 @@ export function ChatWidget() {
 
           {/* Messages list */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#F9FBFA]">
-            {messages.length === 0 ? (
+            {messages.length === 0 && !aiTyping ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-500">
-                <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-[#006400] mb-3">
-                  <MessageCircle size={24} />
+                <div className="w-14 h-14 rounded-full overflow-hidden bg-white border border-gray-200 flex items-center justify-center mb-3 shadow-sm">
+                  <LogoMark size={34} tone="dark" />
                 </div>
-                <p className="font-semibold text-gray-800 text-sm">Need help with a gig, payment, or escrow?</p>
-                <p className="text-xs text-gray-500 mt-1 max-w-[220px]">
-                  Our campus support team is online across Nigerian universities to help you!
+                <p className="font-bold text-gray-800 text-sm">Hi! I'm Grind AI 🇳🇬</p>
+                <p className="text-xs text-gray-500 mt-1 max-w-[240px]">
+                  Ask me anything about gigs, escrow, withdrawals, or spin — or tap a question below. Humans are here too.
                 </p>
+                <div className="flex flex-wrap justify-center gap-1.5 mt-4">
+                  {AI_SUGGESTIONS.map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => askSuggestion(q)}
+                      className="text-[11px] font-semibold bg-green-50 hover:bg-[#006400] hover:text-white text-[#006400] border border-green-200 px-3 py-1.5 rounded-full transition-colors"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : (
               messages.map((m) => {
                 const isMe = m.sender === 'user';
+                const isAi = m.sender === 'ai';
                 return (
                   <div key={m.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                    {!isMe && isAi && (
+                      <span className="text-[10px] font-bold text-[#006400] px-1 mb-0.5 flex items-center gap-1">
+                        <Sparkles size={10} /> Grind AI
+                      </span>
+                    )}
+                    {!isMe && !isAi && (
+                      <span className="text-[10px] font-semibold text-gray-400 px-1 mb-0.5">
+                        Support team
+                      </span>
+                    )}
                     <div
                       className={`max-w-[82%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm break-words ${
                         isMe
                           ? 'bg-[#006400] text-white rounded-br-sm'
-                          : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm'
+                          : isAi
+                            ? 'bg-green-50 text-gray-800 border border-green-200 rounded-bl-sm'
+                            : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm'
                       }`}
                     >
                       <p>{m.body}</p>
@@ -261,6 +379,15 @@ export function ChatWidget() {
                   </div>
                 );
               })
+            )}
+            {aiTyping && (
+              <div className="flex items-start">
+                <div className="bg-white border border-green-200 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#006400] animate-bounce" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#006400] animate-bounce" style={{ animationDelay: '0.15s' }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#006400] animate-bounce" style={{ animationDelay: '0.3s' }} />
+                </div>
+              </div>
             )}
             <div ref={bottomRef} />
           </div>
@@ -286,14 +413,14 @@ export function ChatWidget() {
         </div>
       )}
 
-      {/* Floating trigger button — compact support agent icon */}
+      {/* Floating trigger button — Grind AI */}
       <button
         onClick={() => setOpen(!open)}
-        aria-label="Campus Support"
-        title="Campus Support"
+        aria-label="Grind AI — Ask anything"
+        title="Ask Grind AI"
         className="group relative w-13 h-13 sm:w-14 sm:h-14 bg-[#006400] hover:bg-[#004d00] text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-200 active:scale-95 border-2 border-white/20 hover:scale-105"
       >
-        <MessageCircle size={24} />
+        {open ? <ChevronDown size={22} /> : <MessageCircle size={24} />}
         {unreadCount > 0 && !open && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center animate-bounce shadow">
             {unreadCount}
