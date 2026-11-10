@@ -14,6 +14,7 @@ import chatRouter, { initChat } from './routes/chat';
 import giftsRouter from './routes/gifts';
 import walletRouter, { handlePaystackWebhook } from './routes/wallet';
 import gigsRouter from './routes/gigs';
+import checkSpamRouter from './routes/checkSpam';
 import notificationsRouter from './routes/notifications';
 import requestsRouter from './routes/requests';
 import leaderboardRouter from './routes/leaderboard';
@@ -122,6 +123,7 @@ app.get(['/health', '/healthcheck', '/ping', '/api/health'], (_req, res) => {
 
 // ── API routes ────────────────────────────────────────────────────────────────
 app.use('/api/gigs',           gigsRouter);
+app.use('/api/gigs/check-spam', checkSpamRouter);
 app.use('/api/chat',           chatRouter);
 app.use('/api/wallet',         walletLimiter, walletRouter);
 app.use('/api/notifications',  notificationsRouter);

@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import {
   ChevronLeft, ArrowRight, Shield, CreditCard, Landmark,
   CheckCircle2, PenLine, Paintbrush2, Code2, BookOpen,
-  Truck, FlaskConical, Video, MoreHorizontal
+  Truck, FlaskConical, Video, MoreHorizontal, AlertTriangle,
+  Scissors, Smartphone, Printer, Wind, ShoppingBag, Utensils, Home
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "../../lib/utils";
+import { apiFetch } from "../../lib/auth";
 
 interface PostTaskProps {
   onBack: () => void;
@@ -20,6 +22,14 @@ const CATEGORIES = [
   { value: "Delivery", label: "Delivery", icon: Truck, color: "bg-orange-50 text-orange-600" },
   { value: "Research", label: "Research", icon: FlaskConical, color: "bg-yellow-50 text-yellow-600" },
   { value: "Video", label: "Video", icon: Video, color: "bg-red-50 text-red-600" },
+  { value: "Hostel Runs", label: "Hostel Runs", icon: Home, color: "bg-teal-50 text-teal-600" },
+  { value: "Food Pickup", label: "Food Pickup", icon: Utensils, color: "bg-amber-50 text-amber-600" },
+  { value: "Assignment", label: "Assignment", icon: PenLine, color: "bg-indigo-50 text-indigo-600" },
+  { value: "Braid and Barb", label: "Braid & Barb", icon: Scissors, color: "bg-rose-50 text-rose-600" },
+  { value: "Thrift", label: "Thrift", icon: ShoppingBag, color: "bg-purple-50 text-purple-600" },
+  { value: "Phone Repair", label: "Phone Repair", icon: Smartphone, color: "bg-cyan-50 text-cyan-600" },
+  { value: "Printing", label: "Printing", icon: Printer, color: "bg-gray-100 text-gray-600" },
+  { value: "Laundry", label: "Laundry", icon: Wind, color: "bg-sky-50 text-sky-600" },
   { value: "Other", label: "Other", icon: MoreHorizontal, color: "bg-gray-100 text-gray-600" },
 ];
 
@@ -34,6 +44,8 @@ export function PostTask({ onBack, onPostSuccess }: PostTaskProps) {
   const [duration, setDuration] = useState("3 days");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const [spamWarning, setSpamWarning] = useState<string | null>(null);
+  const [checkingSpam, setCheckingSpam] = useState(false);
 
   const budgetNum = parseFloat(budget) || 0;
   const platformFee = Math.round(budgetNum * 0.08);
@@ -43,6 +55,35 @@ export function PostTask({ onBack, onPostSuccess }: PostTaskProps) {
 
   const canNext1 = title.trim().length >= 5 && category && description.trim().length >= 20;
   const canNext2 = budgetNum >= 500;
+
+  const handleStep1Continue = async () => {
+    if (!canNext1) return;
+    setSpamWarning(null);
+    setCheckingSpam(true);
+    try {
+      const result = await apiFetch<{ flagged: boolean; reason?: string }>("/api/gigs/check-spam", {
+        method: "POST",
+        body: JSON.stringify({ title, description }),
+      });
+      if (result.flagged) {
+        setSpamWarning(result.reason ?? "E get one thing wey look like spam. Edit am before you continue.");
+        setCheckingSpam(false);
+        return;
+      }
+    } catch {
+      // If server down, do local check
+      const lower = `${title} ${description}`.toLowerCase();
+      const badWords = ["send me money", "pay upfront", "bitcoin", "crypto", "nudes", "adult"];
+      const found = badWords.find(w => lower.includes(w));
+      if (found) {
+        setSpamWarning(`Looks like spam: "${found}" — remove it and try again.`);
+        setCheckingSpam(false);
+        return;
+      }
+    }
+    setCheckingSpam(false);
+    setStep(2);
+  };
 
   const handlePay = (method: "wallet" | "card" | "transfer") => {
     if (method === "transfer") {
@@ -176,13 +217,24 @@ export function PostTask({ onBack, onPostSuccess }: PostTaskProps) {
               <textarea
                 placeholder="Describe exactly what needs to be done, format, and any requirements..."
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => { setDescription(e.target.value); setSpamWarning(null); }}
                 rows={5}
                 maxLength={500}
                 className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
               />
               <p className="text-[10px] text-gray-400 text-right mt-1">{description.length}/500</p>
             </div>
+
+            {/* Spam warning */}
+            {spamWarning && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-bold text-yellow-800 mb-0.5">E get issue with your post</p>
+                  <p className="text-xs text-yellow-700 leading-relaxed">{spamWarning}</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -334,11 +386,11 @@ export function PostTask({ onBack, onPostSuccess }: PostTaskProps) {
               </button>
             )}
             <button
-              onClick={() => setStep((s) => s + 1)}
-              disabled={step === 1 ? !canNext1 : !canNext2}
+              onClick={step === 1 ? handleStep1Continue : () => setStep((s) => s + 1)}
+              disabled={step === 1 ? (!canNext1 || checkingSpam) : !canNext2}
               className="flex-[2] h-13 bg-accent text-white rounded-2xl font-bold py-3.5 flex items-center justify-center gap-2 hover:bg-grind-accent-dark active:scale-95 transition-all shadow-lg shadow-accent/30 disabled:opacity-40 disabled:shadow-none"
             >
-              Continue <ArrowRight className="w-4 h-4" />
+              {checkingSpam ? "Checking…" : <>Continue <ArrowRight className="w-4 h-4" /></>}
             </button>
           </div>
         ) : null}

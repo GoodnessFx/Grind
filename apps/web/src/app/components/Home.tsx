@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Bell, Search, ChevronRight, Eye, EyeOff,
   Briefcase, Tv2, Users, TrendingUp, X, CheckCircle2,
-  ArrowUpRight, Zap, Gift, Sparkles
+  ArrowUpRight, Zap, Gift, Sparkles, Crown, Target, Edit2
 } from "lucide-react";
 import { TaskCard } from "./TaskCard";
 import { toast } from "sonner";
+import { apiFetch } from "../../lib/auth";
+import { cn } from "../../lib/utils";
 import type { Tab, UserData } from "../App";
 
 interface HomeProps {
@@ -41,6 +43,317 @@ const tierColors: Record<string, string> = {
   GOLD: "#F79009",
   DIAMOND: "#0BA5EC",
 };
+
+// ── Sapa Meter helpers ─────────────────────────────────────────────────────
+function getWeeklyEarned(transactions: UserData["transactions"]): number {
+  const now = new Date();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  monday.setHours(0, 0, 0, 0);
+  return transactions
+    .filter((t) => t.amount > 0 && new Date(t.date) >= monday)
+    .reduce((sum, t) => sum + t.amount, 0);
+}
+
+// ── Sapa Meter ─────────────────────────────────────────────────────────────
+function SapaMeter({ user, onUpdateUser }: { user: UserData; onUpdateUser: (u: Partial<UserData>) => void }) {
+  const weeklyEarned = getWeeklyEarned(user.transactions);
+  const target = (user as any).weeklyTarget ?? 10000;
+  const pct = Math.min((weeklyEarned / target) * 100, 100);
+  const toGo = Math.max(target - weeklyEarned, 0);
+  const isWeekEnd = new Date().getDay() === 0; // Sunday
+  const [editing, setEditing] = useState(false);
+  const [editVal, setEditVal] = useState(String(target));
+
+  const barColor = isWeekEnd && weeklyEarned === 0
+    ? "bg-red-500"
+    : pct > 80
+    ? "bg-yellow-400"
+    : "bg-[#00FF7F]";
+
+  const saveTarget = () => {
+    const num = parseInt(editVal.replace(/[^0-9]/g, ""), 10);
+    if (!num || num < 500) { toast.error("Set a target of at least ₦500"); return; }
+    onUpdateUser({ weeklyTarget: num } as any);
+    setEditing(false);
+    toast.success("Target don set!");
+  };
+
+  return (
+    <div className="px-4 mb-5">
+      <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🎯</span>
+            <h4 className="font-extrabold text-gray-900 text-sm">Sapa Meter</h4>
+          </div>
+          <button
+            onClick={() => setEditing((v) => !v)}
+            className="flex items-center gap-1 text-[11px] text-accent font-bold"
+          >
+            <Edit2 className="w-3 h-3" /> Edit target
+          </button>
+        </div>
+
+        {editing ? (
+          <div className="flex gap-2 mb-3">
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₦</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                value={editVal}
+                onChange={(e) => setEditVal(e.target.value)}
+                className="w-full pl-7 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-accent/20"
+              />
+            </div>
+            <button
+              onClick={saveTarget}
+              className="px-4 py-2.5 bg-accent text-white rounded-xl text-xs font-bold"
+            >
+              Save
+            </button>
+          </div>
+        ) : null}
+
+        <div className="flex items-end justify-between text-xs mb-2">
+          <span className="text-gray-500 font-medium">₦{weeklyEarned.toLocaleString()} earned this week</span>
+          <span className={cn("font-bold", pct >= 100 ? "text-accent" : "text-gray-400")}>
+            {pct >= 100 ? "🎉 Target reached!" : `₦${toGo.toLocaleString()} to go`}
+          </span>
+        </div>
+        <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className={cn("h-full rounded-full transition-all duration-700", barColor)}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <p className="text-[10px] text-gray-400 mt-1.5 font-medium">
+          Weekly target: ₦{target.toLocaleString()}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── Daily Spin ─────────────────────────────────────────────────────────────
+function DailySpin({ user, onUpdateUser }: { user: UserData; onUpdateUser: (u: Partial<UserData>) => void }) {
+  const [spinning, setSpinning] = useState(false);
+  const [prize, setPrize] = useState<null | { type: string; amount?: number; message: string }>(null);
+  const [showPrize, setShowPrize] = useState(false);
+  const [alreadySpun, setAlreadySpun] = useState(false);
+  const [nextSpin, setNextSpin] = useState("");
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    // Check local spin state first
+    try {
+      const spinData = JSON.parse(localStorage.getItem("grind_spin") ?? "{}");
+      const today = new Date().toDateString();
+      if (spinData.date === today) {
+        setAlreadySpun(true);
+        // Calculate time until midnight
+        const now = new Date();
+        const midnight = new Date();
+        midnight.setHours(24, 0, 0, 0);
+        const diff = midnight.getTime() - now.getTime();
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        setNextSpin(`${h}h ${m}m`);
+      }
+    } catch { /* ignore */ }
+
+    // Check server spin status
+    apiFetch<{ can_spin: boolean; next_spin_at?: string }>("/api/spin/status")
+      .then((data) => {
+        if (!data.can_spin) {
+          setAlreadySpun(true);
+          if (data.next_spin_at) {
+            const diff = new Date(data.next_spin_at).getTime() - Date.now();
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            setNextSpin(`${h}h ${m}m`);
+          }
+        }
+        setChecked(true);
+      })
+      .catch(() => setChecked(true));
+  }, []);
+
+  const DEMO_PRIZES = [
+    { type: "credit", amount: 200, message: "Gbam! ₦200 don land 🎉" },
+    { type: "credit", amount: 500, message: "Gbam! ₦500 don land 🎉" },
+    { type: "free_gig_post", message: "Free gig post don land! 🎁" },
+    { type: "try_again", message: "Try again tomorrow 😅" },
+  ];
+
+  const handleSpin = async () => {
+    if (alreadySpun || spinning) return;
+    setSpinning(true);
+    try {
+      const data = await apiFetch<{ prize: { type: string; amount?: number } }>("/api/spin", { method: "POST" });
+      const p = data.prize;
+      const msg =
+        p.type === "credit" ? `Gbam! ₦${p.amount} don land 🎉` :
+        p.type === "free_gig_post" ? "Free gig post don land! 🎁" :
+        "Try again tomorrow 😅";
+      setPrize({ ...p, message: msg });
+      if (p.type === "credit" && p.amount) {
+        onUpdateUser({ walletBalance: user.walletBalance + p.amount });
+      }
+    } catch {
+      // Demo fallback
+      const demo = DEMO_PRIZES[Math.floor(Math.random() * DEMO_PRIZES.length)];
+      setPrize(demo);
+      if (demo.type === "credit" && demo.amount) {
+        onUpdateUser({ walletBalance: user.walletBalance + demo.amount });
+      }
+    } finally {
+      // Save spin state to localStorage
+      try {
+        localStorage.setItem("grind_spin", JSON.stringify({ date: new Date().toDateString() }));
+      } catch { /* ignore */ }
+      setAlreadySpun(true);
+      setSpinning(false);
+      setShowPrize(true);
+      const now = new Date();
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0);
+      const diff = midnight.getTime() - now.getTime();
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      setNextSpin(`${h}h ${m}m`);
+    }
+  };
+
+  return (
+    <>
+      <div className="px-4 mb-5">
+        <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
+          <div className="flex items-center gap-3 mb-3">
+            <span className={cn("text-3xl transition-transform duration-300", spinning && "animate-spin")}>🎰</span>
+            <div className="flex-1">
+              <h4 className="font-extrabold text-gray-900 text-sm">Daily Spin</h4>
+              <p className="text-xs text-gray-500">One spin per day. You fit win credit or a free gig post.</p>
+            </div>
+          </div>
+
+          {alreadySpun ? (
+            <div className="bg-gray-50 rounded-2xl p-3 text-center">
+              <p className="text-sm font-semibold text-gray-600">Come back tomorrow</p>
+              {nextSpin && <p className="text-xs text-accent font-bold mt-0.5">⏱ {nextSpin} remaining</p>}
+            </div>
+          ) : (
+            <button
+              onClick={handleSpin}
+              disabled={spinning || !checked}
+              className="w-full h-12 bg-gradient-to-r from-accent to-[#008A43] text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-95 active:scale-95 transition-all shadow-lg shadow-accent/30 disabled:opacity-50"
+            >
+              {spinning ? (
+                <><span className="animate-spin">🎰</span> Spinning...</>
+              ) : (
+                <>🎯 Spin!</>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Prize modal */}
+      {showPrize && prize && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowPrize(false)} />
+          <div className="relative bg-white rounded-3xl p-8 text-center max-w-xs w-full shadow-2xl animate-in zoom-in duration-300">
+            <p className="text-5xl mb-4">
+              {prize.type === "credit" ? "💰" : prize.type === "free_gig_post" ? "🎁" : "🎲"}
+            </p>
+            <h3 className="text-xl font-extrabold text-gray-900 mb-2">{prize.message}</h3>
+            {prize.type === "credit" && (
+              <p className="text-sm text-gray-500 mb-5">Credited to your wallet!</p>
+            )}
+            {prize.type === "free_gig_post" && (
+              <p className="text-sm text-gray-500 mb-5">Your next gig post na free!</p>
+            )}
+            {prize.type === "try_again" && (
+              <p className="text-sm text-gray-500 mb-5">Your luck go change tomorrow 💪</p>
+            )}
+            <button
+              onClick={() => setShowPrize(false)}
+              className="w-full h-12 bg-accent text-white rounded-2xl font-bold"
+            >
+              Nice one!
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ── Seller of the Week ─────────────────────────────────────────────────────
+function SellerOfWeek({ campus }: { campus?: string }) {
+  const [seller, setSeller] = useState<any>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams({ limit: "1" });
+    if (campus) params.set("campus", campus);
+    apiFetch<{ leaderboard: any[] }>(`/api/leaderboard?${params.toString()}`)
+      .then((d) => {
+        if (d.leaderboard?.[0]) setSeller(d.leaderboard[0]);
+      })
+      .catch(() => {
+        // Fallback seeded seller
+        setSeller({
+          handle: "@ada_hustler",
+          full_name: "Ada O.",
+          grind_score: 892,
+          tier: "DIAMOND",
+          total_earned: 87000,
+        });
+      });
+  }, [campus]);
+
+  if (!seller) return null;
+
+  const initial = (seller.full_name ?? seller.handle ?? "?")[0].toUpperCase();
+
+  return (
+    <div className="px-4 mb-5">
+      <div className="bg-gradient-to-br from-[#0A2540] to-[#04111E] rounded-3xl p-5 relative overflow-hidden">
+        <div className="absolute -top-8 -right-8 w-40 h-40 bg-yellow-500/10 blur-3xl rounded-full pointer-events-none" />
+        <div className="flex items-center gap-2 mb-4">
+          <Crown className="w-4 h-4 text-yellow-400" />
+          <h4 className="text-white font-extrabold text-sm">Seller of the Week</h4>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-yellow-400 flex items-center justify-center text-[#0A2540] font-extrabold text-xl shadow-lg">
+            {initial}
+          </div>
+          <div className="flex-1">
+            <p className="text-white font-extrabold">{seller.full_name ?? seller.handle}</p>
+            <p className="text-white/60 text-xs">{seller.handle}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-yellow-400 text-[10px] font-bold bg-yellow-400/10 px-2 py-0.5 rounded-full">
+                {seller.tier ?? "GOLD"}
+              </span>
+              <span className="text-white/50 text-[10px]">GrindScore: {seller.grind_score ?? seller.score ?? "—"}</span>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-yellow-400 font-extrabold text-sm">₦{((seller.total_earned ?? 0) / 100).toLocaleString()}</p>
+            <p className="text-white/40 text-[10px]">this week</p>
+          </div>
+        </div>
+        <a
+          href={`/u/${(seller.handle ?? "").replace("@", "")}`}
+          className="mt-4 w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2.5 rounded-xl transition-all"
+        >
+          View profile <ArrowUpRight className="w-3.5 h-3.5" />
+        </a>
+      </div>
+    </div>
+  );
+}
 
 export function Home({ user, onNavigate, onPostTask, onTaskClick, onUpdateUser, onGoLive }: HomeProps) {
   const [balanceHidden, setBalanceHidden] = useState(false);
@@ -138,7 +451,7 @@ export function Home({ user, onNavigate, onPostTask, onTaskClick, onUpdateUser, 
             <div className="grid grid-cols-3 gap-2">
               {[
                 { label: "Add Money", icon: "＋" },
-                { label: "Transfer", icon: "�" },
+                { label: "Transfer", icon: "�" },
                 { label: "Withdraw", icon: "↙" },
               ].map((btn) => (
                 <button
@@ -154,6 +467,12 @@ export function Home({ user, onNavigate, onPostTask, onTaskClick, onUpdateUser, 
           </div>
         </div>
       </div>
+
+      {/* ── Sapa Meter ───────────────────────────────────────── */}
+      <SapaMeter user={user} onUpdateUser={onUpdateUser} />
+
+      {/* ── Daily Spin ───────────────────────────────────────── */}
+      <DailySpin user={user} onUpdateUser={onUpdateUser} />
 
       {/* ── Quick Actions ────────────────────────────────────── */}
       <div className="px-4 mb-5">
@@ -177,6 +496,9 @@ export function Home({ user, onNavigate, onPostTask, onTaskClick, onUpdateUser, 
           </div>
         </div>
       </div>
+
+      {/* ── Seller of the Week ─────────────────────────────── */}
+      <SellerOfWeek campus={(user as any).campus} />
 
       {/* ── Smart Pick Banner ────────────────────────────────── */}
       <div className="px-4 mb-5">

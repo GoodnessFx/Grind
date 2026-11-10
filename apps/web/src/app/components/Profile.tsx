@@ -3,10 +3,11 @@ import {
   Settings, Share2, TrendingUp, LogOut, Camera, Edit2,
   Check, Download, History, X as CloseIcon,
   Star, Shield, Briefcase, ChevronRight,
-  Crown, Clock, Users, Link2, MapPin, Grid, Hexagon, Medal
+  Crown, Clock, Users, Link2, MapPin, Grid, Flag
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "../../lib/utils";
+import { ReportModal } from "./ReportModal";
 import type { UserData } from "../App";
 
 interface ProfileProps {
@@ -38,6 +39,7 @@ export function Profile({ user, onLogout, onUpdate, onOpenSettings }: ProfilePro
   
   const [showHistory, setShowHistory] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [showReport, setShowReport] = useState(false);
 
   const handleSave = () => {
     const skillsArray = editedSkills.split(",").map(s => s.trim()).filter(Boolean);
@@ -291,8 +293,22 @@ export function Profile({ user, onLogout, onUpdate, onOpenSettings }: ProfilePro
               <Shield className="w-3 h-3" /> Campus Verified
             </p>
           </div>
-          <div className="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center shadow-[0_8px_16px_-4px_rgba(0,166,81,0.4)] border border-white/20">
-            <TrendingUp className="w-6 h-6 text-white" />
+          <div className="flex flex-col items-end gap-2">
+            <div className="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center shadow-[0_8px_16px_-4px_rgba(0,166,81,0.4)] border border-white/20">
+              <TrendingUp className="w-6 h-6 text-white" />
+            </div>
+            {/* Share card button */}
+            <button
+              onClick={() => {
+                const url = `${import.meta.env.VITE_API_URL ?? ""}/api/share-card/${user.id ?? "me"}`;
+                const a = document.createElement("a");
+                a.href = url; a.download = "grind-card.svg"; a.target = "_blank"; a.click();
+                toast.success("Share card don drop!");
+              }}
+              className="flex items-center gap-1 text-[10px] font-bold text-accent bg-grind-accent-light px-2.5 py-1 rounded-full"
+            >
+              <Download className="w-3 h-3" /> Share card
+            </button>
           </div>
         </div>
       </div>
@@ -325,6 +341,20 @@ export function Profile({ user, onLogout, onUpdate, onOpenSettings }: ProfilePro
             <p className="text-xs text-gray-500 font-medium mt-0.5">34 tasks completed</p>
           </div>
           <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-accent transition-colors" />
+        </button>
+
+        {/* Report user */}
+        <button
+          onClick={() => setShowReport(true)}
+          className="w-full bg-red-50 border border-red-100 rounded-2xl p-4 flex items-center gap-4 active:scale-[0.99] transition-all"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center">
+            <Flag className="w-5 h-5 text-red-500" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="font-extrabold text-red-600 text-[15px]">Report this user</p>
+            <p className="text-xs text-red-400 font-medium mt-0.5">Something nor right? Let us know</p>
+          </div>
         </button>
       </div>
 
@@ -373,8 +403,7 @@ export function Profile({ user, onLogout, onUpdate, onOpenSettings }: ProfilePro
       )}
 
       {/* ── Work History Modal ──────────────────────────────── */}
-      {showHistory && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+      {showHistory && (        <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowHistory(false)} />
           <div className="relative bg-white rounded-t-3xl px-5 pt-5 pb-8 max-h-[75vh] flex flex-col animate-in slide-in-from-bottom duration-300 shadow-[0_-8px_32px_rgba(0,0,0,0.1)]">
             <div className="flex items-center justify-between mb-5">
@@ -409,6 +438,10 @@ export function Profile({ user, onLogout, onUpdate, onOpenSettings }: ProfilePro
             </div>
           </div>
         </div>
+      )}
+
+      {showReport && (
+        <ReportModal targetType="user" targetId={user.id ?? "unknown"} onClose={() => setShowReport(false)} />
       )}
     </div>
   );

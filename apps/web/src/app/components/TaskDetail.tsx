@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import {
   ChevronLeft, Share2, Shield, Clock, Tag, Star,
-  CheckCircle2, MessageCircle, Send, X, User
+  CheckCircle2, MessageCircle, Send, X, Flag, Download
 } from "lucide-react";
 import { toast } from "sonner";
 import { ALL_TASKS } from "./TaskBoard";
 import { cn } from "../../lib/utils";
+import { ReportModal } from "./ReportModal";
 import type { UserData } from "../App";
 
 interface TaskDetailProps {
@@ -35,6 +36,8 @@ export function TaskDetail({ taskId, user, onBack }: TaskDetailProps) {
   const [messages, setMessages] = useState(CHAT_SEED);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [pitch, setPitch] = useState("");
+  const [showReport, setShowReport] = useState(false);
+  const [gigStatus] = useState<"open"|"completed">("open"); // in real app comes from API
 
   const handleShare = () => {
     navigator.clipboard.writeText(`https://grind.market/gig/${task.id}`);
@@ -74,7 +77,6 @@ export function TaskDetail({ taskId, user, onBack }: TaskDetailProps) {
 
       {/* ── Scrollable content ──────────────────────────────── */}
       <div className="flex-1 overflow-y-auto px-5 py-5 pb-36">
-        {/* Poster card */}
         <div className="flex items-center gap-3 mb-5">
           <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold text-lg">
             {task.posterHandle?.[1]?.toUpperCase() ?? "?"}
@@ -144,12 +146,51 @@ export function TaskDetail({ taskId, user, onBack }: TaskDetailProps) {
             <Shield className="w-4 h-4 text-white" />
           </div>
           <div>
-            <p className="text-sm font-bold text-gray-800 mb-0.5">Trustless Escrow Active</p>
+            <p className="text-sm font-bold text-gray-800 mb-0.5">Secured by escrow</p>
             <p className="text-xs text-gray-600 leading-relaxed">
-              Payment is locked in a smart contract. Funds are released only when you approve the work, or auto-refunded after 48h of no response.
+              Payment locks in a smart contract. Funds release only when you approve the work, or auto-refund after 48h of no response.
             </p>
           </div>
         </div>
+
+        {/* Share your win — shown when gig is completed */}
+        {gigStatus === "completed" && (
+          <div className="bg-[#0D0D14] rounded-2xl p-5 mb-5">
+            <p className="text-white font-extrabold text-base mb-1">Share your win 🎉</p>
+            <p className="text-white/60 text-xs mb-4">
+              You earned ₦{Math.round(task.price * 0.92).toLocaleString()} on Grind. Share it!
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  const url = `${import.meta.env.VITE_API_URL ?? ""}/api/share-card/${user.id ?? "me"}`;
+                  const a = document.createElement("a");
+                  a.href = url; a.download = "grind-win.svg"; a.target = "_blank"; a.click();
+                  toast.success("Share card downloading!");
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-3 rounded-xl transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" /> Download card
+              </button>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(`I just earned ₦${Math.round(task.price * 0.92).toLocaleString()} on Grind! Way for poor people. grind.market`)}`}
+                target="_blank" rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-1.5 bg-[#25D366] hover:bg-[#1ebe57] text-white text-xs font-bold py-3 rounded-xl transition-colors"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                WhatsApp
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* Report link */}
+        <button
+          onClick={() => setShowReport(true)}
+          className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors mb-6"
+        >
+          <Flag className="w-3.5 h-3.5" /> Report this gig
+        </button>
 
         {/* About the poster */}
         <div className="bg-white border border-gray-100 rounded-2xl p-4">
@@ -189,8 +230,7 @@ export function TaskDetail({ taskId, user, onBack }: TaskDetailProps) {
         </div>
       </div>
 
-      {/* ── Apply Modal ─────────────────────────────────────── */}
-      {showApplyModal && (
+      {/* ── Apply Modal ─────────────────────────────────────── */}      {showApplyModal && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowApplyModal(false)} />
           <div className="relative bg-white rounded-t-3xl px-5 pt-5 pb-8 animate-in slide-in-from-bottom duration-300">
@@ -232,7 +272,7 @@ export function TaskDetail({ taskId, user, onBack }: TaskDetailProps) {
               </div>
               <div className="flex-1">
                 <p className="font-bold text-sm text-gray-900">{task.posterHandle}</p>
-                <p className="text-[10px] text-green-500 font-medium">� Online</p>
+                <p className="text-[10px] text-green-500 font-medium">� Online</p>
               </div>
               <button onClick={() => setShowChat(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
                 <X className="w-4 h-4 text-gray-600" />
@@ -275,6 +315,10 @@ export function TaskDetail({ taskId, user, onBack }: TaskDetailProps) {
             </div>
           </div>
         </div>
+      )}
+
+      {showReport && (
+        <ReportModal targetType="gig" targetId={task.id} onClose={() => setShowReport(false)} />
       )}
     </div>
   );

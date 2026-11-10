@@ -1,6 +1,8 @@
-import React from "react";
-import { Clock, Shield } from "lucide-react";
+import React, { useState } from "react";
+import { Clock, Shield, MoreVertical, Share2, Flag } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { ReportModal } from "./ReportModal";
+import { toast } from "sonner";
 
 export interface TaskCardData {
   id: number;
@@ -39,68 +41,110 @@ const categoryColors: Record<string, string> = {
 import { Users } from "lucide-react";
 
 export function TaskCard({ category, price, title, description, posterHandle, posterTier, posterScore, deadline, status, squadSize, onClick }: TaskCardData) {
-  const urgent = deadline.includes("hour") || deadline.includes("1 day");
+  const urgent = deadline.toLowerCase().includes("hour") || deadline.includes("1 day") || deadline.includes("Urgent");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(`https://grind.market/gig/...`).catch(() => {});
+    toast.success("Link copied!");
+    setMenuOpen(false);
+  };
 
   return (
-    <button
-      onClick={onClick}
-      className="w-full bg-white border border-gray-100 rounded-2xl p-4 text-left hover:shadow-md active:scale-[0.99] transition-all shadow-sm"
-    >
-      {/* Top row */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex gap-2 items-center">
-          <span className={cn("px-2.5 py-1 rounded-full text-[11px] font-semibold", categoryColors[category] ?? "bg-gray-100 text-gray-600")}>
-            {category}
-          </span>
-          {squadSize && (
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100">
-              <Users className="w-3 h-3" />
-              Squad of {squadSize}
-            </span>
+    <>
+      <button
+        onClick={onClick}
+        className="w-full bg-white border border-gray-100 rounded-2xl p-4 text-left hover:shadow-md active:scale-[0.99] transition-all shadow-sm relative"
+      >
+        {/* ⋯ menu top-right */}
+        <div className="absolute top-3 right-3 z-10">
+          <button
+            onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
+            className="w-7 h-7 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center transition-colors"
+          >
+            <MoreVertical className="w-3.5 h-3.5 text-gray-400" />
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-8 bg-white border border-gray-100 rounded-2xl shadow-xl z-20 min-w-[140px] overflow-hidden py-1">
+              <button
+                onClick={handleShare}
+                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                <Share2 className="w-3.5 h-3.5 text-gray-400" /> Share gig
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setMenuOpen(false); setShowReport(true); }}
+                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50"
+              >
+                <Flag className="w-3.5 h-3.5" /> Report gig
+              </button>
+            </div>
           )}
         </div>
-        <div className="flex items-center gap-1">
-          <span className="text-base font-extrabold text-gray-900">₦{price.toLocaleString()}</span>
-          <span className="text-[10px] font-bold text-accent bg-grind-accent-light px-1.5 py-0.5 rounded-md">cNGN</span>
-        </div>
-      </div>
 
-      {/* Title */}
-      <h3 className="font-bold text-gray-900 text-sm mb-1 line-clamp-2 leading-snug">{title}</h3>
-      <p className="text-xs text-gray-500 line-clamp-1 mb-3">{description}</p>
-
-      {/* Bottom row */}
-      <div className="flex items-center justify-between">
-        {/* Poster info */}
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center text-xs font-bold text-accent">
-            {posterHandle?.[1]?.toUpperCase() ?? "?"}
+        {/* Top row */}
+        <div className="flex items-center justify-between mb-3 pr-8">
+          <div className="flex gap-2 items-center flex-wrap">
+            <span className={cn("px-2.5 py-1 rounded-full text-[11px] font-semibold", categoryColors[category] ?? "bg-gray-100 text-gray-600")}>
+              {category}
+            </span>
+            {urgent && (
+              <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-yellow-400 text-yellow-900">
+                ⚡ Urgent Now
+              </span>
+            )}
+            {squadSize && (
+              <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100">
+                <Users className="w-3 h-3" /> Squad of {squadSize}
+              </span>
+            )}
           </div>
-          <div>
-            <span className="text-xs font-semibold text-gray-700">{posterHandle}</span>
-            <div className="flex items-center gap-1 mt-0.5">
-              <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tierColors[posterTier] }} />
-              <span className="text-[10px] text-gray-400">{posterTier}</span>
+          <div className="flex items-center gap-1">
+            <span className="text-base font-extrabold text-gray-900">₦{price.toLocaleString()}</span>
+            <span className="text-[10px] font-bold text-accent bg-grind-accent-light px-1.5 py-0.5 rounded-md">cNGN</span>
+          </div>
+        </div>
+
+        {/* Title */}
+        <h3 className="font-bold text-gray-900 text-sm mb-1 line-clamp-2 leading-snug pr-2">{title}</h3>
+        <p className="text-xs text-gray-500 line-clamp-1 mb-3">{description}</p>
+
+        {/* Bottom row */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center text-xs font-bold text-accent">
+              {posterHandle?.[1]?.toUpperCase() ?? "?"}
+            </div>
+            <div>
+              <span className="text-xs font-semibold text-gray-700">{posterHandle}</span>
+              <div className="flex items-center gap-1 mt-0.5">
+                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tierColors[posterTier] }} />
+                <span className="text-[10px] text-gray-400">{posterTier}</span>
+              </div>
             </div>
           </div>
+          <div className={cn(
+            "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold",
+            urgent ? "bg-yellow-50 text-yellow-700" : "bg-green-50 text-green-600"
+          )}>
+            <Clock className="w-3 h-3" />
+            {deadline}
+          </div>
         </div>
 
-        {/* Deadline */}
-        <div className={cn(
-          "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold",
-          urgent ? "bg-red-50 text-red-500" : "bg-green-50 text-green-600"
-        )}>
-          <Clock className="w-3 h-3" />
-          {deadline}
+        {/* Escrow badge */}
+        <div className="mt-3 pt-3 border-t border-gray-50 flex items-center gap-1.5">
+          <Shield className="w-3 h-3 text-accent" />
+          <span className="text-[10px] text-gray-400 font-medium">Secured by escrow</span>
+          {status && <span className="ml-auto text-[10px] font-semibold text-accent bg-grind-accent-light px-2 py-0.5 rounded-full">{status}</span>}
         </div>
-      </div>
+      </button>
 
-      {/* Escrow badge */}
-      <div className="mt-3 pt-3 border-t border-gray-50 flex items-center gap-1.5">
-        <Shield className="w-3 h-3 text-accent" />
-        <span className="text-[10px] text-gray-400 font-medium">Protected by escrow</span>
-        {status && <span className="ml-auto text-[10px] font-semibold text-accent bg-grind-accent-light px-2 py-0.5 rounded-full">{status}</span>}
-      </div>
-    </button>
+      {showReport && (
+        <ReportModal targetType="gig" targetId={0} onClose={() => setShowReport(false)} />
+      )}
+    </>
   );
 }

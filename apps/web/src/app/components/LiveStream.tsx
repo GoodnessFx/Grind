@@ -41,6 +41,11 @@ const MOCK_STREAMS: Stream[] = [
   { id: "5", title: "Q&A: Getting your first campus gig", creator: "@chidi_grind", viewers: 156, category: "Talk", thumbnail: "", isLive: false, tier: "GOLD" },
 ];
 
+const SCHEDULED_STREAMS = [
+  { id: "s1", title: "How to Price Your Gigs Right", creator: "@ada_tech", category: "Talk", scheduled_for: new Date(Date.now() + 2 * 3600 * 1000).toISOString() },
+  { id: "s2", title: "Figma for Beginners — Live Workshop", creator: "@fatimah.design", category: "Design", scheduled_for: new Date(Date.now() + 24 * 3600 * 1000).toISOString() },
+];
+
 const CHAT_COLORS = ["text-yellow-500", "text-pink-500", "text-blue-500", "text-green-500", "text-purple-500", "text-orange-500"];
 
 const SEED_CHAT: ChatMessage[] = [
@@ -344,6 +349,52 @@ export function LiveStream({ user, onUpdateUser, onBack }: LiveStreamProps) {
             ))}
           </div>
         </div>
+
+        {/* Scheduled streams */}
+        {SCHEDULED_STREAMS.length > 0 && (
+          <div className="px-4 mt-4 mb-2">
+            <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 bg-blue-500 rounded-full" />
+              Coming Up
+            </h3>
+            <div className="space-y-2">
+              {SCHEDULED_STREAMS.map((s) => {
+                const reminderId = `remind_${s.id}`;
+                const reminded = !!localStorage.getItem(reminderId);
+                const [isReminded, setIsReminded] = React.useState(reminded);
+                const scheduledDate = new Date(s.scheduled_for);
+                const timeStr = scheduledDate.toLocaleString("en-NG", { weekday: "short", hour: "2-digit", minute: "2-digit" });
+
+                return (
+                  <div key={s.id} className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+                    <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
+                      <Tv2 className="w-5 h-5 text-blue-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900 text-sm line-clamp-1">{s.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{s.creator} · {timeStr}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        localStorage.setItem(reminderId, "1");
+                        setIsReminded(true);
+                        toast.success("Reminder don set! We go ping you 🔔");
+                      }}
+                      className={cn(
+                        "shrink-0 text-xs font-bold px-3 py-2 rounded-xl transition-all",
+                        isReminded
+                          ? "bg-grind-accent-light text-accent"
+                          : "bg-gray-100 text-gray-700 hover:bg-accent/10 hover:text-accent"
+                      )}
+                    >
+                      {isReminded ? "✓ Reminded" : "Remind me"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Featured stream */}
         {filtered[0] && (
@@ -770,6 +821,22 @@ export function LiveStream({ user, onUpdateUser, onBack }: LiveStreamProps) {
               </div>
             </div>
           )}
+
+          {/* Schedule toggle */}
+          <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
+            <p className="text-sm font-bold text-blue-800 mb-1">Schedule instead of going live now?</p>
+            <p className="text-xs text-blue-600 mb-3">Pick a time and your stream will appear in the "Coming Up" section.</p>
+            <input
+              type="datetime-local"
+              className="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-400/20"
+              min={new Date().toISOString().slice(0, 16)}
+              onChange={(e) => {
+                if (e.target.value) {
+                  toast.success("Stream scheduled! It will show in Coming Up.");
+                }
+              }}
+            />
+          </div>
 
           <button
             onClick={handleBecomeCreator}

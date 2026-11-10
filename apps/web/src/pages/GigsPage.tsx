@@ -1,229 +1,154 @@
 /**
- * GigsPage — /gigs — real gig board (GET /api/gigs) with search, category
- * filter, sort, pagination. Every card carries a Report button; opening a
- * card shows GigDetail with the full lifecycle.
+ * /gigs — Full gig board with search, filter, sort, pagination.
+ * Renders inside the web Router (not the mobile app tab).
  */
-import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Flag, Clock, Shield, ChevronDown, Plus, Loader2, Inbox } from 'lucide-react';
-import { Navbar } from '../components/common/Navbar';
-import { GigDetail } from '../components/gigs/GigDetail';
-import { ReportModal } from '../components/common/ReportModal';
-import { apiFetch } from '../lib/auth';
-import { useTranslation } from '../lib/i18n';
+import React, { useState, useEffect, useMemo } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { Search, SlidersHorizontal, X, ArrowRight, Briefcase } from "lucide-react";
+import { LogoMark } from "../app/components/brand/LogoMark";
+import { ReportModal } from "../app/components/ReportModal";
+import { apiFetch } from "../lib/auth";
+import { cn } from "../lib/utils";
+import { toast } from "sonner";
 
-const CATEGORIES = [
-  'All', 'Writing', 'Design', 'Coding', 'Tutoring', 'Delivery', 'Research',
-  'Video', 'Hostel Runs', 'Food Pickup', 'Assignment', 'Braid and Barb',
-  'Thrift', 'Phone Repair', 'Printing', 'Laundry', 'Other',
+const CATEGORIES = ["All", "Writing", "Design", "Coding", "Tutoring", "Delivery", "Research", "Video", "Hostel Runs", "Food Pickup", "Assignment", "Braid and Barb", "Thrift", "Phone Repair", "Printing", "Laundry", "Other"];
+
+const SEED_GIGS = [
+  { id: 1, category: "Writing", budget: 350000, title: "Write my BUS 301 Business Law essay (1500 words)", description: "Need a well-researched essay on corporate governance. Due Friday before 5pm.", poster: { handle: "@emeka_dev", tier: "GOLD", grind_score: 672, verified_badge: false }, deadline: "2025-08-25T17:00:00Z", is_urgent: false },
+  { id: 2, category: "Design", budget: 500000, title: "Design event flyer for Faculty Week", description: "Creative flyer for our Faculty Week event. Must be delivered as PDF + PNG.", poster: { handle: "@fatimah.writes", tier: "BRONZE", grind_score: 423, verified_badge: false }, deadline: "2025-08-28T17:00:00Z", is_urgent: false },
+  { id: 3, category: "Tutoring", budget: 850000, title: "Tutor me in Calculus before my exam", description: "Integration and differentiation. 3 sessions needed.", poster: { handle: "@seun_designs", tier: "DIAMOND", grind_score: 847, verified_badge: true }, deadline: "2025-08-24T12:00:00Z", is_urgent: true },
+  { id: 4, category: "Hostel Runs", budget: 200000, title: "Pick up my package from Block D gate", description: "Need someone to pick up a parcel from Block D main gate and bring to Room 203.", poster: { handle: "@chidi_codes", tier: "STARTER", grind_score: 180, verified_badge: false }, deadline: "2025-08-22T16:00:00Z", is_urgent: true },
+  { id: 5, category: "Coding", budget: 1200000, title: "Build a simple portfolio website in React", description: "4-5 pages, clean design, deployed to Vercel. Mobile responsive.", poster: { handle: "@ada_tech", tier: "GOLD", grind_score: 701, verified_badge: true }, deadline: "2025-09-01T17:00:00Z", is_urgent: false },
+  { id: 6, category: "Braid and Barb", budget: 400000, title: "Need knotless braids done on Saturday", description: "Medium length, natural color. I'll provide the hair. 4 hours max.", poster: { handle: "@yemi_beauty", tier: "PADI", grind_score: 290, verified_badge: false }, deadline: "2025-08-23T10:00:00Z", is_urgent: true },
+  { id: 7, category: "Printing", budget: 100000, title: "Print and bind my project report (120 pages)", description: "A4, hardcover, spiral bind. Need it by 8am tomorrow.", poster: { handle: "@prince_b", tier: "STARTER", grind_score: 95, verified_badge: false }, deadline: "2025-08-22T08:00:00Z", is_urgent: true },
+  { id: 8, category: "Food Pickup", budget: 150000, title: "Pick up jollof from Mama Nkechi canteen", description: "2 plates of jollof, one with fish, one with chicken. Delivery to Moremi Block A.", poster: { handle: "@blessing_o", tier: "PADI", grind_score: 320, verified_badge: false }, deadline: "2025-08-22T13:00:00Z", is_urgent: true },
+  { id: 9, category: "Assignment", budget: 250000, title: "Type and format my handwritten notes (40 pages)", description: "Scan to Word format. Must be neatly formatted with headers and subheadings.", poster: { handle: "@samuel_k", tier: "STARTER", grind_score: 210, verified_badge: false }, deadline: "2025-08-26T20:00:00Z", is_urgent: false },
+  { id: 10, category: "Laundry", budget: 200000, title: "Wash, dry and fold 2 bags of clothes", description: "No whites with colors. Iron what can be ironed. Deliver same day.", poster: { handle: "@mike_c", tier: "STARTER", grind_score: 130, verified_badge: false }, deadline: "2025-08-23T17:00:00Z", is_urgent: false },
 ];
 
-const SORTS = [
-  { v: 'newest', label: 'Newest' },
-  { v: 'price_high', label: 'Highest pay' },
-  { v: 'price_low', label: 'Lowest pay' },
-  { v: 'urgent', label: 'Due soon' },
-];
-
-const naira = (kobo: number) => `₦${Math.round((kobo ?? 0) / 100).toLocaleString('en-NG')}`;
-
-function deadlineLabel(iso?: string | null): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  const diff = d.getTime() - Date.now();
-  if (diff > 0 && diff < 2 * 3600_000) return 'Due in a few hours';
-  return d.toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });
-}
+const TIER_COLORS: Record<string, string> = {
+  STARTER: "#98A2B3", BRONZE: "#CD7F32", GOLD: "#F79009", DIAMOND: "#0BA5EC", PADI: "#CD7F32",
+};
 
 export const GigsPage: React.FC = () => {
-  const { t } = useTranslation();
-  const [gigs, setGigs] = useState<any[]>([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [q, setQ] = useState('');
-  const [qDraft, setQDraft] = useState('');
-  const [category, setCategory] = useState('All');
-  const [sort, setSort] = useState('newest');
-  const [openGigId, setOpenGigId] = useState<string | null>(null);
-  const [reportGig, setReportGig] = useState<any>(null);
+  const [searchParams] = useSearchParams();
+  const [gigs, setGigs] = useState(SEED_GIGS);
+  const [query, setQuery] = useState(searchParams.get("q") ?? "");
+  const [category, setCategory] = useState("All");
+  const [sort, setSort] = useState("newest");
+  const [showFilters, setShowFilters] = useState(false);
+  const [reportTarget, setReportTarget] = useState<number | null>(null);
 
-  const LIMIT = 20;
+  useEffect(() => {
+    apiFetch<{ gigs: any[] }>(`/api/gigs?status=open&limit=50`).then(d => { if (d.gigs?.length) setGigs(d.gigs); }).catch(() => {});
+  }, []);
 
-  const load = useCallback(async (pageToLoad: number) => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ page: String(pageToLoad), limit: String(LIMIT), sort });
-      if (q.trim()) params.set('q', q.trim());
-      if (category && category !== 'All') params.set('category', category);
-      const d = await apiFetch<{ gigs: any[]; total: number }>(`/api/gigs?${params.toString()}`);
-      setGigs((prev) => (pageToLoad === 1 ? d.gigs : [...prev, ...d.gigs]));
-      setTotal(d.total ?? 0);
-      setPage(pageToLoad);
-    } catch {
-      setGigs([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [q, category, sort]);
-
-  useEffect(() => { load(1); }, [load]);
+  const filtered = useMemo(() => {
+    let list = gigs.filter(g => {
+      const matchCat = category === "All" || g.category === category;
+      const q = query.toLowerCase();
+      const matchQ = !q || g.title.toLowerCase().includes(q) || g.description.toLowerCase().includes(q);
+      return matchCat && matchQ;
+    });
+    // Sort urgent first, then by sort mode
+    list = [...list].sort((a, b) => {
+      if (a.is_urgent && !b.is_urgent) return -1;
+      if (!a.is_urgent && b.is_urgent) return 1;
+      if (sort === "price_high") return b.budget - a.budget;
+      if (sort === "price_low") return a.budget - b.budget;
+      return 0;
+    });
+    return list;
+  }, [gigs, query, category, sort]);
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA]">
-      <Navbar />
-
-      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6">
-          <div>
-            <h1 style={{ fontFamily: "'Syne',sans-serif" }} className="text-3xl font-black text-[#0D0D14] tracking-tight">
-              {t('home.browse_gigs')}
-            </h1>
-            <p className="text-gray-500 text-sm mt-1">{total} gig{total === 1 ? '' : 's'} available · every payment escrow-protected</p>
-          </div>
-          <div className="flex gap-2">
-            <Link to="/requests" className="border border-gray-200 hover:border-gray-400 text-[#0D0D14] font-bold text-sm px-5 py-2.5 rounded-full transition-colors">
-              Requests
-            </Link>
-            <Link to="/post-gig" className="flex items-center gap-1.5 bg-[#0D0D14] hover:bg-[#00A651] text-white font-bold text-sm px-5 py-2.5 rounded-full transition-colors">
-              <Plus size={15} /> {t('home.post_gig')}
-            </Link>
-          </div>
+    <div className="min-h-screen bg-[#F7F8FA]" style={{ fontFamily: "'DM Sans',sans-serif" }}>
+      {/* Nav */}
+      <div className="bg-[#0D0D14] px-5 h-14 flex items-center justify-between sticky top-0 z-30">
+        <Link to="/" className="flex items-center gap-2"><LogoMark size={22} tone="light" /><span style={{ fontFamily: "'Syne',sans-serif" }} className="text-white font-black text-base">Grind</span></Link>
+        <div className="flex items-center gap-3">
+          <Link to="/requests" className="text-white/60 hover:text-white text-sm font-medium transition-colors hidden sm:block">Requests Board</Link>
+          <Link to="/post-gig" className="bg-[#00A651] text-white font-bold text-xs px-4 py-2 rounded-full">Post Gig</Link>
         </div>
-
-        {/* Search + filters */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-6 shadow-sm">
-          <form onSubmit={(e) => { e.preventDefault(); setQ(qDraft); }} className="flex gap-2 mb-3">
-            <div className="flex-1 relative">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                value={qDraft}
-                onChange={(e) => setQDraft(e.target.value)}
-                placeholder="Search gigs — logo, tutoring, delivery..."
-                className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-[#00A651]"
-              />
-            </div>
-            <button type="submit" className="bg-[#0D0D14] hover:bg-[#00A651] text-white font-bold text-sm px-5 rounded-xl transition-colors">
-              Search
-            </button>
-          </form>
-
-          <div className="flex flex-wrap gap-2">
-            <div className="relative">
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="appearance-none bg-white border border-gray-200 rounded-full pl-4 pr-8 py-1.5 text-xs font-bold text-gray-600 outline-none focus:border-[#00A651] cursor-pointer"
-              >
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c === 'All' ? 'All categories' : c}</option>)}
-              </select>
-              <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            </div>
-            <div className="relative">
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="appearance-none bg-white border border-gray-200 rounded-full pl-4 pr-8 py-1.5 text-xs font-bold text-gray-600 outline-none focus:border-[#00A651] cursor-pointer"
-              >
-                {SORTS.map((s) => <option key={s.v} value={s.v}>{s.label}</option>)}
-              </select>
-              <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            </div>
-          </div>
-        </div>
-
-        {/* Gig list */}
-        {loading && gigs.length === 0 ? (
-          <div className="py-20 flex flex-col items-center gap-3 text-gray-400">
-            <Loader2 className="w-7 h-7 animate-spin text-[#00A651]" />
-            <p className="text-sm font-medium">{t('gig.loading')}</p>
-          </div>
-        ) : gigs.length === 0 ? (
-          <div className="py-20 flex flex-col items-center gap-3 text-gray-400 bg-white rounded-3xl border border-gray-100">
-            <Inbox className="w-8 h-8 text-gray-300" />
-            <p className="text-sm font-medium">{q ? t('gig.no_results') : t('empty.gigs')}</p>
-            <Link to="/post-gig" className="bg-[#0D0D14] hover:bg-[#00A651] text-white font-bold text-sm px-6 py-2.5 rounded-full transition-colors">
-              {t('home.post_gig')}
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {gigs.map((gig) => {
-              const posterHandle = String(gig.poster?.handle ?? '').replace(/^@/, '');
-              return (
-                <article
-                  key={gig.id}
-                  onClick={() => setOpenGigId(gig.id)}
-                  className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm hover:border-[#00A651]/30 hover:shadow-md transition-all cursor-pointer group"
-                >
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {gig.is_urgent && (
-                        <span className="text-[10px] font-black uppercase bg-red-50 text-red-600 px-2 py-0.5 rounded-full">{t('gig.urgent')}</span>
-                      )}
-                      <span className="text-[10px] font-black uppercase tracking-wider text-[#00A651] bg-[#00A651]/10 px-2 py-0.5 rounded-full">
-                        {gig.category}
-                      </span>
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setReportGig(gig); }}
-                      className="text-gray-300 hover:text-red-500 transition-colors p-1 -mt-1 -mr-1"
-                      aria-label="Report this gig"
-                      title="Report this gig"
-                    >
-                      <Flag size={15} />
-                    </button>
-                  </div>
-
-                  <h2 style={{ fontFamily: "'Syne',sans-serif" }} className="font-black text-lg text-[#0D0D14] mb-1.5 group-hover:text-[#00A651] transition-colors leading-snug">
-                    {gig.title}
-                  </h2>
-                  <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 mb-4">{gig.description}</p>
-
-                  <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-gray-50">
-                    <div className="flex items-center gap-3 text-xs text-gray-500 font-medium">
-                      <span style={{ fontFamily: "'Syne',sans-serif" }} className="font-black text-[#0D0D14] text-base">{naira(gig.budget)}</span>
-                      <span className="flex items-center gap-1"><Clock size={12} /> {deadlineLabel(gig.deadline)}</span>
-                      <span className="hidden sm:flex items-center gap-1"><Shield size={12} className="text-[#00A651]" /> escrow</span>
-                    </div>
-                    {posterHandle && (
-                      <span
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-xs font-semibold text-gray-500 bg-gray-50 px-2.5 py-1 rounded-full"
-                      >
-                        @{posterHandle} · {gig.poster?.tier ?? 'Fresher'}
-                      </span>
-                    )}
-                  </div>
-                </article>
-              );
-            })}
-
-            {/* Pagination */}
-            {gigs.length < total && (
-              <button
-                onClick={() => load(page + 1)}
-                disabled={loading}
-                className="w-full border border-gray-200 hover:border-gray-400 disabled:opacity-50 text-gray-600 font-bold text-sm py-3.5 rounded-2xl transition-colors flex items-center justify-center gap-2"
-              >
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />} {t('gig.load_more')}
-              </button>
-            )}
-          </div>
-        )}
       </div>
 
-      {/* Gig detail drawer */}
-      {openGigId && (
-        <GigDetail gigId={openGigId} onClose={() => setOpenGigId(null)} onChanged={() => load(page)} />
-      )}
+      <div className="max-w-2xl mx-auto px-4 py-6">
+        {/* Header */}
+        <div className="mb-5">
+          <h1 style={{ fontFamily: "'Syne',sans-serif" }} className="text-2xl font-black text-[#0D0D14] mb-1">Available Gigs</h1>
+          <p className="text-gray-400 text-sm">{filtered.length} gigs open right now</p>
+        </div>
 
-      {/* Report modal (from card flag) */}
-      {reportGig && (
-        <ReportModal targetType="gig" targetId={reportGig.id} onClose={() => setReportGig(null)} />
-      )}
+        {/* Search + filter bar */}
+        <div className="flex gap-2 mb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input type="text" placeholder="Search gigs..." value={query} onChange={e => setQuery(e.target.value)}
+              className="w-full pl-10 pr-4 h-11 bg-white border border-gray-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#00A651]/20 focus:border-[#00A651]" />
+            {query && <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2"><X className="w-4 h-4 text-gray-400" /></button>}
+          </div>
+          <button onClick={() => setShowFilters(v => !v)}
+            className={cn("w-11 h-11 rounded-2xl border flex items-center justify-center transition-all", showFilters ? "bg-[#00A651] border-[#00A651] text-white" : "bg-white border-gray-200 text-gray-600")}>
+            <SlidersHorizontal className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Category chips */}
+        {showFilters && (
+          <div className="flex gap-2 overflow-x-auto pb-3 mb-3 scrollbar-hide">
+            {CATEGORIES.map(cat => (
+              <button key={cat} onClick={() => setCategory(cat)}
+                className={cn("flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all", category === cat ? "bg-[#00A651] text-white border-[#00A651]" : "bg-white text-gray-600 border-gray-200 hover:border-gray-300")}>
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Gig list */}
+        <div className="space-y-3">
+          {filtered.length > 0 ? filtered.map(gig => (
+            <div key={gig.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-600">{gig.category}</span>
+                  {gig.is_urgent && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-yellow-400 text-yellow-900">⚡ Urgent Now</span>}
+                </div>
+                <span className="font-extrabold text-[#0D0D14]">₦{(gig.budget / 100).toLocaleString()}</span>
+              </div>
+              <h3 className="font-bold text-[#0D0D14] text-sm mb-1 line-clamp-2">{gig.title}</h3>
+              <p className="text-xs text-gray-500 line-clamp-1 mb-3">{gig.description}</p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-[#00A651]/10 flex items-center justify-center text-[10px] font-bold text-[#00A651]">
+                    {(gig.poster?.handle ?? "?")[1]?.toUpperCase()}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs font-semibold text-gray-700">{gig.poster?.handle}</span>
+                    {gig.poster?.verified_badge && <Shield className="w-3 h-3 text-[#00A651]" />}
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: TIER_COLORS[gig.poster?.tier] ?? "#98A2B3" }} />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setReportTarget(gig.id)} className="text-gray-200 hover:text-red-400 transition-colors p-1"><X className="w-3.5 h-3.5" /></button>
+                  <Link to={`/gigs/${gig.id}`} className="flex items-center gap-1.5 bg-[#0D0D14] hover:bg-[#00A651] text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors">
+                    Apply <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )) : (
+            <div className="text-center py-16">
+              <Briefcase className="w-10 h-10 text-gray-200 mx-auto mb-4" />
+              <p className="text-gray-500 font-semibold mb-1">No gig dey here</p>
+              <p className="text-gray-400 text-sm mb-4">Try a different search or clear filters</p>
+              <button onClick={() => { setCategory("All"); setQuery(""); }} className="text-[#00A651] font-bold text-sm">Clear filters</button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {reportTarget !== null && <ReportModal targetType="gig" targetId={reportTarget} onClose={() => setReportTarget(null)} />}
     </div>
   );
 };
-

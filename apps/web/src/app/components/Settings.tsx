@@ -3,10 +3,12 @@ import {
   ChevronLeft, ChevronRight, User, Lock, Bell,
   Shield, CreditCard, HelpCircle, FileText, Moon,
   Smartphone, Trash2, CheckCircle2, X, Eye, EyeOff,
-  LogOut, MessageSquare, Link2, Globe, Users, Facebook, Twitter, Github
+  LogOut, MessageSquare, Link2, Globe, Users, Facebook, Twitter, Github, Languages
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "../../lib/utils";
+import { setLang, getLang, type Lang } from "../../lib/i18n";
+import { apiFetch } from "../../lib/auth";
 import type { UserData } from "../App";
 
 interface SettingsProps {
@@ -49,6 +51,9 @@ export function Settings({ user, onBack, onLogout, onUpdate }: SettingsProps) {
   // Security toggles
   const [biometrics, setBiometrics] = useState(false);
   const [twoFactor, setTwoFactor] = useState(false);
+
+  // Language state
+  const [activeLang, setActiveLang] = useState<Lang>(getLang);
 
   // Feedback state
   const [feedbackText, setFeedbackText] = useState("");
@@ -97,6 +102,7 @@ export function Settings({ user, onBack, onLogout, onUpdate }: SettingsProps) {
   ];
 
   const PREFERENCES_ROWS: SettingsRow[] = [
+    { icon: Languages, label: "Language", desc: activeLang === "pidgin" ? "Pidgin 🇳🇬 (active)" : "English 🇬🇧 (active)", action: () => setSub("language" as any) },
     { icon: Bell, label: "Notifications", desc: "Gigs, chats, wallet alerts", action: () => setSub("notifications") },
     { icon: Shield, label: "Security Center", desc: "Biometrics, 2FA, sessions", action: () => setSub("security") },
     { icon: Link2, label: "Connected Accounts", desc: "Google, X, LinkedIn", action: () => setSub("connected") },
@@ -451,9 +457,59 @@ export function Settings({ user, onBack, onLogout, onUpdate }: SettingsProps) {
     );
   }
 
+  // Language
+  if ((sub as any) === "language") {
+    return (
+      <div className="bg-background min-h-full">
+        <SubHeader title="Language" />
+        <div className="px-5 py-6 space-y-3">
+          <p className="text-sm text-gray-500 font-medium mb-4">Choose the language for the whole app.</p>
+          {(["pidgin", "english"] as Lang[]).map((l) => (
+            <button
+              key={l}
+              onClick={() => {
+                setActiveLang(l);
+                setLang(l);
+                window.dispatchEvent(new Event("grind_lang_change"));
+                // Fire and forget — save to server
+                apiFetch("/api/users/me", { method: "PATCH", body: JSON.stringify({ lang: l }) }).catch(() => {});
+                onUpdate({ lang: l } as any);
+                toast.success(l === "pidgin" ? "Pidgin don set! 🇳🇬" : "Switched to English 🇬🇧");
+              }}
+              className={cn(
+                "w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 transition-all",
+                activeLang === l
+                  ? "border-accent bg-grind-accent-light"
+                  : "border-gray-100 bg-white hover:border-gray-200"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{l === "pidgin" ? "🇳🇬" : "🇬🇧"}</span>
+                <div className="text-left">
+                  <p className={cn("font-extrabold text-base", activeLang === l ? "text-accent" : "text-gray-900")}>
+                    {l === "pidgin" ? "Pidgin" : "English"}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {l === "pidgin" ? "Nigerian Pidgin — default" : "Standard English"}
+                  </p>
+                </div>
+              </div>
+              {activeLang === l && (
+                <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center">
+                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                    <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   // ── Main Settings screen ─────────────────────────────────
-  return (
-    <div className="bg-background min-h-full pb-10">
+  return (    <div className="bg-background min-h-full pb-10">
       {/* Header */}
       <div className="px-5 pt-12 pb-4 flex items-center gap-3 border-b border-gray-100 bg-white shadow-sm relative z-10">
         <button onClick={onBack} className="w-9 h-9 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-100 transition-colors">
