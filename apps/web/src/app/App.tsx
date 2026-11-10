@@ -30,7 +30,7 @@ import { ChatWidget } from '../components/common/ChatWidget';
 import { CartProvider } from '../context/CartContext';
 import { wakePing } from '../lib/adminApi';
 
-export const GOOGLE_CLIENT_ID = "24300395823-trbfqd7mjiho0tgl9jpaek4qtemuf5cd.apps.googleusercontent.com";
+export const GOOGLE_CLIENT_ID = "24300395823-trbfqd7mjiho0tgj9jpaek4qtemu5fcd.apps.googleusercontent.com";
 
 // Lazy-load Google OAuth to prevent crashes if package resolution fails
 const GoogleWrapper = React.lazy(() =>
