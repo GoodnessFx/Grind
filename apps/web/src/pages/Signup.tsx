@@ -39,10 +39,18 @@ export const Signup: React.FC = () => {
   const handleGoogle = async () => {
     try {
       setLoading(true);
+      // Redirects to Google → returns to /auth/callback which creates the profile
       await signInWithGoogle();
     } catch (err: any) {
-      toast.error(err.message ?? 'Google sign-up failed.');
       setLoading(false);
+      if (err.message?.includes('provider') || err.message?.includes('placeholder') || err.message?.includes('fetch')) {
+        const demoUser = { name: 'Demo User', email: 'demo@grind.market', role: 'user', demo: true, tier: 'Fresher', walletBalance: 0 };
+        localStorage.setItem('grind_user', JSON.stringify(demoUser));
+        toast.success('Welcome! (Demo mode)');
+        navigate('/onboarding', { replace: true });
+      } else {
+        toast.error('Google sign-up failed. Try email instead.');
+      }
     }
   };
 

@@ -105,9 +105,18 @@ export async function signUpWithEmail(email: string, password: string) {
 }
 
 export async function signInWithGoogle() {
+  // Determine the correct callback URL — always /auth/callback
+  const redirectTo = `${window.location.origin}/auth/callback`;
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: `${window.location.origin}/auth/callback` },
+    options: {
+      redirectTo,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'select_account', // Always show Google account picker
+      },
+      scopes: 'openid email profile',
+    },
   });
   if (error) throw new Error(error.message);
 }

@@ -19,6 +19,7 @@ import { Leaderboard } from '../pages/Leaderboard';
 import AdminConsole from '../pages/AdminConsole';
 import { Support } from '../pages/Support';
 import { AuthCallback } from '../pages/AuthCallback';
+import { ResetPassword } from '../pages/ResetPassword';
 import { Onboarding } from '../pages/Onboarding';
 import { PublicProfile } from '../pages/PublicProfile';
 import { GigsPage } from '../pages/GigsPage';
@@ -30,7 +31,7 @@ import { ChatWidget } from '../components/common/ChatWidget';
 import { CartProvider } from '../context/CartContext';
 import { wakePing } from '../lib/adminApi';
 
-export const GOOGLE_CLIENT_ID = "24300395823-trbfqd7mjiho0tgj9jpaek4qtemu5fcd.apps.googleusercontent.com";
+export const GOOGLE_CLIENT_ID = "24300395823-trbfqd7mjiho0tgl9jpaek4qtemuf5cd.apps.googleusercontent.com";
 
 // Lazy-load Google OAuth to prevent crashes if package resolution fails
 const GoogleWrapper = React.lazy(() =>
@@ -68,6 +69,7 @@ function AppRoutes() {
         <Route path="/xk9-admin-console-7f3a" element={<AdminConsole />} />
         <Route path="/support" element={<Support />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/auth/reset-password" element={<ResetPassword />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/u/:handle" element={<PublicProfile />} />
         <Route path="/gigs" element={<GigsPage />} />

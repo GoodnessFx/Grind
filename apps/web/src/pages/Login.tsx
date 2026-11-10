@@ -51,15 +51,20 @@ export const Login: React.FC = () => {
   const handleGoogle = async () => {
     try {
       setLoading(true);
+      // This redirects the page to Google → returns to /auth/callback
       await signInWithGoogle();
+      // If we reach here, Supabase didn't redirect (misconfigured) — use demo
     } catch (err: any) {
-      // Graceful fallback: if Supabase/OAuth not configured, create a local session
-      const demoUser = { name: 'Google User', email: 'user@google.com', role: 'user', demo: true };
-      localStorage.setItem('grind_user', JSON.stringify(demoUser));
-      toast.success('Welcome back!');
-      navigate(params.get('next') ?? '/profile', { replace: true });
-    } finally {
       setLoading(false);
+      if (err.message?.includes('provider') || err.message?.includes('placeholder') || err.message?.includes('fetch') || err.message?.includes('OAuth')) {
+        // Supabase Google not configured yet — demo session
+        const demoUser = { name: 'Demo User', email: 'demo@grind.market', role: 'user', demo: true, tier: 'Fresher', walletBalance: 0 };
+        localStorage.setItem('grind_user', JSON.stringify(demoUser));
+        toast.success('Welcome! (Demo mode — configure Supabase Google OAuth to go live)');
+        navigate(params.get('next') ?? '/profile', { replace: true });
+      } else {
+        toast.error('Google sign-in failed. Try email instead.');
+      }
     }
   };
 
