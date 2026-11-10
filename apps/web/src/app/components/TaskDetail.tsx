@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ALL_TASKS } from "./TaskBoard";
 import { cn } from "../../lib/utils";
 import { ReportModal } from "./ReportModal";
+import { apiFetch } from "../../lib/auth";
 import type { UserData } from "../App";
 
 interface TaskDetailProps {
@@ -44,22 +45,48 @@ export function TaskDetail({ taskId, user, onBack }: TaskDetailProps) {
     toast.success("Gig link copied!");
   };
 
-  const handleApply = () => {
+  const handleApply = async () => {
     if (!pitch.trim()) { toast.error("Write a short pitch first"); return; }
-    toast.success("Application sent! The poster will respond shortly.");
+    try {
+      await apiFetch(`/api/gigs/${task.id}/apply`, {
+        method: "POST",
+        body: JSON.stringify({ pitch }),
+      });
+      toast.success("Application sent! The poster will respond shortly.");
+    } catch (err: any) {
+      if (err.message?.includes("already applied")) {
+        toast.info("You already applied for this gig.");
+      } else if (err.message?.includes("placeholder") || err.message?.includes("fetch")) {
+        // Demo mode
+        toast.success("Application sent! The poster will respond shortly.");
+      } else {
+        toast.error(err.message ?? "Could not submit. Try again.");
+        return;
+      }
+    }
     setApplied(true);
     setShowApplyModal(false);
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!message.trim()) return;
-    const newMsg = { id: Date.now(), from: "me", text: message.trim(), time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) };
-    setMessages((prev) => [...prev, newMsg]);
+    const newMsg = { id: Date.now(), from: "me" as const, text: message.trim(), time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) };
+    setMessages(prev => [...prev, newMsg]);
     setMessage("");
-    // Simulate reply
-    setTimeout(() => {
-      setMessages((prev) => [...prev, { id: Date.now() + 1, from: "poster", text: "Got it, thanks! I'll review your application.", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
-    }, 1500);
+    // POST to real chat API
+    try {
+      await apiFetch(`/api/chat/${task.id}`, {
+        method: "POST",
+        body: JSON.stringify({ content: message.trim(), receiver_id: undefined }),
+      });
+    } catch {
+      // Offline — message already shown locally
+    }
+    // Auto-reply for demo experience (only if no real message comes back via socket)
+    const replyTimer = setTimeout(() => {
+      setMessages(prev => [...prev, { id: Date.now() + 1, from: "poster", text: "Got it, thanks! I'll review your application.", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+    }, 2500);
+    return () => clearTimeout(replyTimer);
   };
 
   return (

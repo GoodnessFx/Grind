@@ -581,7 +581,7 @@ export function Home({ user, onNavigate, onPostTask, onTaskClick, onUpdateUser, 
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-base font-bold text-gray-900">Real-World Opportunities</h3>
           <button
-            onClick={() => toast.info("More opportunities coming soon!")}
+            onClick={() => onNavigate("gigs")}
             className="text-accent text-xs font-semibold flex items-center gap-1"
           >
             See all <ArrowUpRight className="w-3 h-3" />

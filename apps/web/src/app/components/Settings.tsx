@@ -106,7 +106,12 @@ export function Settings({ user, onBack, onLogout, onUpdate }: SettingsProps) {
     { icon: Bell, label: "Notifications", desc: "Gigs, chats, wallet alerts", action: () => setSub("notifications") },
     { icon: Shield, label: "Security Center", desc: "Biometrics, 2FA, sessions", action: () => setSub("security") },
     { icon: Link2, label: "Connected Accounts", desc: "Google, X, LinkedIn", action: () => setSub("connected") },
-    { icon: Moon, label: "Themes", desc: "Light / Dark mode", action: () => toast.info("Dark mode coming soon!") },
+    { icon: Moon, label: "Themes", desc: "Light / Dark mode", action: () => {
+      const html = document.documentElement;
+      const isDark = html.classList.toggle("dark");
+      localStorage.setItem("grind_theme", isDark ? "dark" : "light");
+      toast.success(isDark ? "Dark mode on 🌙" : "Light mode on ☀️");
+    } },
   ];
 
   const SUPPORT_ROWS: SettingsRow[] = [
@@ -389,7 +394,10 @@ export function Settings({ user, onBack, onLogout, onUpdate }: SettingsProps) {
               <Toggle value={twoFactor} onChange={() => { setTwoFactor((v) => !v); toast.success(twoFactor ? "2FA disabled" : "2FA enabled!"); }} />
             </div>
             <button
-              onClick={() => toast.info("Sessions feature coming soon!")}
+              onClick={() => {
+                const info = `Session started: ${new Date().toLocaleString()}\nDevice: ${navigator.userAgent.split(" ")[0]}\nLocation: This device`;
+                toast.info(info, { duration: 5000 });
+              }}
               className="w-full flex items-center justify-between px-4 py-4 bg-white active:bg-gray-50"
             >
               <div>
@@ -416,14 +424,21 @@ export function Settings({ user, onBack, onLogout, onUpdate }: SettingsProps) {
       <div className="bg-background min-h-full">
         <SubHeader title="Payment Settings" />
         <div className="px-4 py-5 space-y-4">
+          <div className="bg-grind-accent-light border border-accent/20 rounded-2xl p-4 text-sm text-gray-700 leading-relaxed">
+            Add a bank account in the form below so we know where to send your withdrawals.
+          </div>
           <div className="bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-sm divide-y divide-gray-50">
-            {["Add Debit Card", "Add Bank Account", "Withdrawal Settings", "Transaction Limits"].map((item) => (
-              <button
-                key={item}
-                onClick={() => toast.info(`${item} — coming soon!`)}
-                className="w-full flex items-center justify-between px-4 py-4 active:bg-gray-50 transition-colors"
-              >
-                <p className="text-[15px] font-extrabold text-gray-900">{item}</p>
+            {[
+              { label: "Add Bank Account", desc: "For withdrawals", nav: () => { onBack(); toast.info("Go to Profile → Work History to add your bank details, or complete onboarding."); } },
+              { label: "Transaction History", desc: "View all wallet activity", nav: () => { onBack(); } },
+              { label: "Withdrawal History", desc: "Track your payouts", nav: () => { onBack(); } },
+            ].map(item => (
+              <button key={item.label} onClick={item.nav}
+                className="w-full flex items-center justify-between px-4 py-4 active:bg-gray-50 transition-colors text-left">
+                <div>
+                  <p className="text-[15px] font-extrabold text-gray-900">{item.label}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{item.desc}</p>
+                </div>
                 <ChevronRight className="w-4 h-4 text-gray-300" />
               </button>
             ))}
